@@ -114,6 +114,7 @@ public:
 
     void draw(const core::visual::VisualParams* vparams);
 
+	void handleTopologyChange();
 
 protected:
 

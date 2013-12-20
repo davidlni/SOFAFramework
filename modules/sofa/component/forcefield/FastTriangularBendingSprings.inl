@@ -163,7 +163,7 @@ void FastTriangularBendingSprings<DataTypes>::TriangularBSEdgeHandler::applyTria
     {
         typename MechanicalState::ReadVecCoord restPosition = ff->mstate->readRestPositions();
         helper::vector<EdgeSpring>& edgeData = *(ff->edgeSprings.beginEdit());
-
+		std::cout << "triangleRemoved " << triangleRemoved.size() << std::endl;
         for (unsigned int i=0; i<triangleRemoved.size(); ++i)
         {
             /// describe the jth edge index of triangle no i
@@ -507,6 +507,50 @@ void FastTriangularBendingSprings<DataTypes>::draw(const core::visual::VisualPar
 
     glPopAttrib();
 #endif /* SOFA_NO_OPENGL */
+}
+
+template<class DataTypes>
+void FastTriangularBendingSprings<DataTypes>::handleTopologyChange()
+{
+    if (!_topology) return;
+
+	std::list<const core::topology::TopologyChange *>::const_iterator itBegin = _topology->beginChange();
+	std::list<const core::topology::TopologyChange *>::const_iterator itEnd = _topology->endChange();
+
+	for ( std::list<const core::topology::TopologyChange *>::const_iterator changeIt = itBegin;
+		changeIt != itEnd; ++changeIt )
+	{
+		const core::topology::TopologyChangeType changeType = ( *changeIt )->getChangeType();
+		switch ( changeType )
+		{
+		case core::topology::TRIANGLESADDED:
+			{
+				const sofa::core::topology::TrianglesAdded *ta = static_cast< const sofa::core::topology::TrianglesAdded * >( *changeIt );
+				edgeHandler->applyTriangleCreation(ta->triangleIndexArray, ta->triangleArray, ta->ancestorsList, ta->coefs);
+				break;
+			}
+		case core::topology::TRIANGLESREMOVED:
+			{
+				const sofa::core::topology::TrianglesRemoved *tr = static_cast< const sofa::core::topology::TrianglesRemoved * >( *changeIt );
+				edgeHandler->applyTriangleDestruction(tr->getArray());
+				break;
+			}
+		case core::topology::POINTSREMOVED:
+			{
+				const sofa::core::topology::PointsRemoved *pr = static_cast< const sofa::core::topology::PointsRemoved * >( *changeIt );
+				edgeHandler->applyPointDestruction(pr->getArray());
+				break;
+			}
+		case core::topology::POINTSRENUMBERING:
+			{
+				const sofa::core::topology::PointsRenumbering *pr = static_cast< const sofa::core::topology::PointsRenumbering * >( *changeIt );
+				edgeHandler->applyPointRenumbering(pr->getIndexArray());
+				break;
+			}
+		default:
+			break;
+		}
+	}
 }
 
 
