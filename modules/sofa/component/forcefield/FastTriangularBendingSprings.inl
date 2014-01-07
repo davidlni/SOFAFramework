@@ -67,7 +67,7 @@ using core::topology::BaseMeshTopology;
 typedef BaseMeshTopology::EdgesInTriangle EdgesInTriangle;
 
 template< class DataTypes>
-void FastTriangularBendingSprings<DataTypes>::TriangularBSEdgeHandler::applyCreateFunction(unsigned int , EdgeSpring &ei, const Edge &, const sofa::helper::vector<unsigned int> &, const sofa::helper::vector<double> &)
+void FastTriangularBendingSprings<DataTypes>::TriangularBSEdgeHandler::applyCreateFunction(unsigned int edgeIndex, EdgeSpring &ei, const Edge &, const sofa::helper::vector<unsigned int> &, const sofa::helper::vector<double> &)
 {
     if (ff)
     {
@@ -86,10 +86,9 @@ void FastTriangularBendingSprings<DataTypes>::TriangularBSEdgeHandler::applyTria
         typename MechanicalState::ReadVecCoord restPosition = ff->mstate->readRestPositions();
 
         helper::WriteAccessor<Data<vector<EdgeSpring> > > edgeData(ff->edgeSprings);
-
+        
         for (unsigned int i=0; i<triangleAdded.size(); ++i)
         {
-
             /// edges of the new triangle
             EdgesInTriangle te2 = ff->_topology->getEdgesInTriangle(triangleAdded[i]);
             /// vertices of the new triangle
@@ -144,13 +143,17 @@ void FastTriangularBendingSprings<DataTypes>::TriangularBSEdgeHandler::applyTria
 							ei.setEdgeSpring( restPosition.ref(), v1, v2, e1, e2, (Real)ff->f_bendingStiffness.getValue() );
                     }
                 }
+                //else
+                //{
+                    //unsigned int edgeIndex = te2[j];
+
+                    //const sofa::helper::vector< unsigned int > shell = ff->_topology->getTrianglesAroundEdge(edgeIndex);
+                    //if(shell.size()!=2)
+                    //    ei.is_activated = ei.is_initialized = false;
+                //}
             }
-
         }
-
-        ff->edgeSprings.endEdit();
     }
-
 }
 
 
@@ -178,9 +181,8 @@ void FastTriangularBendingSprings<DataTypes>::TriangularBSEdgeHandler::applyTria
             {
 
                 EdgeSpring &ei = edgeData[te[j]]; // ff->edgeInfo
-                if(ei.is_initialized)
+                //if(ei.is_initialized)
                 {
-
                     unsigned int edgeIndex = te[j];
 
                     const sofa::helper::vector< unsigned int > shell = ff->_topology->getTrianglesAroundEdge(edgeIndex);
@@ -240,16 +242,14 @@ void FastTriangularBendingSprings<DataTypes>::TriangularBSEdgeHandler::applyTria
 						if(vp.norm2()>epsilonSq && ve.norm2()>epsilonSq)
 							ei.setEdgeSpring(restPosition.ref(), v1, v2, e1, e2, (Real)ff->f_bendingStiffness.getValue());
 						else
-						{
 							ei.is_activated = false;
-						}
                     }
-                    else
-                        ei.is_activated = ei.is_initialized = false;
+                    //else
+                        //ei.is_activated = ei.is_initialized = false;
 
                 }
-                else
-                    ei.is_activated = false;
+                //else
+                //    ei.is_activated = false;
             }
 
         }
@@ -259,7 +259,28 @@ void FastTriangularBendingSprings<DataTypes>::TriangularBSEdgeHandler::applyTria
 
 }
 
+template<class DataTypes>
+void FastTriangularBendingSprings<DataTypes>::TriangularBSEdgeHandler::ApplyTopologyChange(const core::topology::TrianglesAdded* e)
+{
+    return;
 
+    const sofa::helper::vector<unsigned int> &triangleAdded = e->getIndexArray();
+    const sofa::helper::vector<Triangle> &elems = e->getElementArray();
+    const sofa::helper::vector<sofa::helper::vector<unsigned int> > & ancestors = e->ancestorsList;
+    const sofa::helper::vector<sofa::helper::vector<double> > & coefs = e->coefs;
+
+    applyTriangleCreation(triangleAdded, elems, ancestors, coefs);
+}
+
+template<class DataTypes>
+void FastTriangularBendingSprings<DataTypes>::TriangularBSEdgeHandler::ApplyTopologyChange(const core::topology::TrianglesRemoved* e)
+{
+    return;
+
+    const sofa::helper::vector<unsigned int> &triangleRemoved = e->getArray();
+
+    applyTriangleDestruction(triangleRemoved);
+}
 
 template<class DataTypes>
 void FastTriangularBendingSprings<DataTypes>::TriangularBSEdgeHandler::applyPointDestruction(const sofa::helper::vector<unsigned int> &tab)
@@ -273,16 +294,14 @@ void FastTriangularBendingSprings<DataTypes>::TriangularBSEdgeHandler::applyPoin
 
         helper::vector<EdgeSpring>& edgeInf = *(ff->edgeSprings.beginEdit());
 
+        //make a reverse copy of tab
         sofa::helper::vector<unsigned int> lastIndexVec;
+        lastIndexVec.reserve(tab.size());
         for(unsigned int i_init = 0; i_init < tab.size(); ++i_init)
-        {
-
             lastIndexVec.push_back(last - i_init);
-        }
 
         for ( i = 0; i < tab.size(); ++i)
         {
-
             unsigned int i_next = i;
             bool is_reached = false;
             while( (!is_reached) && (i_next < lastIndexVec.size() - 1))
@@ -294,15 +313,12 @@ void FastTriangularBendingSprings<DataTypes>::TriangularBSEdgeHandler::applyPoin
 
             if(is_reached)
             {
-
                 lastIndexVec[i_next] = lastIndexVec[i];
-
             }
 
             const sofa::helper::vector<unsigned int> &shell= ff->_topology->getTrianglesAroundVertex(lastIndexVec[i]);
             for (j=0; j<shell.size(); ++j)
             {
-
                 Triangle tj = ff->_topology->getTriangle(shell[j]);
 
                 int vertexIndex = ff->_topology->getVertexIndexInTriangle(tj, lastIndexVec[i]);
@@ -348,6 +364,24 @@ void FastTriangularBendingSprings<DataTypes>::TriangularBSEdgeHandler::applyPoin
         }
         ff->edgeSprings.endEdit();
     }
+}
+
+template<class DataTypes>
+void FastTriangularBendingSprings<DataTypes>::TriangularBSEdgeHandler::ApplyTopologyChange(const core::topology::PointsRemoved* e)
+{
+    return;
+
+    const sofa::helper::vector<unsigned int> & tab = e->getArray();
+    applyPointDestruction(tab);
+}
+
+template<class DataTypes>
+void FastTriangularBendingSprings<DataTypes>::TriangularBSEdgeHandler::ApplyTopologyChange(const core::topology::PointsRenumbering* e)
+{
+    return;
+
+    const sofa::helper::vector<unsigned int> &newIndices = e->getIndexArray();
+    applyPointRenumbering(newIndices);
 }
 
 
@@ -487,7 +521,7 @@ void FastTriangularBendingSprings<DataTypes>::draw(const core::visual::VisualPar
     glPushAttrib(GL_LIGHTING_BIT);
     glDisable(GL_LIGHTING);
 
-    unsigned int nb_to_draw = 0;
+    //unsigned int nb_to_draw = 0;
 
     const helper::vector<EdgeSpring>& edgeInf = edgeSprings.getValue();
 
@@ -497,62 +531,17 @@ void FastTriangularBendingSprings<DataTypes>::draw(const core::visual::VisualPar
     {
         if(edgeInf[i].is_activated)
         {
-            nb_to_draw+=1;
+            //nb_to_draw+=1;
             helper::gl::glVertexT(x[edgeInf[i].vid[EdgeSpring::A]]);
             helper::gl::glVertexT(x[edgeInf[i].vid[EdgeSpring::B]]);
 
         }
     }
     glEnd();
-
+    
     glPopAttrib();
 #endif /* SOFA_NO_OPENGL */
 }
-
-template<class DataTypes>
-void FastTriangularBendingSprings<DataTypes>::handleTopologyChange()
-{
-    if (!_topology) return;
-
-	std::list<const core::topology::TopologyChange *>::const_iterator itBegin = _topology->beginChange();
-	std::list<const core::topology::TopologyChange *>::const_iterator itEnd = _topology->endChange();
-
-	for ( std::list<const core::topology::TopologyChange *>::const_iterator changeIt = itBegin;
-		changeIt != itEnd; ++changeIt )
-	{
-		const core::topology::TopologyChangeType changeType = ( *changeIt )->getChangeType();
-		switch ( changeType )
-		{
-		case core::topology::TRIANGLESADDED:
-			{
-				const sofa::core::topology::TrianglesAdded *ta = static_cast< const sofa::core::topology::TrianglesAdded * >( *changeIt );
-				edgeHandler->applyTriangleCreation(ta->triangleIndexArray, ta->triangleArray, ta->ancestorsList, ta->coefs);
-				break;
-			}
-		case core::topology::TRIANGLESREMOVED:
-			{
-				const sofa::core::topology::TrianglesRemoved *tr = static_cast< const sofa::core::topology::TrianglesRemoved * >( *changeIt );
-				edgeHandler->applyTriangleDestruction(tr->getArray());
-				break;
-			}
-		case core::topology::POINTSREMOVED:
-			{
-				const sofa::core::topology::PointsRemoved *pr = static_cast< const sofa::core::topology::PointsRemoved * >( *changeIt );
-				edgeHandler->applyPointDestruction(pr->getArray());
-				break;
-			}
-		case core::topology::POINTSRENUMBERING:
-			{
-				const sofa::core::topology::PointsRenumbering *pr = static_cast< const sofa::core::topology::PointsRenumbering * >( *changeIt );
-				edgeHandler->applyPointRenumbering(pr->getIndexArray());
-				break;
-			}
-		default:
-			break;
-		}
-	}
-}
-
 
 } // namespace forcefield
 

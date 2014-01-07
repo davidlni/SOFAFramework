@@ -114,8 +114,6 @@ public:
 
     void draw(const core::visual::VisualParams* vparams);
 
-	void handleTopologyChange();
-
 protected:
 
 
@@ -260,6 +258,16 @@ protected:
         void applyPointDestruction(const sofa::helper::vector<unsigned int> &pointIndices);
 
         void applyPointRenumbering(const sofa::helper::vector<unsigned int> &pointToRenumber);
+
+        /// Callback to add triangles elements.
+        void ApplyTopologyChange(const core::topology::TrianglesAdded* /*event*/);
+        /// Callback to remove triangles elements.
+        void ApplyTopologyChange(const core::topology::TrianglesRemoved* /*event*/);
+
+        /// Callback to remove points elements.
+        void ApplyTopologyChange(const core::topology::PointsRemoved* /*event*/);
+        /// Callback to renumbering on points elements.
+        void ApplyTopologyChange(const core::topology::PointsRenumbering* /*event*/);
 
     protected:
         FastTriangularBendingSprings<DataTypes>* ff;
