@@ -58,10 +58,12 @@ public:
     typedef typename DataTypes::Coord Coord;
     typedef typename DataTypes::Deriv Deriv;
     typedef TTriangleModel<DataTypes> ParentModel;
+	typedef typename DataTypes::Real Real;
 
     TTriangle(ParentModel* model, int index);
     TTriangle() {}
     explicit TTriangle(const core::CollisionElementIterator& i);
+	TTriangle(ParentModel* model, int index, helper::ReadAccessor<typename DataTypes::VecCoord>& /*x*/);
 
     const Coord& p1() const;
     const Coord& p2() const;
@@ -92,6 +94,14 @@ public:
     bool hasFreePosition() const;
 
     int flags() const;
+
+	TTriangle& shape() { return *this; }
+    const TTriangle& shape() const { return *this; }
+
+    Coord interpX(defaulttype::Vec<2,Real> bary) const
+    {
+		return (p1()*(1-bary[0]-bary[1])) + (p2()*bary[0]) + (p3()*bary[1]);
+	}
 };
 
 template<class TDataTypes>
@@ -120,6 +130,8 @@ public:
         FLAG_POINTS  = FLAG_P1|FLAG_P2|FLAG_P3,
         FLAG_EDGES   = FLAG_E12|FLAG_E23|FLAG_E31,
     };
+
+	enum { NBARY = 2 };
 
     Data<bool> bothSide; // to activate collision on both side of the triangle model
 protected:
@@ -241,6 +253,11 @@ inline TTriangle<DataTypes>::TTriangle(ParentModel* model, int index)
 template<class DataTypes>
 inline TTriangle<DataTypes>::TTriangle(const core::CollisionElementIterator& i)
     : core::TCollisionElementIterator<ParentModel>(static_cast<ParentModel*>(i.getCollisionModel()), i.getIndex())
+{}
+
+template<class DataTypes>
+inline TTriangle<DataTypes>::TTriangle(ParentModel* model, int index, helper::ReadAccessor<typename DataTypes::VecCoord>& /*x*/)
+    : core::TCollisionElementIterator<ParentModel>(model, index)
 {}
 
 template<class DataTypes>
