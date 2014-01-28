@@ -65,6 +65,10 @@ GenericConstraintSolver::GenericConstraintSolver()
 , graphConstraints( initData(&graphConstraints,"graphConstraints","Graph of each constraint's error at the end of the resolution"))
 , graphForces( initData(&graphForces,"graphForces","Graph of each constraint's force at each step of the resolution"))
 , graphViolations( initData(&graphViolations, "graphViolations", "Graph of each constraint's violation at each step of the resolution"))
+, currentNumConstraints(initData(&currentNumConstraints, 0, "currentNumConstraints", "OUTPUT: current number of constraints"))
+, currentNumConstraintGroups(initData(&currentNumConstraintGroups, 0, "currentNumConstraintGroups", "OUTPUT: current number of constraints"))
+, currentIterations(initData(&currentIterations, 0, "currentIterations", "OUTPUT: current number of constraint groups"))
+, currentError(initData(&currentError, 0.0, "currentError", "OUTPUT: current error"))
 , current_cp(&cp1)
 , last_cp(NULL)
 {
@@ -81,6 +85,15 @@ GenericConstraintSolver::GenericConstraintSolver()
 
 	graphViolations.setWidget("graph_linear");
 	graphViolations.setGroup("Graph2");
+
+	currentNumConstraints.setReadOnly(true);
+	currentNumConstraints.setGroup("Stats");
+	currentNumConstraintGroups.setReadOnly(true);
+	currentNumConstraintGroups.setGroup("Stats");
+	currentIterations.setReadOnly(true);
+	currentIterations.setGroup("Stats");
+	currentError.setReadOnly(true);
+	currentError.setGroup("Stats");
 }
 
 GenericConstraintSolver::~GenericConstraintSolver()
@@ -303,6 +316,11 @@ bool GenericConstraintSolver::solveSystem(const core::ConstraintParams * /*cPara
 		sofa::helper::AdvancedTimer::stepEnd("ConstraintsGaussSeidel");
 	}
 
+    this->currentError.setValue(current_cp->currentError);
+    this->currentIterations.setValue(current_cp->currentIterations);
+    this->currentNumConstraints.setValue(current_cp->getNumConstraints());
+    this->currentNumConstraintGroups.setValue(current_cp->getNumConstraintGroups());
+
 	if ( displayTime.getValue() )
 	{
 		sout<<" TOTAL solve_LCP " <<( (double) timer.getTime() - time)*timeScale<<" ms" <<sendl;
@@ -416,6 +434,25 @@ void GenericConstraintProblem::freeConstraintResolutions()
 			constraintsResolutions[i] = NULL;
 		}
 	}
+}
+int GenericConstraintProblem::getNumConstraints()
+{
+    return dimension;
+}
+
+int GenericConstraintProblem::getNumConstraintGroups()
+{
+    int n = 0;
+    for(int i=0; i<dimension; )
+    {
+        if(!constraintsResolutions[i])
+        {
+            break;
+        }
+        ++n;
+        i += constraintsResolutions[i]->nbLines;
+    }
+    return n;
 }
 
 void GenericConstraintProblem::solveTimed(double tol, int maxIt, double timeout)
@@ -638,6 +675,8 @@ void GenericConstraintProblem::gaussSeidel(double timeout, GenericConstraintSolv
 		}
 	}
 
+    currentError = error;
+    currentIterations = i+1;
 	if(solver)
 	{
 		if(!convergence)
@@ -901,6 +940,9 @@ void GenericConstraintProblem::unbuiltGaussSeidel(double timeout, GenericConstra
 	}
     
 	sofa::helper::AdvancedTimer::valSet("GS iterations", i+1);
+
+    currentError = error;
+    currentIterations = i+1;
 
 	if(solver)
 	{

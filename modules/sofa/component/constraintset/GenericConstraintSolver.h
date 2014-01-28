@@ -61,6 +61,8 @@ public:
 	bool scaleTolerance, allVerified, unbuilt;
 	double sor;
 	double sceneTime;
+    double currentError;
+    int currentIterations;
 
 	// For unbuilt version :
 	SparseMatrix<double> Wdiag;
@@ -74,6 +76,7 @@ public:
 	
 
 	GenericConstraintProblem() : scaleTolerance(true), allVerified(false), sor(1.0)
+        , sceneTime(0.0), currentError(0.0), currentIterations(0)
 		, change_sequence(false) {}
 	~GenericConstraintProblem() { freeConstraintResolutions(); }
 
@@ -83,6 +86,9 @@ public:
 
 	void gaussSeidel(double timeout=0, GenericConstraintSolver* solver = NULL);
 	void unbuiltGaussSeidel(double timeout=0, GenericConstraintSolver* solver = NULL);
+
+    int getNumConstraints();
+    int getNumConstraintGroups();
 };
 
 class SOFA_CONSTRAINT_API GenericConstraintSolver : public ConstraintSolverImpl
@@ -113,6 +119,11 @@ public:
 	Data<bool> unbuilt;
 	Data<bool> computeGraphs;
 	Data<std::map < std::string, sofa::helper::vector<double> > > graphErrors, graphConstraints, graphForces, graphViolations;
+
+	Data<int> currentNumConstraints;
+	Data<int> currentNumConstraintGroups;
+	Data<int> currentIterations;
+	Data<double> currentError;
 
 	ConstraintProblem* getConstraintProblem();
 	void lockConstraintProblem(ConstraintProblem* p1, ConstraintProblem* p2=0);
