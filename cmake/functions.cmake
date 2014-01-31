@@ -26,7 +26,7 @@ function(sofa_save_option_list filename)
     if("${human_readable_list}" STREQUAL "")
         set(human_readable_list "(none)\n")
     endif()
-    file(WRITE "${filename}"
+    file(WRITE "${SOFA_BUILD_DIR}/${filename}"
 "Those options differ from their default values:
 
 ${human_readable_list}
@@ -36,7 +36,7 @@ declared with the 'sofa_option' function; e.g. CMAKE_BUILD_TYPE will not be list
 
 cmake${cmake_option_list} .
 ")
-    message(STATUS "The list of the options you changed was saved in: ${filename}")
+    message(STATUS "The list of the options you changed was saved to: ${filename}")
 endfunction()
 
 # group files
@@ -534,6 +534,16 @@ macro(listSubtraction outList inList0 inList1)
     set(${outList} ${tmpList})
 endmacro()
 
+# Set 'var' to TRUE if 'value' appears in the remaining arguments, otherwise unset 'var'
+macro(list_contains var value)
+  set(${var})
+  foreach (value2 ${ARGN})
+    if (${value} STREQUAL ${value2})
+      set(${var} TRUE)
+    endif()
+  endforeach()
+endmacro()
+
 # Set SOFA_FORCE_RECONFIGURE to signal that CMake must be run again
 function(sofa_force_reconfigure)
     set(SOFA_FORCE_RECONFIGURE 1 CACHE INTERNAL "" FORCE)
@@ -592,6 +602,71 @@ function(sofa_print_detailed_projects_info)
     endforeach()
 endfunction()
 
+function(sofa_save_dependencies filename)
+    set(text "")
+
+    set(projectNames ${GLOBAL_DEPENDENCIES})
+    foreach(projectName ${projectNames})
+        if(TARGET ${projectName})
+            set(dependencies ${GLOBAL_PROJECT_DEPENDENCIES_${projectName}})
+            if (dependencies)
+                set(text "${text}> ${projectName} depends on:\n")
+                foreach(dependency ${dependencies})
+                    set(text "${text}  - ${dependency}\n")
+                endforeach()
+            else()
+                set(text "${text}> ${projectName} has no dependencies\n")
+            endif()
+        endif()
+    endforeach()
+    file(WRITE "${SOFA_BUILD_DIR}/${filename}"
+"Here are the direct dependencies for every project:
+
+${text}")
+    message(STATUS "The list of direct dependencies was saved to: ${filename}")
+endfunction()
+
+# Write to a file the list of compilation definitions
+function(sofa_save_compiler_definitions filename)
+    # Get the definitions for the first TARGET project,
+    foreach(project_name ${GLOBAL_DEPENDENCIES})
+        if(TARGET ${project_name})
+            set(common_definition_list ${GLOBAL_PROJECT_COMPILER_DEFINITIONS_${project_name}})
+            break()
+        endif()
+    endforeach()
+    # and find the list of definitions which are common to every project
+    foreach(project_name ${GLOBAL_DEPENDENCIES})
+        if(TARGET ${project_name})
+            listIntersection(new_list common_definition_list GLOBAL_PROJECT_COMPILER_DEFINITIONS_${project_name})
+            set(common_definition_list ${new_list})
+        endif()
+    endforeach()
+
+    # List, for each project, the definitions which are not in the common list
+    set(project_list)
+    foreach(project_name ${GLOBAL_DEPENDENCIES})
+        if(TARGET ${project_name})
+            listSubtraction(defines GLOBAL_PROJECT_COMPILER_DEFINITIONS_${project_name} common_definition_list)
+            set(project_list "${project_list}- ${project_name}: ${defines}\n")
+        endif()
+    endforeach()
+
+    if("${common_definition_list}" STREQUAL "")
+        set(common_definition_list "(none)")
+    endif()
+
+    file(WRITE "${SOFA_BUILD_DIR}/${filename}"
+        "Every project is compiled with the following definitions:
+
+${common_definition_list}
+
+And here are the project-specific compiler definitions:
+
+${project_list}")
+    message(STATUS "The list of compiler definitions was saved to: ${filename}")
+endfunction()
+
 function(sofa_print_configuration_report)
     if(SOFA-MISC_CMAKE_VERBOSE)
         sofa_print_detailed_projects_info()
@@ -607,4 +682,53 @@ function(sofa_print_configuration_report)
         message(">>> The configuration has changed, you must configure the project again")
         message("")
     endif()
+endfunction()
+
+
+# Iteratively retrieve all the dependencies of 'project' and store them in 'out_dependency_list'
+function(sofa_get_complete_dependencies project out_dependency_list)
+    set(current_list)
+
+    set(new_dependencies ${GLOBAL_PROJECT_DEPENDENCIES_${project}})
+    while(new_dependencies)
+        list(APPEND current_list ${new_dependencies})
+        # Get these new_dependencies' own dependencies
+        set(dependencies_of_dependencies)
+        foreach(name ${new_dependencies})
+            list(APPEND dependencies_of_dependencies ${GLOBAL_PROJECT_DEPENDENCIES_${name}})
+        endforeach()
+        if(dependencies_of_dependencies)
+            list(REMOVE_DUPLICATES dependencies_of_dependencies)
+        endif()
+        # But keep only the new ones
+        listSubtraction(new_dependencies dependencies_of_dependencies current_list)
+    endwhile()
+
+    set(${out_dependency_list} ${current_list} PARENT_SCOPE)
+endfunction()
+
+function(sofa_save_complete_dependencies filename)
+    foreach(projectName ${GLOBAL_DEPENDENCIES})
+        if(TARGET ${projectName})
+            sofa_get_complete_dependencies(${projectName} dependencies)
+            set(targets)
+            set(others)
+            foreach(dependency ${dependencies})
+                if(TARGET ${dependency})
+                    list(APPEND targets "${dependency}")
+                else()
+                    list(APPEND others "${dependency}")
+                endif()
+            endforeach()
+            if(NOT targets)
+                set(targets "(none)")
+            endif()
+            if(NOT others)
+                set(others "(none)")
+            endif()
+            set(text "${text}> ${projectName}:\n- Targets:\n${targets}\n- Others:\n${others}\n\n")
+        endif()
+    endforeach()
+    file(WRITE "${SOFA_BUILD_DIR}/${filename}" "For debugging purposes, here is the list of ALL dependencies for each project.\n\n${text}")
+    message(STATUS "The list of complete dependencies was saved to: ${filename}")
 endfunction()
