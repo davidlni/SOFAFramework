@@ -1,6 +1,7 @@
 
-set(SOFA_OPTION_LIST CACHE INTERNAL "List of cmake options")
-
+# Declare an option. Just as the standard 'option' command, it creates
+# a cache variable, but it also stores the list of options it created, as
+# well as their default values
 function(sofa_option name type default_value description)
     set(${name} "${default_value}" CACHE ${type} "${description}")
     set(SOFA_OPTION_LIST ${SOFA_OPTION_LIST} ${name} CACHE INTERNAL "List of cmake options")
@@ -9,7 +10,10 @@ function(sofa_option name type default_value description)
         set(SOFA_OPTION_DEFAULT_VALUE_${name} "${default_value}" CACHE INTERNAL "Default value for ${name}")
     endif()
 endfunction()
+set(SOFA_OPTION_LIST CACHE INTERNAL "List of cmake options") # Reset option list
 
+# Write to a file the list of build options, declared with sofa_options(),
+# that are not any more set to their default values
 function(sofa_save_option_list filename)
     set(human_readable_list "")
     set(cmake_option_list "")
@@ -262,8 +266,8 @@ function(EnableDependencyOption projectName)
     #enable the project option
     if(GLOBAL_PROJECT_OPTION_${projectName})
         if(NOT ${${GLOBAL_PROJECT_OPTION_${projectName}}})
-            sofa_logWarning("Adding needed project option: ${GLOBAL_PROJECT_OPTION_${projectName}}")
-            sofa_forceReconfigure()
+            sofa_log_warning("Adding needed project option: ${GLOBAL_PROJECT_OPTION_${projectName}}")
+            sofa_force_reconfigure()
 
             get_property(variableDocumentation CACHE ${GLOBAL_PROJECT_OPTION_${projectName}} PROPERTY HELPSTRING)
             set(${GLOBAL_PROJECT_OPTION_${projectName}} 1 CACHE BOOL "${variableDocumentation}" FORCE)
@@ -276,8 +280,8 @@ function(EnableDependencyOption projectName)
             get_property(variableDocumentation CACHE ${GLOBAL_PROJECT_NO_OPTION_${projectName}} PROPERTY HELPSTRING)
             set(${GLOBAL_PROJECT_NO_OPTION_${projectName}} 0 CACHE BOOL "${variableDocumentation}" FORCE)
 
-            sofa_logWarning("Disabling option: ${GLOBAL_PROJECT_NO_OPTION_${projectName}}")
-            sofa_forceReconfigure()
+            sofa_log_warning("Disabling option: ${GLOBAL_PROJECT_NO_OPTION_${projectName}}")
+            sofa_force_reconfigure()
         endif()
     endif()
 endfunction()
@@ -529,3 +533,78 @@ macro(listSubtraction outList inList0 inList1)
 
     set(${outList} ${tmpList})
 endmacro()
+
+# Set SOFA_FORCE_RECONFIGURE to signal that CMake must be run again
+function(sofa_force_reconfigure)
+    set(SOFA_FORCE_RECONFIGURE 1 CACHE INTERNAL "" FORCE)
+endfunction()
+unset(SOFA_FORCE_RECONFIGURE CACHE) # Reset flag
+
+# Print a warning message and store it. A summary of the warnings is printed at
+# the end of the configuration step with sofa_print_list()
+function(sofa_log_warning message)
+    set(SOFA_WARNING_MESSAGES ${SOFA_WARNING_MESSAGES} "${message}" CACHE INTERNAL "" FORCE)
+    message(WARNING "\n${message}\n")
+endfunction()
+unset(SOFA_WARNING_MESSAGES CACHE) # Clear warning list
+
+# Print an error message and store it. A summary of the errors is printed at
+# the end of the configuration step with sofa_print_list()
+function(sofa_log_error message)
+    set(SOFA_ERROR_MESSAGES ${SOFA_ERROR_MESSAGES} "${message}" CACHE INTERNAL "" FORCE)
+    message(SEND_ERROR "\n${message}\n")
+endfunction()
+unset(SOFA_ERROR_MESSAGES CACHE) # Clear error list
+
+# Print a list of messages with a little bit of formatting
+function(sofa_print_list title message_list)
+    if(message_list)
+        message("> ${title}:")
+        foreach(message "${message_list}")
+            message("  - ${message}")
+        endforeach()
+    endif()
+endfunction()
+
+function(sofa_print_detailed_projects_info)
+    message(STATUS "Detailed projects information:")
+    message("")
+    set(projectNames ${GLOBAL_DEPENDENCIES})
+    foreach(projectName ${projectNames})
+        if(TARGET ${projectName})
+            set(dependencies ${GLOBAL_PROJECT_DEPENDENCIES_${projectName}})
+            set(defines ${GLOBAL_PROJECT_COMPILER_DEFINITIONS_${projectName}})
+            message("> ${projectName}")
+            if(defines)
+                message("  - Compiler definitions: ${defines}")
+            else()
+                message("  - No compiler definitions")
+            endif()
+            if (dependencies)
+                message("  - Dependencies:")
+                foreach(dependency ${dependencies})
+                    message("    > ${dependency}")
+                endforeach()
+            else()
+                message("  - No dependencies")
+            endif()
+        endif()
+    endforeach()
+endfunction()
+
+function(sofa_print_configuration_report)
+    if(SOFA-MISC_CMAKE_VERBOSE)
+        sofa_print_detailed_projects_info()
+    endif()
+    if(SOFA_ERROR_MESSAGES OR SOFA_WARNING_MESSAGES)
+        message("")
+        message(STATUS "Log summary:")
+        sofa_print_list("Errors" "${SOFA_ERROR_MESSAGES}")
+        sofa_print_list("Warnings" "${SOFA_WARNING_MESSAGES}")
+        message("")
+    endif()
+    if(NOT SOFA_ERROR_MESSAGES AND SOFA_FORCE_RECONFIGURE)
+        message(">>> The configuration has changed, you must configure the project again")
+        message("")
+    endif()
+endfunction()
