@@ -490,11 +490,15 @@ void  Base::parse ( BaseObjectDescription* arg )
     arg->getAttributeList(attributeList);
     for (unsigned int i=0; i<attributeList.size(); ++i)
     {
-        if (!hasField(attributeList[i])) continue;
-        const char* val = arg->getAttribute(attributeList[i]);
+        std::string attrName = attributeList[i];
+        // FIX: "type" is already used to define the type of object to instanciate, any Data with
+        // the same name cannot be extracted from BaseObjectDescription
+        if (attrName == std::string("type")) continue;
+        if (!hasField(attrName)) continue;
+        const char* val = arg->getAttribute(attrName);
         if (!val) continue;
         std::string valueString(val);
-        parseField(attributeList[i], valueString);
+        parseField(attrName, valueString);
     }
     updateLinks(false);
 }
