@@ -590,8 +590,18 @@ void SubsetTopology<DataTypes>::update()
 	else
 	{
 		helper::ReadAccessor< Data<SetIndex> > tetrahedraInput = d_tetrahedraInput;
-		sofa::helper::vector<bool> pointChecked;
-		pointChecked.resize(x0->size(),false);
+		sofa::helper::vector<bool> pointCheckedIn, pointCheckedOut;
+		pointCheckedIn.resize(x0->size(), false);
+		pointCheckedOut.resize(x0->size(), false);
+
+		SetIndex localIndicesOut;
+		localIndicesOut.resize(x0->size());
+
+		pointsOutROI.clear();
+		pointsInROI.clear();
+
+		cpt_in = 0;
+		cpt_out = 0;
 
 		for(unsigned int i=0 ; i<tetrahedra.size() ; i++)
 		{
@@ -603,7 +613,7 @@ void SubsetTopology<DataTypes>::update()
 				{
 					for (unsigned int k=0; k<t.size(); ++k)
 					{
-						if (!isPointChecked(t[k], pointChecked))
+						if (!isPointChecked(t[k], pointCheckedIn))
 						{
 							indices.push_back(t[k]);
 							pointsInROI.push_back((*x0)[t[k]]);
@@ -626,17 +636,17 @@ void SubsetTopology<DataTypes>::update()
 			{
 				for (unsigned int k=0; k<t.size(); ++k)
 				{
-					if (!isPointChecked(t[k], pointChecked))
+					if (!isPointChecked(t[k], pointCheckedOut))
 					{
 						pointsOutROI.push_back((*x0)[t[k]]);
 						if (local)
 						{
-							localIndices[i] = cpt_out;
+							localIndicesOut[t[k]] = cpt_out;
 							cpt_out++;
 						}
 					}
-				if (local)
-					t[k] = localIndices[t[k]];
+					if (local)
+						t[k] = localIndicesOut[t[k]];
 				}
 				tetrahedraOutROI.push_back(t);
 			}
