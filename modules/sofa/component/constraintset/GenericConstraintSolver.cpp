@@ -69,6 +69,7 @@ GenericConstraintSolver::GenericConstraintSolver()
 , currentNumConstraintGroups(initData(&currentNumConstraintGroups, 0, "currentNumConstraintGroups", "OUTPUT: current number of constraints"))
 , currentIterations(initData(&currentIterations, 0, "currentIterations", "OUTPUT: current number of constraint groups"))
 , currentError(initData(&currentError, 0.0, "currentError", "OUTPUT: current error"))
+, reverseAccumulateOrder(initData(&reverseAccumulateOrder, false, "reverseAccumulateOrder", "True to accumulate constraints from nodes in reversed order (can be necessary when using multi-mappings or interaction constraints not following the node hierarchy)"))
 , current_cp(&cp1)
 , last_cp(NULL)
 {
@@ -149,7 +150,7 @@ bool GenericConstraintSolver::buildSystem(const core::ConstraintParams *cParams,
 	//simulation::MechanicalAccumulateConstraint(&cparams /* PARAMS FIRST */, core::MatrixDerivId::holonomicC(), numConstraints).execute(context);
 
 	MechanicalSetConstraint(cParams, core::MatrixDerivId::holonomicC(), numConstraints).execute(context);
-	MechanicalAccumulateConstraint2(cParams, core::MatrixDerivId::holonomicC()).execute(context);
+    MechanicalAccumulateConstraint2(cParams, core::MatrixDerivId::holonomicC(), reverseAccumulateOrder.getValue()).execute(context);
 
     // suppress the constraints that are on DOFS currently concerned by projective constraint
     core::MechanicalParams mparams = core::MechanicalParams(*cParams);
@@ -477,7 +478,11 @@ void GenericConstraintProblem::solveTimed(double tol, int maxIt, double timeout)
 void GenericConstraintProblem::gaussSeidel(double timeout, GenericConstraintSolver* solver)
 {
 	if(!dimension)
-		return;
+    {
+        currentError = 0.0;
+        currentIterations = 0;
+        return;
+    }
 
 	double t0 = (double)CTime::getTime() ;
 	double timeScale = 1.0 / (double)CTime::getTicksPerSec();
@@ -735,7 +740,11 @@ void GenericConstraintProblem::gaussSeidel(double timeout, GenericConstraintSolv
 void GenericConstraintProblem::unbuiltGaussSeidel(double timeout, GenericConstraintSolver* solver)
 {
 	if(!dimension)
-		return;
+    {
+        currentError = 0.0;
+        currentIterations = 0;
+        return;
+    }
 
 	double t0 = (double)CTime::getTime();
 	double timeScale = 1.0 / (double)CTime::getTicksPerSec();
@@ -918,12 +927,18 @@ void GenericConstraintProblem::unbuiltGaussSeidel(double timeout, GenericConstra
 			for(j=0; j<dimension; j++)
 				force[j] = sor * force[j] + (1-sor) * tempForces[j];
 		}
+        if(timeout)
+        {
+            double t1 = (double)CTime::getTime();
+            double dt = (t1 - t0)*timeScale;
 
-		double t1 = (double)CTime::getTime();
-		double dt = (t1 - t0)*timeScale;
-
-		if(timeout && dt > timeout)
-			return;
+            if(dt > timeout)
+            {
+                currentError = error;
+                currentIterations = i+1;
+                return;
+            }
+        }
 		else if(allVerified)
 		{
 			if(constraintsAreVerified)
