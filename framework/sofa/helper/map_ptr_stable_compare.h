@@ -161,7 +161,7 @@ public:
 
     /// Copy constructor
     map_ptr_stable_compare(const map_ptr_stable_compare& other)
-    :Inherit( key_compare( new stable_id_map_type( *other.m_stable_id_map) ) )
+    :Inherit( other.begin(), other.end(), key_compare( new stable_id_map_type( *other.m_stable_id_map) ) )
     ,m_stable_id_map(Inherit::key_comp().get_stable_id_map())
     {
     }
@@ -170,13 +170,13 @@ public:
     /// Constructor
     template <class InputIterator>
     map_ptr_stable_compare(InputIterator first, InputIterator last)
-    :Inherit(first,last, key_compare(new stable_map_type))
+    :Inherit(first,last, key_compare(new stable_id_map_type()))
     ,m_stable_id_map(Inherit::key_comp().get_stable_id_map())
     {}
 #else /* __STL_MEMBER_TEMPLATES */
     /// Constructor
     map_ptr_stable_compare(const_iterator first, const_iterator last)
-    :Inherit(first,last, key_compare(new stable_map_type) ) 
+    :Inherit(first,last, key_compare(new stable_id_map_type()) ) 
     ,m_stable_id_map(Inherit::key_comp().get_stable_id_map())
     {}
 #endif /* __STL_MEMBER_TEMPLATES */
