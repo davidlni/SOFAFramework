@@ -265,7 +265,7 @@ void Base::processStream(std::ostream& out)
         sout << "\n";
         std::string str = sout.str();
         if (f_printLog.getValue())
-            std::cout<< "[" << getName() << "(" << getClassName() << ")]: "<< sout.str() << std::flush;
+            std::cout<< "[" << getName() << "(" << getClassName() << ")]: "<< str << std::flush;
         if (outputs.size()+str.size() >= MAXLOGSIZE)
         {
             std::cerr<< "LOG OVERFLOW[" << getName() << "(" << getClassName() << ")]: resetting sout buffer." << std::endl;
