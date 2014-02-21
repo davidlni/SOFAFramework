@@ -241,22 +241,38 @@ void Base::setName(const std::string& n, int counter)
     setName(o.str());
 }
 
+#define MAXLOGSIZE 10000000
+
 void Base::processStream(std::ostream& out)
 {
     if (&out == &serr)
     {
         serr << "\n";
+        std::string str = serr.str();
         //if (f_printLog.getValue())
-        std::cerr<< "WARNING[" << getName() << "(" << getClassName() << ")]: "<<serr.str();
-        warnings += serr.str();
+        std::cerr<< "WARNING[" << getName() << "(" << getClassName() << ")]: "<<str;
+        if (warnings.size()+str.size() >= MAXLOGSIZE)
+        {
+            std::cerr<< "LOG OVERFLOW[" << getName() << "(" << getClassName() << ")]: resetting serr buffer." << std::endl;
+            warnings.clear();
+            warnings = "LOG EVERFLOW: resetting serr buffer\n";
+        }
+        warnings += str;
         serr.str("");
     }
     else if (&out == &sout)
     {
         sout << "\n";
+        std::string str = sout.str();
         if (f_printLog.getValue())
             std::cout<< "[" << getName() << "(" << getClassName() << ")]: "<< sout.str() << std::flush;
-        outputs += sout.str();
+        if (outputs.size()+str.size() >= MAXLOGSIZE)
+        {
+            std::cerr<< "LOG OVERFLOW[" << getName() << "(" << getClassName() << ")]: resetting sout buffer." << std::endl;
+            outputs.clear();
+            outputs = "LOG EVERFLOW: resetting sout buffer\n";
+        }
+        outputs += str;
         sout.str("");
     }
 }
