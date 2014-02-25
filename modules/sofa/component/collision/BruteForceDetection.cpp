@@ -142,7 +142,7 @@ void BruteForceDetection::addCollisionModel(core::CollisionModel *cm)
         	continue;
         }
         */
-        if (!cm->getLast()->canCollideWith(cm2->getLast()))
+        if (!cm->getLast()->canCollideWith(cm2->getLast()) || !cm2->getLast()->canCollideWith(cm->getLast()))
         {
             //sout<<" - No : case 3"<<sendl;
             continue;
