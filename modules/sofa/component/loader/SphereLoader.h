@@ -46,6 +46,8 @@ public:
     // Point coordinates in 3D in double.
     Data< helper::vector<sofa::defaulttype::Vec<3,SReal> > > positions;
     Data< helper::vector<SReal> > radius;
+    Data< defaulttype::Vector3 > d_scale;
+    Data< defaulttype::Vector3 > d_translation;
     virtual bool load();
 };
 
