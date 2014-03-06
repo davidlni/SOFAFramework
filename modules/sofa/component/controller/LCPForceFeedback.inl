@@ -99,7 +99,6 @@ double computeDot(const typename DataTypes::Deriv& v0, const typename DataTypes:
     return dot(v0,v1);
 }
 
-} // anonymous namespace
 
 #ifndef SOFA_FLOAT
 using sofa::defaulttype::Rigid3dTypes;
@@ -127,6 +126,13 @@ double computeDot<Rigid3fTypes>(const Rigid3fTypes::Deriv& v0, const Rigid3fType
 {
     return dot(getVCenter(v0),getVCenter(v1)) + dot(getVOrientation(v0), getVOrientation(v1));
 }
+
+#endif
+
+} // anonymous namespace
+
+namespace sofa
+{
 
 namespace component
 {

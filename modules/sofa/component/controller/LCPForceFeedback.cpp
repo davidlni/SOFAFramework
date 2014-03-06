@@ -27,7 +27,7 @@
 #include <sofa/component/controller/LCPForceFeedback.inl>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/defaulttype/RigidTypes.h>
-
+/*
 namespace
 {
 
@@ -65,7 +65,7 @@ double computeDot<Rigid3fTypes>(const Rigid3fTypes::Deriv& v0, const Rigid3fType
 
 #endif
 
-} // anonymous namespace
+} */// anonymous namespace
 
 
 namespace sofa
