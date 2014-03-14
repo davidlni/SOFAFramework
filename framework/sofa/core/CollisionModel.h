@@ -103,7 +103,10 @@ protected:
         , size(0), numberOfContacts(0)
         , previous(initLink("previous", "Previous (coarser / upper / parent level) CollisionModel in the hierarchy."))
         , next(initLink("next", "Next (finer / lower / child level) CollisionModel in the hierarchy."))
+        , collisionID(initData(&collisionID,-1,"collisionID","ID used to filter collisions"))
+        , collisionFilter(initData(&collisionFilter,"collisionFilter","collisionFilter[other->collisionID] == true, then this collision model and the other can collide "))
     {
+        ++nb_collision_models;
     }
 
     /// Destructor
@@ -112,6 +115,17 @@ protected:
 
     }
 public:
+    virtual void init(){
+        BaseObject::init();
+        helper::vector<bool> * vec = collisionFilter.beginEdit();
+
+        vec->resize(nb_collision_models);
+//        for(int i = 0 ; i < nb_collision_models ; ++i)
+//            vec[i] = true;
+
+        collisionFilter.endEdit();
+    }
+
     virtual void bwdInit()
     {
         getColor4f(); //init the color to default value
@@ -287,14 +301,27 @@ public:
     ///
     /// Default to false if the collision models are attached to the same
     /// context (i.e. the same node in the scenegraph).
-    virtual bool canCollideWith(CollisionModel* model)
-    {
-        if (model != this && this->group.getValue() != 0 && this->group.getValue() == model->group.getValue())
-            return false;
-        else if (model->getContext() != this->getContext())
-            return true;
-        else return bSelfCollision.getValue();
-    }
+//    virtual bool canCollideWith(CollisionModel* model)
+//    {
+//        if (model != this && this->group.getValue() != 0 && this->group.getValue() == model->group.getValue())
+//            return false;
+//        else if (model->getContext() != this->getContext())
+//            return true;
+//        else return bSelfCollision.getValue();
+//    }
+      virtual bool canCollideWith(CollisionModel* model)
+        {
+            if (model->getContext() == this->getContext())
+                return bSelfCollision.getValue();
+            else if(collisionID.getValue()< 0)
+                return true;
+            else if(model->collisionID.getValue() < 0)
+                return true;
+            else
+                return collisionFilter.getValue()[model->collisionID.getValue()];
+        }
+
+
     //virtual bool canCollideWith(CollisionModel* model) { return model != this; }
 
     /// \brief Test if two elements can collide with each other.
@@ -458,6 +485,13 @@ protected:
     /// color used to display the collision model if requested
     Data<defaulttype::Vec4f> color;
 
+    /// ID used in collision detection if two collision models can collide
+    Data<int> collisionID;
+
+    /// field used to know if two collision models can collide i.e. if this->collisionFilter[other->collisionID] == true,
+    /// then this and other can collide
+    Data<helper::vector<bool> > collisionFilter;
+
     /// Number of collision elements
     int size;
 
@@ -470,6 +504,7 @@ protected:
     /// Pointer to the next (finer / lower / child level) CollisionModel in the hierarchy.
     SingleLink<CollisionModel,CollisionModel,BaseLink::FLAG_DOUBLELINK> next;
 
+    static int nb_collision_models;
     int enum_type;
 };
 
