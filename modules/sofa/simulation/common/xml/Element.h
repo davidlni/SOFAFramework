@@ -35,13 +35,11 @@ namespace sofa
 namespace simulation
 {
 
-
 namespace xml
 {
 
-
 template<class Object>
-class SOFA_SIMULATION_COMMON_API Element : public BaseElement
+class Element : public BaseElement
 {
 private:
     typename Object::SPtr object;
@@ -58,7 +56,6 @@ public:
     virtual core::objectmodel::Base* getObject();
 
     typedef helper::Factory< std::string, Object, Element<Object>*, typename Object::SPtr > Factory;
-
 };
 
 
@@ -67,5 +64,7 @@ public:
 } // namespace simulation
 
 } // namespace sofa
+
+#include "Element.inl"
 
 #endif

@@ -1,14 +1,8 @@
 import Sofa
 
-# TODO ease this nonsense, upstream in SofaPython
-compliant_path = Sofa.src_dir() + '/applications/plugins/Compliant'
+from Compliant import Rigid, Tools
 
-import sys
-sys.path.append(compliant_path + '/python')
-
-from Compliant import Rigid
-
-mesh_path = compliant_path + '/examples/bielle_manivelle'
+mesh_path = Tools.path( __file__ )
 
 scale = 1
 

@@ -66,7 +66,7 @@ public:
     typedef sofa::defaulttype::Vec<4,Real> Vec4;
     typedef sofa::defaulttype::Mat<4,4,Real> Mat44;
 protected:
-    BezierTetrahedronSetGeometryAlgorithms();
+   
 	/// container	
 	BezierTetrahedronSetTopologyContainer *container; 
 	/// degree of the polynomial
@@ -79,9 +79,11 @@ protected:
 	std::map<TetrahedronBezierIndex,Real> bernsteinCoeffMap;
 	/// the list of edges of the Bezier Tetrahedron used in the draw function
 	sofa::helper::set<Edge> bezierTetrahedronEdgeSet;
-    virtual ~BezierTetrahedronSetGeometryAlgorithms() {}
+
 public:
-	/// 
+	/// constructor 
+	BezierTetrahedronSetGeometryAlgorithms();
+    virtual ~BezierTetrahedronSetGeometryAlgorithms() {}
 	virtual void init();
 	virtual void reinit();
     virtual void draw(const core::visual::VisualParams* vparams);
@@ -95,7 +97,7 @@ public:
 	Coord computeNodalValue(const size_t tetrahedronIndex,const Vec4 barycentricCoordinate); 
 	/// computes the shape function 
 	Real computeBernsteinPolynomial(const TetrahedronBezierIndex tbi, const Vec4 barycentricCoordinate);
-    /// computes the shape function gradient
+	/// computes the shape function gradient
     Vec4 computeBernsteinPolynomialGradient(const TetrahedronBezierIndex tbi, const Vec4 barycentricCoordinate);
     /// computes the shape function hessian
     Mat44 computeBernsteinPolynomialHessian(const TetrahedronBezierIndex tbi, const Vec4 barycentricCoordinate);
@@ -104,12 +106,12 @@ public:
 	/// computes Jacobian
 	Real computeJacobian(const size_t tetrahedronIndex, const Vec4 barycentricCoordinate);
 	/// compute the 4 De Casteljeau  of degree d-1
-	void computeDeCasteljeauPoints(const size_t tetrahedronIndex, const Vec4 barycentricCoordinate, Coord point[4]);
+	void computeDeCasteljeauPoints(const size_t tetrahedronIndex, const Vec4 barycentricCoordinate, const VecCoord& p,Coord point[4]);
 	/// test if the Bezier tetrahedron is a simple affine tesselation of a regular tetrahedron
 	bool isBezierTetrahedronAffine(const size_t tetrahedronIndex,const VecCoord& p, const Real tolerance=(Real)1e-5) const; 
 protected:
     Data<bool> drawControlPointsEdges;
-    Data<sofa::defaulttype::Vec3f> _drawColor;
+    Data<bool> drawVolumeEdges;
 };
 
 

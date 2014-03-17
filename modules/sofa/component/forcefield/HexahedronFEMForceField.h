@@ -31,6 +31,10 @@
 #include <sofa/helper/vector.h>
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/defaulttype/Mat.h>
+#include <sofa/core/behavior/BaseRotationFinder.h>
+#include <sofa/helper/decompose.h>
+#include <sofa/core/behavior/RotationMatrix.h>
+#include <sofa/helper/OptionsGroup.h>
 
 namespace sofa
 {
@@ -45,9 +49,21 @@ using namespace sofa::defaulttype;
 using sofa::helper::vector;
 
 template<class DataTypes>
+class HexahedronFEMForceField;
+
+template<class DataTypes>
 class HexahedronFEMForceFieldInternalData
 {
 public:
+    typedef HexahedronFEMForceField<DataTypes> Main;
+    void initPtrData(Main * m)
+    {
+        m->_gatherPt.beginEdit()->setNames(1," ");
+        m->_gatherPt.endEdit();
+
+        m->_gatherBsize.beginEdit()->setNames(1," ");
+        m->_gatherBsize.endEdit();
+    }
 };
 
 /** Compute Finite Element forces based on hexahedral elements.
@@ -76,7 +92,7 @@ public:
 *     0---------1-->X
 */
 template<class DataTypes>
-class HexahedronFEMForceField : virtual public core::behavior::ForceField<DataTypes>
+class HexahedronFEMForceField : virtual public core::behavior::ForceField<DataTypes>, public sofa::core::behavior::BaseRotationFinder
 {
 public:
     SOFA_CLASS(SOFA_TEMPLATE(HexahedronFEMForceField, DataTypes), SOFA_TEMPLATE(core::behavior::ForceField, DataTypes));
@@ -155,6 +171,8 @@ public:
     Data<Real> f_youngModulus;
     Data<bool> f_updateStiffnessMatrix;
     Data<bool> f_assembling;
+    Data< sofa::helper::OptionsGroup > _gatherPt; //use in GPU version
+    Data< sofa::helper::OptionsGroup > _gatherBsize; //use in GPU version
     Data<bool> f_drawing;
     Data<Real> f_drawPercentageOffset;
 
@@ -170,9 +188,12 @@ protected:
         , f_youngModulus(initData(&f_youngModulus,(Real)5000,"youngModulus",""))
         , f_updateStiffnessMatrix(initData(&f_updateStiffnessMatrix,false,"updateStiffnessMatrix",""))
         , f_assembling(initData(&f_assembling,false,"assembling",""))
+        , _gatherPt(initData(&_gatherPt,"gatherPt","number of dof accumulated per threads during the gather operation (Only use in GPU version)"))
+        , _gatherBsize(initData(&_gatherBsize,"gatherBsize","number of dof accumulated per threads during the gather operation (Only use in GPU version)"))
         , f_drawing(initData(&f_drawing,true,"drawing"," draw the forcefield if true"))
         , f_drawPercentageOffset(initData(&f_drawPercentageOffset,(Real)0.15,"drawPercentageOffset","size of the hexa"))
     {
+        data->initPtrData(this);
         _coef[0][0]=-1;
         _coef[1][0]=1;
         _coef[2][0]=1;
@@ -227,7 +248,83 @@ public:
 
     virtual void addDForce (const core::MechanicalParams* mparams /* PARAMS FIRST */, DataVecDeriv& df, const DataVecDeriv& dx);
 
-    const Transformation& getRotation(const unsigned elemidx);
+    const Transformation& getElementRotation(const unsigned elemidx);
+
+    void getNodeRotation(Transformation& R, unsigned int nodeIdx)
+    {
+        core::topology::BaseMeshTopology::HexahedraAroundVertex liste_hexa = _mesh->getHexahedraAroundVertex(nodeIdx);
+
+        R[0][0] = R[1][1] = R[2][2] = 1.0 ;
+        R[0][1] = R[0][2] = R[1][0] = R[1][2] = R[2][0] = R[2][1] = 0.0 ;
+
+        unsigned int numHexa=liste_hexa.size();
+
+        for (unsigned int ti=0; ti<numHexa; ti++)
+        {
+            Transformation R0t;
+            R0t.transpose(_initialrotations[liste_hexa[ti]]);
+            Transformation Rcur = getElementRotation(liste_hexa[ti]);
+            R += Rcur * R0t;
+        }
+
+        // on "moyenne"
+        R[0][0] = R[0][0]/numHexa ; R[0][1] = R[0][1]/numHexa ; R[0][2] = R[0][2]/numHexa ;
+        R[1][0] = R[1][0]/numHexa ; R[1][1] = R[1][1]/numHexa ; R[1][2] = R[1][2]/numHexa ;
+        R[2][0] = R[2][0]/numHexa ; R[2][1] = R[2][1]/numHexa ; R[2][2] = R[2][2]/numHexa ;
+
+        defaulttype::Mat<3,3,Real> Rmoy;
+        helper::Decompose<Real>::polarDecomposition( R, Rmoy );
+
+        R = Rmoy;
+    }
+
+    void getRotations(defaulttype::BaseMatrix * rotations,int offset = 0)
+    {
+        unsigned int nbdof = this->mstate->getX()->size();
+
+        if (component::linearsolver::RotationMatrix<float> * diag = dynamic_cast<component::linearsolver::RotationMatrix<float> *>(rotations))
+        {
+            Transformation R;
+            for (unsigned int e=0; e<nbdof; ++e)
+            {
+                getNodeRotation(R,e);
+                for(int j=0; j<3; j++)
+                {
+                    for(int i=0; i<3; i++)
+                    {
+                        diag->getVector()[e*9 + j*3 + i] = (float)R[j][i];
+                    }
+                }
+            }
+        }
+        else if (component::linearsolver::RotationMatrix<double> * diag = dynamic_cast<component::linearsolver::RotationMatrix<double> *>(rotations))
+        {
+            Transformation R;
+            for (unsigned int e=0; e<nbdof; ++e)
+            {
+                getNodeRotation(R,e);
+                for(int j=0; j<3; j++)
+                {
+                    for(int i=0; i<3; i++)
+                    {
+                        diag->getVector()[e*9 + j*3 + i] = R[j][i];
+                    }
+                }
+            }
+        }
+        else
+        {
+            for (unsigned int i=0; i<nbdof; ++i)
+            {
+                Transformation t;
+                getNodeRotation(t,i);
+                int e = offset+i*3;
+                rotations->set(e+0,e+0,t[0][0]); rotations->set(e+0,e+1,t[0][1]); rotations->set(e+0,e+2,t[0][2]);
+                rotations->set(e+1,e+0,t[1][0]); rotations->set(e+1,e+1,t[1][1]); rotations->set(e+1,e+2,t[1][2]);
+                rotations->set(e+2,e+0,t[2][0]); rotations->set(e+2,e+1,t[2][1]); rotations->set(e+2,e+2,t[2][2]);
+            }
+        }
+    }
 
     void addKToMatrix(const core::MechanicalParams* mparams /* PARAMS FIRST */, const sofa::core::behavior::MultiMatrixAccessor* matrix);
 
@@ -257,6 +354,7 @@ protected:
     ////////////// large displacements method
     vector<helper::fixed_array<Coord,8> > _rotatedInitialElements;   ///< The initials positions in its frame
     vector<Transformation> _rotations;
+    vector<Transformation> _initialrotations;
     void initLarge(int i, const Element&elem);
     void computeRotationLarge( Transformation &r, Coord &edgex, Coord &edgey);
     virtual void accumulateForceLarge( WDataRefVecDeriv &f, RDataRefVecCoord &p, int i, const Element&elem  );

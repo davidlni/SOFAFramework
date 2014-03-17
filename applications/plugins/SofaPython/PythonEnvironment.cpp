@@ -28,6 +28,7 @@
 #include <sofa/simulation/common/Node.h>
 #include <sofa/helper/system/SetDirectory.h>
 #include <sofa/component/contextobject/CoordinateSystem.h>
+#include <sofa/config.h>
 
 #include "PythonScriptController.h"
 using namespace sofa::component::controller;
@@ -75,6 +76,21 @@ void PythonEnvironment::Init()
 
     // append sofa modules to the embedded python environment
     bindSofaPythonModule();
+
+    // load a python script which search for python packages defined in the modules
+    std::string scriptPy = std::string(SOFA_SRC_DIR) + "/applications/plugins/SofaPython/SofaPython.py";
+
+#ifdef WIN32
+    char* scriptPyChar = (char*) malloc(scriptPy.size()*sizeof(char));
+    strcpy(scriptPyChar,scriptPy.c_str());
+    PyObject* PyFileObject = PyFile_FromString(scriptPyChar, "r");
+    PyRun_SimpleFileEx(PyFile_AsFile(PyFileObject), scriptPyChar, 1);
+    free(scriptPyChar);
+#else
+    FILE* scriptPyFile = fopen(scriptPy.c_str(),"r");
+    PyRun_SimpleFile(scriptPyFile, scriptPy.c_str());
+    fclose(scriptPyFile);
+#endif 
 
     //std::cout<<"<SofaPython> Initialization done."<<std::endl;
 
