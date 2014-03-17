@@ -103,8 +103,8 @@ protected:
         , size(0), numberOfContacts(0)
         , previous(initLink("previous", "Previous (coarser / upper / parent level) CollisionModel in the hierarchy."))
         , next(initLink("next", "Next (finer / lower / child level) CollisionModel in the hierarchy."))
-        , collisionID(initData(&collisionID,-1,"collisionID","ID used to filter collisions"))
-        , collisionFilter(initData(&collisionFilter,"collisionFilter","collisionFilter[other->collisionID] == true, then this collision model and the other can collide "))
+        , collisionGroupTags(initData(&collisionGroupTags,"collisionGroupTags","If not empty, collision can occur only when two CollisionModel share a same tag."))
+
     {
         ++nb_collision_models;
     }
@@ -115,17 +115,6 @@ protected:
 
     }
 public:
-    virtual void init(){
-        BaseObject::init();
-        helper::vector<bool> * vec = collisionFilter.beginEdit();
-
-        vec->resize(nb_collision_models);
-//        for(int i = 0 ; i < nb_collision_models ; ++i)
-//            vec[i] = true;
-
-        collisionFilter.endEdit();
-    }
-
     virtual void bwdInit()
     {
         getColor4f(); //init the color to default value
@@ -309,18 +298,37 @@ public:
 //            return true;
 //        else return bSelfCollision.getValue();
 //    }
-      virtual bool canCollideWith(CollisionModel* model)
-        {
-            if (model->getContext() == this->getContext())
-                return bSelfCollision.getValue();
-            else if(collisionID.getValue()< 0)
-                return true;
-            else if(model->collisionID.getValue() < 0)
-                return true;
-            else
-                return collisionFilter.getValue()[model->collisionID.getValue()];
-        }
+//      virtual bool canCollideWith(CollisionModel* model)
+//        {
+//            if (model->getContext() == this->getContext())
+//                return bSelfCollision.getValue();
+//            else if(collisionID.getValue()< 0)
+//                return true;
+//            else if(model->collisionID.getValue() < 0)
+//                return true;
+//            else
+//                return collisionFilter.getValue()[model->collisionID.getValue()];
+//        }
 
+
+    virtual bool canCollideWith(CollisionModel* model)
+    {
+        if (model->getContext() == this->getContext())
+            return bSelfCollision.getValue();
+        else if(!(this->collisionGroupTags.getValue().empty())){
+            if(model->collisionGroupTags.getValue().empty())
+                return true;
+
+            sofa::core::objectmodel::TagSet::const_iterator it = collisionGroupTags.getValue().begin();
+            for(;it != collisionGroupTags.getValue().end() ; ++it)
+                if(model->collisionGroupTags.getValue().includes(*it))
+                    return true;
+
+            return false;
+        }
+        else
+            return true;
+    }
 
     //virtual bool canCollideWith(CollisionModel* model) { return model != this; }
 
@@ -485,12 +493,7 @@ protected:
     /// color used to display the collision model if requested
     Data<defaulttype::Vec4f> color;
 
-    /// ID used in collision detection if two collision models can collide
-    Data<int> collisionID;
-
-    /// field used to know if two collision models can collide i.e. if this->collisionFilter[other->collisionID] == true,
-    /// then this and other can collide
-    Data<helper::vector<bool> > collisionFilter;
+    Data< sofa::core::objectmodel::TagSet > collisionGroupTags;
 
     /// Number of collision elements
     int size;
