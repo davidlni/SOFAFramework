@@ -73,13 +73,13 @@ public:
 
     // -- CollisionModel interface
 
-    virtual void computeBoundingTree(int maxDepth=0);
+    virtual void computeBoundingTree(size_t maxDepth=0);
 
-    virtual std::pair<core::CollisionElementIterator,core::CollisionElementIterator> getInternalChildren(int index) const;
+    virtual std::pair<core::CollisionElementIterator,core::CollisionElementIterator> getInternalChildren(size_t index) const;
 
-    virtual std::pair<core::CollisionElementIterator,core::CollisionElementIterator> getExternalChildren(int index) const;
+    virtual std::pair<core::CollisionElementIterator,core::CollisionElementIterator> getExternalChildren(size_t index) const;
 
-    virtual bool isLeaf( int index ) const;
+    virtual bool isLeaf(size_t index ) const;
 
     void draw(const core::visual::VisualParams*,int index);
 

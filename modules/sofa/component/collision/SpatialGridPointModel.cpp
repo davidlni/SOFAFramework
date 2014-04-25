@@ -78,7 +78,7 @@ bool SpatialGridPointModel::OctreeSorter::operator()(const Grid::Key& k1, const 
     return false;
 }
 
-void SpatialGridPointModel::computeBoundingTree(int maxDepth)
+void SpatialGridPointModel::computeBoundingTree(size_t maxDepth)
 {
     if (!grid)
     {

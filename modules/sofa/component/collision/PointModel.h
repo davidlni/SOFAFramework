@@ -111,15 +111,15 @@ public:
 
     virtual void resize(int size);
 
-    virtual void computeBoundingTree(int maxDepth=0);
+    virtual void computeBoundingTree(size_t maxDepth=0);
 
-    virtual void computeContinuousBoundingTree(double dt, int maxDepth=0);
+    virtual void computeContinuousBoundingTree(double dt, size_t maxDepth=0);
 
     void draw(const core::visual::VisualParams*,int index);
 
     void draw(const core::visual::VisualParams* vparams);
 
-    virtual bool canCollideWithElement(int index, CollisionModel* model2, int index2);
+    virtual bool canCollideWithElement(size_t index, CollisionModel* model2, size_t index2);
 
     core::behavior::MechanicalState<DataTypes>* getMechanicalState() { return mstate; }
 

@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<Node 	name="Root" gravity="0 0 0" time="0" animate="0"   >
+  <RequiredPlugin pluginName="ContinuousCollisiond"/>
+  <CollisionPipeline depth="15" verbose="0" draw="0" />
+  <ContinuousDetection name="CCD" />
+  <ContinuousIntersection name="CCI"/>
+  <CollisionResponse name="Response" response="default" />
+  <VisualStyle displayFlags="hideVisualModels showBehaviorModels showMappings showForceFields" />
+  <Node name="cubeFEM">
+    <EulerImplicit name="cg_odesolver" printLog="false" />
+    <CGLinearSolver iterations="25" name="linear solver" tolerance="1.0e-9" threshold="1.0e-9" />
+    <MechanicalObject />
+    <UniformMass mass="0.25" />
+    <RegularGrid nx="5" ny="5" nz="5" xmin="-3.5" xmax="3.5" ymin="-3.5" ymax="3.5" zmin="-3.5" zmax="3.5" />
+    <TetrahedronFEMForceField name="FEM" youngModulus="25" poissonRatio="0.3" computeGlobalMatrix="false" updateStiffnessMatrix="false" method="large" />
+    <Node name="Visu">
+      <OglModel name="Visual" fileMesh="mesh/smCube125.obj" color="red" />
+      <SubsetMapping object1="../.." object2="Visual" />
+    </Node>
+    <Node name="Surf">
+        <MeshObjLoader name="loader" filename="mesh/smCube125.obj" />
+        <Mesh src="@loader" />
+        <MechanicalObject src="@loader" />
+        <RTriangle />
+        <SubsetMapping />
+    </Node>
+  </Node>
+</Node>

@@ -165,7 +165,7 @@ void TSphereModel<DataTypes>::draw(const core::visual::VisualParams* vparams)
 }
 
 template <class DataTypes>
-void TSphereModel<DataTypes>::computeBoundingTree(int maxDepth)
+void TSphereModel<DataTypes>::computeBoundingTree(size_t maxDepth)
 {
     CubeModel* cubeModel = createPrevious<CubeModel>();
     const int npoints = mstate->getX()->size();
@@ -200,7 +200,7 @@ void TSphereModel<DataTypes>::computeBoundingTree(int maxDepth)
 
 
 template <class DataTypes>
-void TSphereModel<DataTypes>::computeContinuousBoundingTree(double dt, int maxDepth)
+void TSphereModel<DataTypes>::computeContinuousBoundingTree(double dt, size_t maxDepth)
 {
     CubeModel* cubeModel = createPrevious<CubeModel>();
     const int npoints = mstate->getX()->size();

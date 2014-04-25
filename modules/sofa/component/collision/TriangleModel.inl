@@ -618,7 +618,7 @@ void TTriangleModel<DataTypes>::draw(const core::visual::VisualParams* vparams)
 
 
 template<class DataTypes>
-bool TTriangleModel<DataTypes>::canCollideWithElement(int index, CollisionModel* model2, int index2)
+bool TTriangleModel<DataTypes>::canCollideWithElement(size_t index, CollisionModel* model2, size_t index2)
 {
     if (!this->bSelfCollision.getValue()) return true; // we need to perform this verification process only for the selfcollision case.
     if (this->getContext() != model2->getContext()) return true;
@@ -666,7 +666,7 @@ bool TTriangleModel<DataTypes>::canCollideWithElement(int index, CollisionModel*
 }
 
 template<class DataTypes>
-void TTriangleModel<DataTypes>::computeBoundingTree(int maxDepth)
+void TTriangleModel<DataTypes>::computeBoundingTree(size_t maxDepth)
 {
     CubeModel* cubeModel = createPrevious<CubeModel>();
     //updateFromTopology();
@@ -784,7 +784,7 @@ void TTriangleModel<DataTypes>::computeBoundingTree(int maxDepth)
 }
 
 template<class DataTypes>
-void TTriangleModel<DataTypes>::computeContinuousBoundingTree(double dt, int maxDepth)
+void TTriangleModel<DataTypes>::computeContinuousBoundingTree(double dt, size_t maxDepth)
 {
     CubeModel* cubeModel = createPrevious<CubeModel>();
     //updateFromTopology();

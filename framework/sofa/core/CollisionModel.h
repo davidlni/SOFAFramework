@@ -80,7 +80,8 @@ public:
         TETRAHEDRON_TYPE,
         RDISTANCE_GRIDE_TYPE,
         FFDDISTANCE_GRIDE_TYPE,
-        ENUM_TYPE_SIZE
+        ENUM_TYPE_SIZE,
+        KDOP_TYPE
     };
 
     typedef CollisionElementIterator Iterator;
@@ -127,9 +128,21 @@ public:
     }
 
     /// Get the number of elements.
-    int getSize() const
+    inline const size_t &getSize() const
     {
         return size;
+    }
+
+    /// Get the number of elements.
+    inline size_t &getSize()
+    {
+      return size;
+    }
+
+    /// Set the number of elements.
+    inline void setSize(size_t _size)
+    {
+      this->size = _size;
     }
 
     /// Return true if this model process self collision
@@ -145,19 +158,19 @@ public:
     }
 
     /// Get the number of contacts attached to the collision model
-    int getNumberOfContacts() const
+    size_t getNumberOfContacts() const
     {
         return numberOfContacts;
     }
 
     /// Set the number of contacts attached to the collision model
-    void setNumberOfContacts(int i)
+    void setNumberOfContacts(size_t i)
     {
         numberOfContacts = i;
     }
 
     /// Set the number of elements.
-    virtual void resize(int s)
+    virtual void resize(size_t s)
     {
         size = s;
     }
@@ -234,13 +247,13 @@ public:
     virtual void setSimulated(bool val=true) { bSimulated.setValue(val); }
 
     /// Create or update the bounding volume hierarchy.
-    virtual void computeBoundingTree(int maxDepth=0) = 0;
+    virtual void computeBoundingTree(size_t maxDepth=0) = 0;
 
     /// \brief Create or update the bounding volume hierarchy, accounting for motions
     /// within the given timestep.
     ///
     /// Default to computeBoundingTree().
-    virtual void computeContinuousBoundingTree(double /*dt*/, int maxDepth=0) { computeBoundingTree(maxDepth); }
+    virtual void computeContinuousBoundingTree(double /*dt*/, size_t maxDepth=0) { computeBoundingTree(maxDepth); }
 
     /// \brief Return the list (as a pair of iterators) of <i>internal children</i> of
     /// an element.
@@ -252,7 +265,7 @@ public:
     /// intersection method.
     ///
     /// Default to empty (i.e. two identical iterators)
-    virtual std::pair<CollisionElementIterator,CollisionElementIterator> getInternalChildren(int /*index*/) const
+    virtual std::pair<CollisionElementIterator,CollisionElementIterator> getInternalChildren(size_t /*index*/) const
     {
         return std::make_pair(CollisionElementIterator(),CollisionElementIterator());
     }
@@ -264,7 +277,7 @@ public:
     /// parent (often corresponding to the final elements).
     ///
     /// Default to empty (i.e. two identical iterators)
-    virtual std::pair<CollisionElementIterator,CollisionElementIterator> getExternalChildren(int /*index*/) const
+    virtual std::pair<CollisionElementIterator,CollisionElementIterator> getExternalChildren(size_t /*index*/) const
     {
         return std::make_pair(CollisionElementIterator(),CollisionElementIterator());
     }
@@ -274,7 +287,7 @@ public:
     ///
     /// Default to true since triangle model, line model, etc. does not have this method implemented and they
     /// are themselves (normally) leaves and primitives
-    virtual bool isLeaf( int /*index*/ ) const
+    virtual bool isLeaf(size_t /*index*/ ) const
     {
         return true;  //e.g. Triangle will return true
     }
@@ -339,7 +352,7 @@ public:
     ///
     /// Default to true. Note that this method assumes that canCollideWith(model2)
     /// was already used to test if the collision models can collide.
-    virtual bool canCollideWithElement(int /*index*/, CollisionModel* /*model2*/, int /*index2*/) { return true; }
+    virtual bool canCollideWithElement(size_t /*index*/, CollisionModel* /*model2*/, size_t /*index2*/) { return true; }
 
 
     /// Render an collision element.
@@ -402,10 +415,6 @@ public:
             //previous=pmodel;
             //pmodel->next = this;
             setPrevious(pmodel);
-            if (prev)
-            {
-
-            }
         }
         return pmodel.get();
     }
@@ -417,17 +426,17 @@ public:
     SReal getProximity() { return proximity.getValue(); }
 
     /// Get contact stiffness
-    SReal getContactStiffness(int /*index*/) { return contactStiffness.getValue(); }
+    SReal getContactStiffness(size_t /*index*/) { return contactStiffness.getValue(); }
     /// Set contact stiffness
     void setContactStiffness(SReal stiffness) { contactStiffness.setValue(stiffness); }
 
     /// Get contact friction (damping) coefficient
-    SReal getContactFriction(int /*index*/) { return contactFriction.getValue(); }
+    SReal getContactFriction(size_t /*index*/) { return contactFriction.getValue(); }
     /// Set contact friction (damping) coefficient
     void setContactFriction(SReal friction) { contactFriction.setValue(friction); }
 
     /// Get contact coefficient of restitution
-     SReal getContactRestitution(int /*index*/) { return contactRestitution.getValue(); }
+     SReal getContactRestitution(size_t /*index*/) { return contactRestitution.getValue(); }
     /// Set contact coefficient of restitution
     void setContactRestitution(SReal restitution) { contactRestitution.setValue(restitution); }
 
@@ -496,10 +505,10 @@ protected:
     Data< sofa::core::objectmodel::TagSet > collisionGroupTags;
 
     /// Number of collision elements
-    int size;
+    size_t size;
 
     /// number of contacts attached to the collision model
-    int numberOfContacts;
+    size_t numberOfContacts;
 
     /// Pointer to the previous (coarser / upper / parent level) CollisionModel in the hierarchy.
     SingleLink<CollisionModel,CollisionModel,BaseLink::FLAG_DOUBLELINK|BaseLink::FLAG_STRONGLINK> previous;

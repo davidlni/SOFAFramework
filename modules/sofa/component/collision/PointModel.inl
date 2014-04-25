@@ -222,7 +222,7 @@ void TPointModel<DataTypes>::draw(const core::visual::VisualParams* vparams)
 }
 
 template<class DataTypes>
-bool TPointModel<DataTypes>::canCollideWithElement(int index, CollisionModel* model2, int index2)
+bool TPointModel<DataTypes>::canCollideWithElement(size_t index, CollisionModel* model2, size_t index2)
 {
 
     if (!this->bSelfCollision.getValue()) return true; // we need to perform this verification process only for the selfcollision case.
@@ -274,7 +274,7 @@ bool TPointModel<DataTypes>::canCollideWithElement(int index, CollisionModel* mo
 }
 
 template<class DataTypes>
-void TPointModel<DataTypes>::computeBoundingTree(int maxDepth)
+void TPointModel<DataTypes>::computeBoundingTree(size_t maxDepth)
 {
     CubeModel* cubeModel = createPrevious<CubeModel>();
     const int npoints = mstate->getX()->size();
@@ -310,7 +310,7 @@ void TPointModel<DataTypes>::computeBoundingTree(int maxDepth)
 }
 
 template<class DataTypes>
-void TPointModel<DataTypes>::computeContinuousBoundingTree(double dt, int maxDepth)
+void TPointModel<DataTypes>::computeContinuousBoundingTree(double dt, size_t maxDepth)
 {
     CubeModel* cubeModel = createPrevious<CubeModel>();
     const int npoints = mstate->getX()->size();

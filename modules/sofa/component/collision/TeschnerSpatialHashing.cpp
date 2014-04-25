@@ -133,7 +133,7 @@ void TeschnerSpatialHashing::beginNarrowPhase(){
     int movingcell[3];
 
     sofa::helper::AdvancedTimer::stepBegin("TeschnerSpatialHashing : Hashing");
-    for(int i = 0 ; i < cubeModels.size() ; ++i){
+    for(size_t i = 0 ; i < cubeModels.size() ; ++i){
         //std::cout<<"Treating model "<<cubeModels[i]->getLast()->getName()<<std::endl;
         Cube c(cubeModels[i]);
 

@@ -1,0 +1,101 @@
+/******************************************************************************
+ *       SOFA, Simulation Open-Framework Architecture, version 1.0 RC 1        *
+ *                (c) 2006-2011 MGH, INRIA, USTL, UJF, CNRS                    *
+ *                                                                             *
+ * This library is free software; you can redistribute it and/or modify it     *
+ * under the terms of the GNU Lesser General Public License as published by    *
+ * the Free Software Foundation; either version 2.1 of the License, or (at     *
+ * your option) any later version.                                             *
+ *                                                                             *
+ * This library is distributed in the hope that it will be useful, but WITHOUT *
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       *
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License *
+ * for more details.                                                           *
+ *                                                                             *
+ * You should have received a copy of the GNU Lesser General Public License    *
+ * along with this library; if not, write to the Free Software Foundation,     *
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.          *
+ *******************************************************************************
+ *                               SOFA :: Modules                               *
+ *                                                                             *
+ * Authors: The SOFA Team and external contributors (see Authors.txt)          *
+ *                                                                             *
+ * Contact information: contact@sofa-framework.org                             *
+ ******************************************************************************/
+#ifndef SOFA_COMPONENT_COLLISION_CONTINUOUSDETECTION_H
+#define SOFA_COMPONENT_COLLISION_CONTINUOUSDETECTION_H
+
+
+#include <sofa/core/collision/BroadPhaseDetection.h>
+#include <sofa/core/collision/NarrowPhaseDetection.h>
+#include <sofa/core/CollisionElement.h>
+#include <sofa/component/collision/CubeModel.h>
+#include <sofa/defaulttype/Vec.h>
+#include <set>
+
+
+namespace sofa
+{
+
+namespace component
+{
+
+namespace collision
+{
+
+class SOFA_CONTINUOUS_COLLISION_API ContinuousDetection :
+    public core::collision::BroadPhaseDetection,
+    public core::collision::NarrowPhaseDetection
+{
+public:
+    SOFA_CLASS2(ContinuousDetection, core::collision::BroadPhaseDetection, core::collision::NarrowPhaseDetection);
+
+private:
+    bool _is_initialized;
+    sofa::helper::vector<core::CollisionModel*> collisionModels;
+    Data<bool> bDraw;
+
+
+protected:
+    ContinuousDetection();
+
+    ~ContinuousDetection();
+
+    virtual bool keepCollisionBetween(core::CollisionModel *cm1, core::CollisionModel *cm2);
+
+public:
+    void setDraw(bool val) {
+        bDraw.setValue(val);
+    }
+
+    void init();
+    void reinit();
+
+    void addCollisionModel (core::CollisionModel *cm);
+    void addCollisionPair (const std::pair<core::CollisionModel*, core::CollisionModel*>& cmPair);
+
+    virtual void beginBroadPhase()
+    {
+        core::collision::BroadPhaseDetection::beginBroadPhase();
+        collisionModels.clear();
+    }
+
+    /* for debugging */
+    void draw(const core::visual::VisualParams* vparams);
+
+    inline virtual bool needsDeepBoundingTree()const {
+        return true;
+    }
+
+    class Impl;
+    Impl *pimpl;
+
+};
+
+} // namespace collision
+
+} // namespace component
+
+} // namespace sofa
+
+#endif

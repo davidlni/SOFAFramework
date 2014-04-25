@@ -89,7 +89,7 @@ void TriangleOctreeModel::draw (const core::visual::VisualParams* vparams)
 #endif /* SOFA_NO_OPENGL */
 }
 
-void TriangleOctreeModel::computeBoundingTree(int maxDepth)
+void TriangleOctreeModel::computeBoundingTree(size_t maxDepth)
 {
     const helper::vector<topology::Triangle>& tri = *triangles;
     if(octreeRoot)
@@ -114,7 +114,7 @@ void TriangleOctreeModel::computeBoundingTree(int maxDepth)
     maxElem[2]=minElem[2]=(*mstate->getX())[0][2];
 
     cubeModel->resize(1);  // size = number of triangles
-    for (int i=1; i<size; i++)
+    for (size_t i=1; i<size; i++)
     {
         Triangle t(this,i);
         pNorms[tri[i][0]]+=t.n();
@@ -164,7 +164,7 @@ void TriangleOctreeModel::computeBoundingTree(int maxDepth)
 
 }
 
-void TriangleOctreeModel::computeContinuousBoundingTree(double/* dt*/, int maxDepth)
+void TriangleOctreeModel::computeContinuousBoundingTree(double/* dt*/, size_t maxDepth)
 {
     computeBoundingTree(maxDepth);
 }

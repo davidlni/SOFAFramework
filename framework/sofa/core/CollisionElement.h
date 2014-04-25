@@ -34,10 +34,10 @@ namespace sofa
 namespace core
 {
 
-namespace visual 
-{ 
+namespace visual
+{
 class VisualParams;
-} // namespace visual 
+} // namespace visual
 
 class CollisionModel;
 class CollisionElementIterator;
@@ -49,20 +49,20 @@ class CollisionElementIterator;
 class BaseCollisionElementIterator
 {
 public:
-    typedef std::vector<int>::const_iterator VIterator;
+    typedef std::vector<size_t>::const_iterator VIterator;
 
     /// Constructor.
     /// In most cases it will be used by the CollisionModel to
     /// create interators to its elements (such as in the begin() and end()
     /// methods).
-    BaseCollisionElementIterator(int index=0)
+    BaseCollisionElementIterator(size_t index=0)
         : index(index), it(emptyVector.begin()), itend(emptyVector.end())
     {
     }
 
     /// Constructor.
     /// This constructor should be used in case a vector of indices is used.
-    BaseCollisionElementIterator(int index, VIterator it, VIterator itend)
+    BaseCollisionElementIterator(size_t index, VIterator it, VIterator itend)
         : index(index), it(it), itend(itend)
     {
     }
@@ -106,7 +106,7 @@ public:
     ///
     /// This methods should rarely be used.
     /// Users should call it.draw() instead of model->draw(it.getIndex()).
-    int getIndex() const
+    size_t getIndex() const
     {
         return index;
     }
@@ -126,10 +126,10 @@ public:
     /// @}
 
 protected:
-    int index;      ///< index of the referenced element inside the CollisionModel.
+    size_t index;      ///< index of the referenced element inside the CollisionModel.
     VIterator it; ///< current position in a vector of indices, in case this iterator traverse a non-contiguous set of indices
     VIterator itend; ///< end position in a vector of indices, in case this iterator traverse a non-contiguous set of indices
-    static std::vector<int> SOFA_CORE_API emptyVector; ///< empty vector to be able to initialize the iterator to an empty pair
+    static std::vector<size_t> SOFA_CORE_API emptyVector; ///< empty vector to be able to initialize the iterator to an empty pair
 };
 
 /**
@@ -148,20 +148,20 @@ class TCollisionElementIterator : public BaseCollisionElementIterator
 {
 public:
     typedef TModel Model;
-    typedef std::vector<int>::const_iterator VIterator;
+    typedef std::vector<size_t>::const_iterator VIterator;
 
     /// Constructor.
     /// In most cases it will be used by the CollisionModel to
     /// create interators to its elements (such as in the begin() and end()
     /// methods).
-    TCollisionElementIterator(Model* model=NULL, int index=0)
+    TCollisionElementIterator(Model* model=NULL, size_t index=0)
         : BaseCollisionElementIterator(index), model(model)
     {
     }
 
     /// Constructor.
     /// This constructor should be used in case a vector of indices is used.
-    TCollisionElementIterator(Model* model, int index, VIterator it, VIterator itend)
+    TCollisionElementIterator(Model* model, size_t index, VIterator it, VIterator itend)
         : BaseCollisionElementIterator(index, it, itend), model(model)
     {
     }
@@ -278,7 +278,7 @@ public:
     /// In most cases it will be used by the CollisionModel to
     /// create interators to its elements (such as in the begin() and end()
     /// methods).
-    CollisionElementIterator(CollisionModel* model=NULL, int index=0)
+    CollisionElementIterator(CollisionModel* model=NULL, size_t index=0)
         : TCollisionElementIterator<CollisionModel>(model, index)
     {
     }
@@ -292,7 +292,7 @@ public:
 
     /// Constructor.
     /// This constructor should be used in case a vector of indices is used.
-    CollisionElementIterator(CollisionModel* model, int index, VIterator it, VIterator itend)
+    CollisionElementIterator(CollisionModel* model, size_t index, VIterator it, VIterator itend)
         : TCollisionElementIterator<CollisionModel>(model, index, it, itend)
     {
     }

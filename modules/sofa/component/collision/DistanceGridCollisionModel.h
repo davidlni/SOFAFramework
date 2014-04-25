@@ -228,7 +228,7 @@ public:
     void resize(int size);
 
     /// Create or update the bounding volume hierarchy.
-    void computeBoundingTree(int maxDepth=0);
+    void computeBoundingTree(size_t maxDepth=0);
 
     void draw(const core::visual::VisualParams*, int index);
 
@@ -489,9 +489,9 @@ public:
     void resize(int size);
 
     /// Create or update the bounding volume hierarchy.
-    void computeBoundingTree(int maxDepth=0);
+    void computeBoundingTree(size_t maxDepth=0);
 
-    bool canCollideWithElement(int index, CollisionModel* model2, int index2);
+    bool canCollideWithElement(size_t index, CollisionModel* model2, size_t index2);
 
     void draw(const core::visual::VisualParams*,int index);
 

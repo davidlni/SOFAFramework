@@ -120,9 +120,9 @@ public:
 
     virtual void resize(int size);
 
-    virtual void computeBoundingTree(int maxDepth=0);
+    virtual void computeBoundingTree(size_t maxDepth=0);
 
-    //virtual void computeContinuousBoundingTree(double dt, int maxDepth=0);
+    //virtual void computeContinuousBoundingTree(double dt, size_t maxDepth=0);
 
     void draw(const core::visual::VisualParams*,int index);
 

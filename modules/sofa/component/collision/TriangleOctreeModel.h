@@ -60,8 +60,8 @@ public:
     vector<Vector3> pNorms;
     //vector < Vector4 > octreeVec;
     void draw(const core::visual::VisualParams* vparams);
-    virtual void computeBoundingTree(int maxDepth=0);
-    virtual void computeContinuousBoundingTree(double dt, int maxDepth=0);
+    virtual void computeBoundingTree(size_t maxDepth=0);
+    virtual void computeContinuousBoundingTree(double dt, size_t maxDepth=0);
     /// init the octree creation
     void buildOctree ();
 };

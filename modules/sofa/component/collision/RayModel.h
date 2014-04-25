@@ -79,7 +79,7 @@ public:
     // -- CollisionModel interface
     virtual void resize(int size);
 
-    virtual void computeBoundingTree(int maxDepth);
+    virtual void computeBoundingTree(size_t maxDepth);
 
     void draw(const core::visual::VisualParams*,int index);
     void draw(const core::visual::VisualParams* vparams);

@@ -1,0 +1,19 @@
+
+************************************
+*         ContinuousCollision.txt        *
+************************************
+
+
+
+AUTHOR :
+ - Ricardo Ortiz <ricardo.ortiz@kitware.com>
+
+
+
+
+LICENCE :
+ - Apache 3.0
+
+
+
+OTHER COMMENTS :

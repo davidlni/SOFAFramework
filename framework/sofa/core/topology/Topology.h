@@ -66,14 +66,14 @@ public:
     //typedef int index_type;
     typedef unsigned int index_type;
     enum { InvalidID = (unsigned)-1 };
-    typedef index_type	        	    PointID;
-    typedef index_type          		    EdgeID;
-    typedef index_type                          TriangleID;
-    typedef index_type                 	    QuadID;
-    typedef index_type	                    TetraID;
-    typedef index_type	                    TetrahedronID;
-    typedef index_type	                    HexaID;
-    typedef index_type	                    HexahedronID;
+    typedef index_type PointID;
+    typedef index_type EdgeID;
+    typedef index_type TriangleID;
+    typedef index_type QuadID;
+    typedef index_type TetraID;
+    typedef index_type TetrahedronID;
+    typedef index_type HexaID;
+    typedef index_type HexahedronID;
 
 
     typedef sofa::helper::vector<index_type>                  SetIndex;
@@ -191,31 +191,31 @@ namespace defaulttype
 {
 
 template<>
-struct DataTypeInfo< sofa::core::topology::Topology::Edge > : public FixedArrayTypeInfo<sofa::helper::fixed_array<unsigned int,2> >
+struct DataTypeInfo< sofa::core::topology::Topology::Edge > : public FixedArrayTypeInfo<sofa::helper::fixed_array<sofa::core::topology::Topology::PointID,2> >
 {
     static std::string name() { return "Edge"; }
 };
 
 template<>
-struct DataTypeInfo< sofa::core::topology::Topology::Triangle > : public FixedArrayTypeInfo<sofa::helper::fixed_array<unsigned int,3> >
+struct DataTypeInfo< sofa::core::topology::Topology::Triangle > : public FixedArrayTypeInfo<sofa::helper::fixed_array<sofa::core::topology::Topology::PointID,3> >
 {
     static std::string name() { return "Triangle"; }
 };
 
 template<>
-struct DataTypeInfo< sofa::core::topology::Topology::Quad > : public FixedArrayTypeInfo<sofa::helper::fixed_array<unsigned int,4> >
+struct DataTypeInfo< sofa::core::topology::Topology::Quad > : public FixedArrayTypeInfo<sofa::helper::fixed_array<sofa::core::topology::Topology::PointID,4> >
 {
     static std::string name() { return "Quad"; }
 };
 
 template<>
-struct DataTypeInfo< sofa::core::topology::Topology::Tetrahedron > : public FixedArrayTypeInfo<sofa::helper::fixed_array<unsigned int,4> >
+struct DataTypeInfo< sofa::core::topology::Topology::Tetrahedron > : public FixedArrayTypeInfo<sofa::helper::fixed_array<sofa::core::topology::Topology::PointID,4> >
 {
     static std::string name() { return "Tetrahedron"; }
 };
 
 template<>
-struct DataTypeInfo< sofa::core::topology::Topology::Hexahedron > : public FixedArrayTypeInfo<sofa::helper::fixed_array<unsigned int,8> >
+struct DataTypeInfo< sofa::core::topology::Topology::Hexahedron > : public FixedArrayTypeInfo<sofa::helper::fixed_array<sofa::core::topology::Topology::PointID,8> >
 {
     static std::string name() { return "Hexahedron"; }
 };
@@ -225,3 +225,4 @@ struct DataTypeInfo< sofa::core::topology::Topology::Hexahedron > : public Fixed
 } // namespace sofa
 
 #endif
+

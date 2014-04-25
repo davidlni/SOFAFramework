@@ -100,7 +100,7 @@ class TLineModel : public core::CollisionModel
 {
 public :
     SOFA_CLASS(SOFA_TEMPLATE(TLineModel, TDataTypes), core::CollisionModel);
-    
+
     enum LineFlag
     {
         FLAG_P1  = 1<<0, ///< Point 1  is attached to this line
@@ -145,9 +145,9 @@ public:
 
     virtual void resize(int size);
 
-    virtual void computeBoundingTree(int maxDepth=0);
+    virtual void computeBoundingTree(size_t maxDepth=0);
 
-    virtual void computeContinuousBoundingTree(double dt, int maxDepth=0);
+    virtual void computeContinuousBoundingTree(double dt, size_t maxDepth=0);
 
     void draw(const core::visual::VisualParams*,int index);
 
@@ -155,7 +155,7 @@ public:
 
     virtual void handleTopologyChange();
 
-    bool canCollideWithElement(int index, CollisionModel* model2, int index2);
+    bool canCollideWithElement(size_t index, CollisionModel* model2, size_t index2);
 
     core::behavior::MechanicalState<DataTypes>* getMechanicalState() { return mstate; }
 
@@ -166,7 +166,7 @@ public:
     LineLocalMinDistanceFilter *getFilter() const;
 
     virtual int getElemEdgeIndex(int index) const { return index; }
-    
+
     int getLineFlags(int i);
 
     //template< class TFilter >
