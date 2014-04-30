@@ -21,7 +21,8 @@
  * Authors: Ricardo Ortiz <ricardo.ortiz@kitware.com>                          *
  *                                                                             *
  ******************************************************************************/
-#include "initContinuousCollision.h"
+#include "PolytopeModel.inl"
+#include <sofa/core/ObjectFactory.h>
 
 namespace sofa
 {
@@ -29,62 +30,33 @@ namespace sofa
 namespace component
 {
 
-	//Here are just several convenient functions to help user to know what contains the plugin
+namespace collision
+{
 
-	extern "C" {
-                SOFA_ContinuousCollision_API void initExternalModule();
-                SOFA_ContinuousCollision_API const char* getModuleName();
-                SOFA_ContinuousCollision_API const char* getModuleVersion();
-                SOFA_ContinuousCollision_API const char* getModuleLicense();
-                SOFA_ContinuousCollision_API const char* getModuleDescription();
-                SOFA_ContinuousCollision_API const char* getModuleComponentList();
-	}
+SOFA_DECL_CLASS(Polytope)
 
-	void initExternalModule()
-	{
-		static bool first = true;
-		if (first)
-		{
-			first = false;
-		}
-	}
+using namespace sofa::defaulttype;
 
-	const char* getModuleName()
-	{
-	  return "ContinuousCollision";
-	}
+int PolytopeModelClass = core::RegisterObject("Collision model representing a k-DOP")
+#ifndef SOFA_FLOAT
+                         .add< TPolytopeModel<defaulttype::Vec3dTypes,18> >()
+#endif
+#ifndef SOFA_DOUBLE
+                         .add< TPolytopeModel<defaulttype::Vec3fTypes,18> >()
+#endif
+                         .addAlias("DopModel")
+                         .addAlias("PolytopeModel")
+                         ;
 
-	const char* getModuleVersion()
-	{
-		return "0.2";
-	}
+#ifndef SOFA_FLOAT
+template class SOFA_MESH_COLLISION_API PolytopeModel<defaulttype::Vec3dTypes,18>;
+#endif
+#ifndef SOFA_DOUBLE
+template class SOFA_MESH_COLLISION_API PolytopeModel<defaulttype::Vec3fTypes,18>;
+#endif
+} // namespace collision
 
-	const char* getModuleLicense()
-	{
-		return "LGPL";
-	}
+} // namespace component
 
-
-	const char* getModuleDescription()
-	{
-		return "TODO: replace this with the description of your plugin";
-	}
-
-	const char* getModuleComponentList()
-	{
-	  /// string containing the names of the classes provided by the plugin
-	  return "";
-	  //return "MyMappingPendulumInPlane, MyBehaviorModel, MyProjectiveConstraintSet";
-	}
-
-
-
-}
-
-}
-
-/// Use the SOFA_LINK_CLASS macro for each class, to enable linking on all platforms
-//SOFA_LINK_CLASS(MyMappingPendulumInPlane)
-//SOFA_LINK_CLASS(MyBehaviorModel)
-//SOFA_LINK_CLASS(MyProjectiveConstraintSet)
+} // namespace sofa
 
