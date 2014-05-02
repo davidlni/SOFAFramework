@@ -106,7 +106,7 @@ unsigned int TCapsuleModel<StdRigidTypes<3,MyReal> >::nbCap()const
 }
 
 template <class MyReal>
-void TCapsuleModel<StdRigidTypes<3,MyReal> >::computeBoundingTree(int maxDepth)
+void TCapsuleModel<StdRigidTypes<3,MyReal> >::computeBoundingTree(size_t maxDepth)
 {
     CubeModel* cubeModel = createPrevious<CubeModel>();
     const int ncap = _mstate->getX()->size();

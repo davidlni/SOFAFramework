@@ -103,7 +103,7 @@ unsigned int TCapsuleModel<DataTypes>::nbCap()const
 }
 
 template <class DataTypes>
-void TCapsuleModel<DataTypes>::computeBoundingTree(int maxDepth)
+void TCapsuleModel<DataTypes>::computeBoundingTree(size_t maxDepth)
 {
     CubeModel* cubeModel = createPrevious<CubeModel>();
     const int ncap = getContext()->getMeshTopology()->getNbEdges();
@@ -150,7 +150,7 @@ void TCapsuleModel<DataTypes>::computeBoundingTree(int maxDepth)
 
         }
         cubeModel->computeBoundingTree(maxDepth);
-    }    
+    }
 }
 
 

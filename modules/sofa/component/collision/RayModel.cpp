@@ -130,7 +130,7 @@ void RayModel::draw(const core::visual::VisualParams* vparams)
     {
         glDisable(GL_LIGHTING);
         glColor4fv(getColor4f());
-        for (int i=0; i<size; i++)
+        for (size_t i=0; i<size; i++)
         {
             draw(vparams,i);
         }
@@ -140,7 +140,7 @@ void RayModel::draw(const core::visual::VisualParams* vparams)
 #endif /* SOFA_NO_OPENGL */
 }
 
-void RayModel::computeBoundingTree(int maxDepth)
+void RayModel::computeBoundingTree(size_t maxDepth)
 {
     CubeModel* cubeModel = createPrevious<CubeModel>();
 
@@ -151,7 +151,7 @@ void RayModel::computeBoundingTree(int maxDepth)
     cubeModel->resize(size);
     if (!empty())
     {
-        for (int i=0; i<size; i++)
+        for (size_t i=0; i<size; i++)
         {
             Ray r(this, i);
             const Vector3& o = r.origin();

@@ -140,7 +140,7 @@ void CubeModel::updateCube(int index)
 
 void CubeModel::updateCubes()
 {
-    for (int i=0; i<size; i++)
+    for (size_t i = 0; i < size; i++)
         updateCube(i);
 }
 
@@ -203,7 +203,7 @@ void CubeModel::draw(const core::visual::VisualParams* vparams)
         c=Vec<4,float>(1.0f, 1.0f, 1.0f, color);
 
     std::vector< Vector3 > points;
-    for (int i=0; i<size; i++)
+    for (size_t i=0; i<size; i++)
     {
         const Vector3& vmin = elems[i].minBBox;
         const Vector3& vmax = elems[i].maxBBox;
@@ -243,12 +243,12 @@ void CubeModel::draw(const core::visual::VisualParams* vparams)
         getPrevious()->draw(vparams);
 }
 
-std::pair<core::CollisionElementIterator,core::CollisionElementIterator> CubeModel::getInternalChildren(int index) const
+std::pair<core::CollisionElementIterator,core::CollisionElementIterator> CubeModel::getInternalChildren(size_t index) const
 {
     return elems[index].subcells;
 }
 
-std::pair<core::CollisionElementIterator,core::CollisionElementIterator> CubeModel::getExternalChildren(int index) const
+std::pair<core::CollisionElementIterator,core::CollisionElementIterator> CubeModel::getExternalChildren(size_t index) const
 {
     return elems[index].children;
     /*
@@ -265,12 +265,12 @@ std::pair<core::CollisionElementIterator,core::CollisionElementIterator> CubeMod
     */
 }
 
-bool CubeModel::isLeaf( int index ) const
+bool CubeModel::isLeaf(size_t index ) const
 {
     return elems[index].children.first.valid();
 }
 
-void CubeModel::computeBoundingTree(int maxDepth)
+void CubeModel::computeBoundingTree(size_t maxDepth)
 {
     if(maxDepth <= 0)
         return;
@@ -278,7 +278,7 @@ void CubeModel::computeBoundingTree(int maxDepth)
     //sout << ">CubeModel::computeBoundingTree("<<maxDepth<<")"<<sendl;
     std::list<CubeModel*> levels;
     levels.push_front(createPrevious<CubeModel>());
-    for (int i=0; i<maxDepth; i++)
+    for (size_t i=0; i<maxDepth; i++)
         levels.push_front(levels.front()->createPrevious<CubeModel>());
     CubeModel* root = levels.front();
     //if (isStatic() && root->getPrevious() == NULL && !root->empty()) return; // No need to recompute BBox if immobile
@@ -370,7 +370,7 @@ void CubeModel::computeBoundingTree(int maxDepth)
         if (!parentOf.empty())
         {
             // Finally update parentOf to reflect new cell order
-            for (int i=0; i<size; i++)
+            for (size_t i=0; i<size; i++)
                 parentOf[elems[i].children.first.getIndex()] = i;
         }
     }

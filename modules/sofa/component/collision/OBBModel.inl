@@ -91,7 +91,7 @@ void TOBBModel<DataTypes>::resize(int size){
 
 
 template<class DataTypes>
-void TOBBModel<DataTypes>::computeBoundingTree(int maxDepth){
+void TOBBModel<DataTypes>::computeBoundingTree(size_t maxDepth){
     CubeModel* cubeModel = createPrevious<CubeModel>();
     const int npoints = _mstate->getX()->size();
     bool updated = false;

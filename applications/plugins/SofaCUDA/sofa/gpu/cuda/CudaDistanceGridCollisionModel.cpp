@@ -611,7 +611,7 @@ void CudaRigidDistanceGridCollisionModel::setNewState(int index, double dt, Cuda
 using sofa::component::collision::CubeModel;
 
 /// Create or update the bounding volume hierarchy.
-void CudaRigidDistanceGridCollisionModel::computeBoundingTree(int maxDepth)
+void CudaRigidDistanceGridCollisionModel::computeBoundingTree(size_t maxDepth)
 {
     CubeModel* cubeModel = this->createPrevious<CubeModel>();
 

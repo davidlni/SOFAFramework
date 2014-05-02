@@ -206,12 +206,12 @@ void GridModel::draw(const core::visual::VisualParams* vparams)
         getPrevious()->draw(vparams);
 }
 
-std::pair<core::CollisionElementIterator,core::CollisionElementIterator> GridModel::getInternalChildren(int index) const
+std::pair<core::CollisionElementIterator,core::CollisionElementIterator> GridModel::getInternalChildren(size_t index) const
 {
     return elems[index].subcells;
 }
 
-std::pair<core::CollisionElementIterator,core::CollisionElementIterator> GridModel::getExternalChildren(int index) const
+std::pair<core::CollisionElementIterator,core::CollisionElementIterator> GridModel::getExternalChildren(size_t index) const
 {
     return elems[index].children;
     /*
@@ -228,7 +228,7 @@ std::pair<core::CollisionElementIterator,core::CollisionElementIterator> GridMod
     */
 }
 
-bool GridModel::isLeaf( int index ) const
+bool GridModel::isLeaf(size_t index ) const
 {
     return elems[index].children.first.valid();
 }
@@ -261,7 +261,7 @@ public:
     }
 };
 
-void GridModel::computeBoundingTree(int maxDepth)
+void GridModel::computeBoundingTree(size_t maxDepth)
 {
     //std::cout << ">GridModel::computeBoundingTree("<<maxDepth<<")"<<std::endl;
     std::list<GridModel*> levels;

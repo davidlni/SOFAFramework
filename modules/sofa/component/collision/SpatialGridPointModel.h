@@ -57,7 +57,7 @@ public:
 
     // -- CollisionModel interface
 
-    virtual void computeBoundingTree(int maxDepth=0);
+    virtual void computeBoundingTree(size_t maxDepth=0);
 
     Grid* getGrid() { return grid->getGrid(); }
 protected:

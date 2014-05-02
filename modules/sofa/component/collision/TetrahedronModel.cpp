@@ -188,7 +188,7 @@ void TetrahedronModel::draw(const core::visual::VisualParams* vparams)
 #endif /* SOFA_NO_OPENGL */
 }
 
-void TetrahedronModel::computeBoundingTree(int maxDepth)
+void TetrahedronModel::computeBoundingTree(size_t maxDepth)
 {
     CubeModel* cubeModel = createPrevious<CubeModel>();
     if (!mstate || !_topology) return;

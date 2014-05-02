@@ -118,7 +118,7 @@ void CudaPointModel::draw(const core::visual::VisualParams* vparams)
 
 using sofa::component::collision::CubeModel;
 
-void CudaPointModel::computeBoundingTree(int maxDepth)
+void CudaPointModel::computeBoundingTree(size_t maxDepth)
 {
     CubeModel* cubeModel = createPrevious<CubeModel>();
     const int npoints = mstate->getX()->size();

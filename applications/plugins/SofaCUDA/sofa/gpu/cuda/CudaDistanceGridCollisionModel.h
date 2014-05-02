@@ -551,7 +551,7 @@ public:
     void resize(int size);
 
     /// Create or update the bounding volume hierarchy.
-    void computeBoundingTree(int maxDepth=0);
+    void computeBoundingTree(size_t maxDepth=0);
 
     void draw(const core::visual::VisualParams*,int index);
 

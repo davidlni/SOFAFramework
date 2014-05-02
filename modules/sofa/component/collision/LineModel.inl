@@ -456,7 +456,7 @@ void TLineModel<DataTypes>::draw(const core::visual::VisualParams* vparams)
 }
 
 template<class DataTypes>
-bool TLineModel<DataTypes>::canCollideWithElement(int index, CollisionModel* model2, int index2)
+bool TLineModel<DataTypes>::canCollideWithElement(size_t index, CollisionModel* model2, size_t index2)
 {
     //std::cerr<<"canCollideWithElement is called"<<std::endl;
 
@@ -579,7 +579,7 @@ bool TLineModel<DataTypes>::canCollideWithElement(int index, CollisionModel* mod
 }
 
 template<class DataTypes>
-void TLineModel<DataTypes>::computeBoundingTree(int maxDepth)
+void TLineModel<DataTypes>::computeBoundingTree(size_t maxDepth)
 {
     CubeModel* cubeModel = createPrevious<CubeModel>();
     updateFromTopology();
@@ -622,7 +622,7 @@ void TLineModel<DataTypes>::computeBoundingTree(int maxDepth)
 }
 
 template<class DataTypes>
-void TLineModel<DataTypes>::computeContinuousBoundingTree(double dt, int maxDepth)
+void TLineModel<DataTypes>::computeContinuousBoundingTree(double dt, size_t maxDepth)
 {
     CubeModel* cubeModel = createPrevious<CubeModel>();
     updateFromTopology();

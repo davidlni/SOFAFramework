@@ -30,7 +30,7 @@ namespace sofa
 namespace core
 {
 
-std::vector<int> BaseCollisionElementIterator::emptyVector; ///< empty vector to be able to initialize the iterator to an empty pair
+std::vector<size_t> BaseCollisionElementIterator::emptyVector; ///< empty vector to be able to initialize the iterator to an empty pair
 int CollisionModel::nb_collision_models = 0;
 
 /// Get a color that can be used to display this CollisionModel

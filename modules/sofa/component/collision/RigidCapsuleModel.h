@@ -131,7 +131,7 @@ public:
 
     virtual void resize(int size);
 
-    virtual void computeBoundingTree(int maxDepth=0);
+    virtual void computeBoundingTree(size_t maxDepth=0);
 
     //virtual void computeContinuousBoundingTree(SReal dt, int maxDepth=0);
 

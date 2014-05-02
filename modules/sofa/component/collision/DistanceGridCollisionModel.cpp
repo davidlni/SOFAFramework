@@ -207,13 +207,13 @@ void RigidDistanceGridCollisionModel::updateState()
             {
                 elems[i].translation = initTranslation;
             }
-            
+
         }
     }
 }
 
 /// Create or update the bounding volume hierarchy.
-void RigidDistanceGridCollisionModel::computeBoundingTree(int maxDepth)
+void RigidDistanceGridCollisionModel::computeBoundingTree(size_t maxDepth)
 {
     CubeModel* cubeModel = this->createPrevious<CubeModel>();
 
@@ -607,7 +607,7 @@ void FFDDistanceGridCollisionModel::resize(int s)
     elems.resize(s);
 }
 
-bool FFDDistanceGridCollisionModel::canCollideWithElement(int index, CollisionModel* model2, int index2)
+bool FFDDistanceGridCollisionModel::canCollideWithElement(size_t index, CollisionModel* model2, size_t index2)
 {
     if (model2 != this) return true;
     if (!this->bSelfCollision.getValue()) return true;
@@ -627,7 +627,7 @@ void FFDDistanceGridCollisionModel::setGrid(DistanceGrid* surf, int index)
 }
 
 /// Create or update the bounding volume hierarchy.
-void FFDDistanceGridCollisionModel::computeBoundingTree(int maxDepth)
+void FFDDistanceGridCollisionModel::computeBoundingTree(size_t maxDepth)
 {
     CubeModel* cubeModel = this->createPrevious<CubeModel>();
 
