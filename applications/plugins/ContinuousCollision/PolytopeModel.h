@@ -25,8 +25,6 @@
  ******************************************************************************/
 
 #include <sofa/core/CollisionModel.h>
-#include <sofa/component/container/MechanicalObject.h>
-#include <sofa/defaulttype/Vec3Types.h>
 
 #include "DiscreteOrientedPolytope.h"
 
@@ -44,20 +42,20 @@ using namespace sofa::defaulttype;
 template<typename TDataTypes, size_t NumberOfPlanes>
 class TPolytopeModel;
 
-template<typename TDataTypes, size_t K>
-class Polytope : public core::TCollisionElementIterator<PolytopeModel<TDataTypes,K> >
+template<typename TDataTypes, size_t K = 18>
+class TPolytope : public core::TCollisionElementIterator<TPolytopeModel<TDataTypes,K> >
 {
 public:
-  Polytope(PolytopeModel<TDataTypes,K>* model=NULL, int index=0);
+    TPolytope(TPolytopeModel<TDataTypes,K>* model=NULL, size_t index=0);
 
-    explicit Polytope(const core::CollisionElementIterator& i);
+    explicit TPolytope(const core::CollisionElementIterator& i);
 
-    const DiscreteOrientedPolytope<Vec3Types::Real,K>& getDOP() const;
-    const std::pair<Polytope<TDataTypes,K>,Polytope<TDataTypes,K> >& subcells() const;
+    const std::pair<TPolytope<TDataTypes,K>,TPolytope<TDataTypes,K> >& subcells() const;
+    const typename TPolytopeModel<TDataTypes,K>::PolytopeData& getElement() const;
 };
 
 template<typename TDataTypes, size_t NumberOfPlanes = 18>
-class SOFA_BASE_COLLISION_API TPolytopeModel : public core::CollisionModel
+class TPolytopeModel : public core::CollisionModel
 {
 public:
     enum { K = NumberOfPlanes };
@@ -71,63 +69,66 @@ public:
     typedef typename DataTypes::VecDeriv VecDeriv;
     typedef typename DataTypes::Coord Coord;
     typedef typename DataTypes::Deriv Deriv;
-    typedef typename DOPType::DistanceArrayType DistanceArrayType;
-    typedef Polytope<TDataTypes,K> Element;
+
     typedef DiscreteOrientedPolytope<Real,K> DOPType;
-    friend class Element;
+    typedef typename DOPType::DistanceArrayType DistanceArrayType;
+    typedef TPolytope<DataTypes,K> Element;
+    friend class TPolytope<DataTypes,K>;
 
     struct PolytopeData : public DOPType
     {
         std::pair<Element,Element> subcells;
-        std::pair<core::CollisionElementIterator,core::CollisionElementIterator> children; ///< Note that children is only meaningfull if subcells in empty
+        std::pair<ChildIterator,ChildIterator> children;
     };
 
     struct PolytopeSortPredicate
     {
-        int axis;
-        PolytopeSortPredicate(int _axis) : axis(_axis) {}
-        bool operator()(const PolytopeData& c1,const PolytopeData& c2) const
+        PolytopeSortPredicate(const size_t &_axis, const Real &_center) : axis(_axis), center(_center) {}
+        bool operator()(const PolytopeData& c1) const
         {
-            return c1.GetCenter(axis) < c2.GetCenter(axis);
+            return c1.GetCenter(axis) < center;
         }
+        const size_t &axis;
+        const Real &center;
     };
 
+    typedef typename sofa::helper::vector<PolytopeData> ElementListType;
+    
 protected:
     TPolytopeModel();
 
 public:
-    virtual void resize(int size);
+    virtual void resize(size_t size);
 
-    void setParentOf(int childIndex, const Vector3& p);
-    void setLeafCube(int cubeIndex, int childIndex);
-    void setLeafCube(int cubeIndex, std::pair<core::CollisionElementIterator,core::CollisionElementIterator> children, const Vector3& p);
+    void setParentOf(size_t childIndex, const Vector3& p);
+    void setLeafPolytope(size_t polytopeIndex, size_t childIndex);
+    void setLeafPolytope(size_t polytopeIndex, std::pair<ChildIterator,ChildIterator> children, const Vector3& p);
 
-
-    unsigned int getNumberCells() {
-        return elems.size();
+    size_t getNumberCells() {
+        return polytopes.size();
     }
 
-    void getBoundingTree ( sofa::helper::vector< std::pair< Vector3, Vector3> > &bounding )
+    void getBoundingTree ( sofa::helper::vector< PolytopeData > &bounding )
     {
-        bounding.resize(elems.size());
-        for (unsigned int index=0; index<elems.size(); index++)
-        {
-            bounding[index] = std::make_pair( elems[index].minBBox, elems[index].maxBBox);
-        }
+        bounding = polytopes;
     }
 
-    int getLeafIndex(int index) const
+    size_t getLeafIndex(size_t index) const
     {
-        return elems[index].children.first.getIndex();
+        return polytopes[index].children.first.getIndex();
     }
 
-    int getLeafEndIndex(int index) const
+    size_t getLeafEndIndex(size_t index) const
     {
-        return elems[index].children.second.getIndex();
+        return polytopes[index].children.second.getIndex();
     }
 
-    const PolytopeData & getPolytopeData(int index) const {
-        return elems[index];
+    const PolytopeData & getPolytopeData(size_t index) const {
+        return polytopes[index];
+    }
+
+    PolytopeData & getPolytopeData(size_t index)  {
+        return polytopes[index];
     }
 
     // -- CollisionModel interface
@@ -141,51 +142,62 @@ public:
       *the max depth. The division is made along an axis. This axis corresponds to the biggest dimension of the current bounding box.
       *Note : a bounding box is a k-DOP here.
       */
-    virtual void computeBoundingTree(int maxDepth=0);
+    virtual void computeBoundingTree(size_t maxDepth=0);
 
-    virtual std::pair<core::CollisionElementIterator,core::CollisionElementIterator> getInternalChildren(int index) const;
+    virtual std::pair<ChildIterator,ChildIterator> getInternalChildren(size_t index) const;
+    virtual std::pair<ChildIterator,ChildIterator> getExternalChildren(size_t index) const;
 
-    virtual std::pair<core::CollisionElementIterator,core::CollisionElementIterator> getExternalChildren(int index) const;
+    virtual bool isLeaf( size_t index ) const;
 
-    virtual bool isLeaf( int index ) const;
-
-    void draw(const core::visual::VisualParams*,int index);
+    void draw(const core::visual::VisualParams*,size_t index);
 
     void draw(const core::visual::VisualParams* vparams);
 
-    int addPolytope(Element subcellsBegin, Element subcellsEnd);
+    size_t addPolytope(Element subcellsBegin, Element subcellsEnd);
     void updatePolytope(PolytopeData &element);
-    void updatePolytope(int index);
+    void updatePolytope(size_t index);
     void updatePolytopes();
 
 protected:
-    sofa::helper::vector<PolytopeData> elems;
-    sofa::helper::vector<int> parentOf; ///< Given the index of a child leaf element, store the index of the parent cube
+    ElementListType polytopes;
+    sofa::helper::vector<size_t> parentOf; ///< Given the index of a child leaf element, store the index of the parent cube
 
 };
 
 template<typename TDataTypes, size_t K>
-inline Polytope<TDataTypes,K>::Polytope(PolytopeModel<K>* model, int index)
-    : core::TCollisionElementIterator<PolytopeModel<K> >(model, index)
+inline TPolytope<TDataTypes,K>::TPolytope(TPolytopeModel<TDataTypes,K>* model, size_t index)
+    : core::TCollisionElementIterator<TPolytopeModel<TDataTypes,K> >(model, index)
 {}
 
 template<typename TDataTypes, size_t K>
-inline Polytope<TDataTypes,K>::Polytope(const core::CollisionElementIterator& i)
-    : core::TCollisionElementIterator<PolytopeModel<K> >(static_cast<PolytopeModel<K>*>(i.getCollisionModel()), i.getIndex())
+inline TPolytope<TDataTypes,K>::TPolytope(const core::CollisionElementIterator& i)
+    : core::TCollisionElementIterator<TPolytopeModel<TDataTypes,K> >(static_cast<TPolytopeModel<TDataTypes,K>*>(i.getCollisionModel()), i.getIndex())
 {}
 
 
 template<typename TDataTypes, size_t K>
-inline const DiscreteOrientedPolytope<Vec3Types::Real,K>& Polytope<TDataTypes,K>::getDOP() const
+inline const typename TPolytopeModel<TDataTypes,K>::PolytopeData& TPolytope<TDataTypes,K>::getElement() const
 {
-    return this->model->elems[index];
+    return this->getCollisionModel()->polytopes[this->index];
 }
 
 template<typename TDataTypes, size_t K>
-inline const std::pair<Polytope<TDataTypes,K>,Polytope<TDataTypes,K> >& Polytope<TDataTypes,K>::subcells() const
+inline const std::pair<TPolytope<TDataTypes,K>,TPolytope<TDataTypes,K> >& TPolytope<TDataTypes,K>::subcells() const
 {
-    return this->model->elems[index].subcells;
+    return this->getElement().subcells;
 }
+
+typedef TPolytopeModel<Vec3Types> PolytopeModel;
+typedef TPolytope<Vec3Types> Polytope;
+
+#if defined(SOFA_EXTERN_TEMPLATE) && !defined(CCD_PLUGIN_POLYTOPE_MODEL)
+#ifndef SOFA_FLOAT
+extern template class SOFA_CONTINUOUS_COLLISION_API TPolytopeModel<defaulttype::Vec3dTypes>;
+#endif
+#ifndef SOFA_DOUBLE
+extern template class SOFA_CONTINUOUS_COLLISION_API TPolytopeModel<defaulttype::Vec3fTypes>;
+#endif
+#endif
 
 } // namespace collision
 

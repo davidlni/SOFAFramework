@@ -32,12 +32,12 @@ namespace component
 	//Here are just several convenient functions to help user to know what contains the plugin
 
 	extern "C" {
-                SOFA_ContinuousCollision_API void initExternalModule();
-                SOFA_ContinuousCollision_API const char* getModuleName();
-                SOFA_ContinuousCollision_API const char* getModuleVersion();
-                SOFA_ContinuousCollision_API const char* getModuleLicense();
-                SOFA_ContinuousCollision_API const char* getModuleDescription();
-                SOFA_ContinuousCollision_API const char* getModuleComponentList();
+                SOFA_CONTINUOUS_COLLISION_API void initExternalModule();
+                SOFA_CONTINUOUS_COLLISION_API const char* getModuleName();
+                SOFA_CONTINUOUS_COLLISION_API const char* getModuleVersion();
+                SOFA_CONTINUOUS_COLLISION_API const char* getModuleLicense();
+                SOFA_CONTINUOUS_COLLISION_API const char* getModuleDescription();
+                SOFA_CONTINUOUS_COLLISION_API const char* getModuleComponentList();
 	}
 
 	void initExternalModule()
@@ -73,8 +73,7 @@ namespace component
 	const char* getModuleComponentList()
 	{
 	  /// string containing the names of the classes provided by the plugin
-	  return "";
-	  //return "MyMappingPendulumInPlane, MyBehaviorModel, MyProjectiveConstraintSet";
+	  return "PolytopeModel";
 	}
 
 
@@ -84,7 +83,7 @@ namespace component
 }
 
 /// Use the SOFA_LINK_CLASS macro for each class, to enable linking on all platforms
-//SOFA_LINK_CLASS(MyMappingPendulumInPlane)
+SOFA_LINK_CLASS(PolytopeModel)
 //SOFA_LINK_CLASS(MyBehaviorModel)
 //SOFA_LINK_CLASS(MyProjectiveConstraintSet)
 

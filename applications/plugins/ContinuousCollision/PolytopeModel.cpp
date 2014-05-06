@@ -21,7 +21,11 @@
  * Authors: Ricardo Ortiz <ricardo.ortiz@kitware.com>                          *
  *                                                                             *
  ******************************************************************************/
-#include "PolytopeModel.inl"
+
+#define CCD_PLUGIN_POLYTOPE_MODEL
+
+#include "initContinuousCollision.h"
+#include "PolytopeModel.hpp"
 #include <sofa/core/ObjectFactory.h>
 
 namespace sofa
@@ -34,25 +38,26 @@ namespace collision
 {
 
 SOFA_DECL_CLASS(Polytope)
+SOFA_DECL_CLASS(PolytopeModel)
 
 using namespace sofa::defaulttype;
 
 int PolytopeModelClass = core::RegisterObject("Collision model representing a k-DOP")
 #ifndef SOFA_FLOAT
-                         .add< TPolytopeModel<defaulttype::Vec3dTypes,18> >()
+                         .add< TPolytopeModel<defaulttype::Vec3dTypes> >()
 #endif
 #ifndef SOFA_DOUBLE
-                         .add< TPolytopeModel<defaulttype::Vec3fTypes,18> >()
+                         .add< TPolytopeModel<defaulttype::Vec3fTypes> >()
 #endif
                          .addAlias("DopModel")
                          .addAlias("PolytopeModel")
                          ;
 
 #ifndef SOFA_FLOAT
-template class SOFA_MESH_COLLISION_API PolytopeModel<defaulttype::Vec3dTypes,18>;
+template class SOFA_CONTINUOUS_COLLISION_API TPolytopeModel<defaulttype::Vec3dTypes>;
 #endif
 #ifndef SOFA_DOUBLE
-template class SOFA_MESH_COLLISION_API PolytopeModel<defaulttype::Vec3fTypes,18>;
+template class SOFA_CONTINUOUS_COLLISION_API TPolytopeModel<defaulttype::Vec3fTypes>;
 #endif
 } // namespace collision
 

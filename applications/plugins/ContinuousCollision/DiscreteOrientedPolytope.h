@@ -51,25 +51,33 @@ public:
     typedef std::array<T,K> DistanceArrayType;
     typedef std::array<T,KHalf> HalfDistanceArrayType;
 
-
 public:
 
+    /**
+     * @brief Constructor
+     *  Builds a default dop covering the entire 3D space
+     *
+     */
     DiscreteOrientedPolytope()
     {
-        this->clean();
+      for(size_t i = 0; i < KHalf; ++i )
+      {
+        this->Distance[i] = std::numeric_limits<T>::infinity();
+        this->Distance[i+KHalf] = -this->Distance[i];
+      }
     }
 
-    void DiscreteOrientedPolytope(const defaulttype::Vector3 &p)
+    DiscreteOrientedPolytope(const defaulttype::Vector3 &p)
     {
         NormalProjections<K>::ComputeAll(p,this->Distance);
     }
 
-    void DiscreteOrientedPolytope(const defaulttype::Vector3 &p, const defaulttype::Vector3 &q)
+    DiscreteOrientedPolytope(const defaulttype::Vector3 &p, const defaulttype::Vector3 &q)
     {
         NormalProjections<K>::ComputeAll(p,q,this->Distance);
     }
 
-    friend bool overlaps(const DiscreteOrientedPolytope<T,K> &other)
+    bool Overlaps(const DiscreteOrientedPolytope<T,K> &other)
     {
         for(size_t i = 0; i < KHalf; ++i)
         {
@@ -79,9 +87,9 @@ public:
         return true;
     }
 
-    friend bool overlaps(const DiscreteOrientedPolytope<T,K> &a, DiscreteOrientedPolytope<T,K> &out)
+    bool Overlaps(const DiscreteOrientedPolytope<T,K> &a, DiscreteOrientedPolytope<T,K> &out)
     {
-        if(!this->overlaps(a))
+        if(!this->Overlaps(a))
             return false;
 
         for(size_t i = 0; i < KHalf; ++i)
@@ -92,7 +100,7 @@ public:
         return true;
     }
 
-    bool inside(const defaulttype::Vector3 &p)
+    bool Inside(const defaulttype::Vector3 &p)
     {
         HalfDistanceArrayType d = {0};
         NormalProjections<K>::ComputeAll(p,d);
@@ -114,7 +122,7 @@ public:
         return *this;
     }
 
-    friend DiscreteOrientedPolytope<T,K> &operator+=(const DiscreteOrientedPolytope<T,K> &other)
+    DiscreteOrientedPolytope<T,K> &operator+=(const DiscreteOrientedPolytope<T,K> &other)
     {
         for(size_t i = 0; i < KHalf; ++i)
         {
@@ -124,47 +132,66 @@ public:
         return *this;
     }
 
-    DiscreteOrientedPolytope<T,K> operator+(const DiscreteOrientedPolytope<T,K> &other)
+    inline DiscreteOrientedPolytope<T,K> operator+(const DiscreteOrientedPolytope<T,K> &other)
     {
         DiscreteOrientedPolytope<T,K> result(*this);
         return (result += other);
     }
 
-    void operator=(const DiscreteOrientedPolytope<T,K> &other)
+    inline DiscreteOrientedPolytope<T,K> &operator*=(const defaulttype::Vector3 &p)
+    {
+        DiscreteOrientedPolytope<T,K> dop(p);
+        for(size_t i = 0; i < K; ++i)
+            this->Distance[i] += dop.GetDistance(i);
+        return *this;
+    }
+
+    inline DiscreteOrientedPolytope<T,K> operator*(const defaulttype::Vector3 &p)
+    {
+        DiscreteOrientedPolytope<T,K> dop(p);
+        return dop*=(*this);
+    }
+
+    inline DiscreteOrientedPolytope<T,K> operator%(const DiscreteOrientedPolytope<T,K> &other)
+    {
+        return this->Overlaps(other);
+    }
+
+    inline void operator=(const DiscreteOrientedPolytope<T,K> &other)
     {
         this->Distance = other.Distance;
     }
 
-    T length(size_t i) const
+    inline T GetLength(size_t i) const
     {
         return this->Distance[i+KHalf] - this->Distance[i];
     }
 
-    T width()  const
+    inline T GetWidth() const
     {
         return this->Distance[KHalf] - this->Distance[0];
     }
 
-    T height() const
+    inline T GetHeight() const
     {
         return this->Distance[KHalf+1] - this->Distance[1];
     }
 
-    T depth()  const
+    inline T GetDepth() const
     {
         return this->Distance[KHalf+2] - this->Distance[2];
     }
 
-    T volume() const
+    inline T GetVolume() const
     {
-        return width()*height()*depth();
+        return this->GetWidth()*this->GetHeight()*this->GetDepth();
     }
 
-    int GetSplitAxis()
+    inline size_t GetSplitAxis() const
     {
-        T w = width();
-        T h = height();
-        T d = depth();
+        T w = this->GetWidth();
+        T h = this->GetHeight();
+        T d = this->GetDepth();
         if(w >= h && w >= d)
             return 0;
         else if(h >= w && h >= d)
@@ -172,23 +199,28 @@ public:
         return 2;
     }
 
-    defaulttype::Vector3 GetCenter() const {
+    inline defaulttype::Vector3 GetCenter() const {
         return defaulttype::Vector3(this->Distance[0]+this->Distance[KHalf],
                                     this->Distance[1]+this->Distance[KHalf+1],
                                     this->Distance[2]+this->Distance[KHalf+2])*T(0.5);
     }
 
-    T GetCenter(size_t i) const {
-      return (this->Distance[i]+this->Distance[i+KHalf])*T(0.5);
+    inline T GetCenter(const size_t &i) const {
+        return (this->Distance[i]+this->Distance[i+KHalf])*T(0.5);
     }
 
-    defaulttype::Vector3 GetLength() const {
+    inline defaulttype::Vector3 GetLength() const {
         return defaulttype::Vector3(this->Distance[KHalf]-this->Distance[0],
                                     this->Distance[KHalf+1]-this->Distance[1],
                                     this->Distance[KHalf+2]-this->Distance[2]);
     }
 
-    void clean()
+    /**
+     * @brief ...
+     *
+     * @return void
+     */
+    void Clean()
     {
         for(size_t i = 0; i < KHalf; ++i )
         {

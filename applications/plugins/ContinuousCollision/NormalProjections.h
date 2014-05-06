@@ -114,13 +114,13 @@ struct NormalProjections<6>
     }
 
     template<typename T>
-    inline static void ComputeAll(const defaulttype::Vector3 &p, std::array<T,K> &d)
+    inline static void ComputeAll(const defaulttype::Vector3 &p, std::array<T,6> &d)
     {
         Compute<6>(p,d);
     }
 
     template<typename T>
-    inline static void ComputeAll(const defaulttype::Vector3 &p, std::array<T,K/2> &d)
+    inline static void ComputeAll(const defaulttype::Vector3 &p, std::array<T,3> &d)
     {
         Compute<6>(p,d);
     }

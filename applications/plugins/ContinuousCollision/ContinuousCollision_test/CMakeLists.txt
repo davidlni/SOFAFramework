@@ -1,8 +1,8 @@
 include(${SOFA_CMAKE_DIR}/preProject.cmake)
 
 set(SOURCE_FILES
-
-    ContinuousCollision_test.cpp
+  PolytopeModel_test.cpp
+#     ContinuousCollision_test.cpp
 	)
 
 if(APPLE)
@@ -16,16 +16,13 @@ if(WIN32)
 	link_directories("${SOFA_EXTLIBS_DIR}/SuiteSparse/cholmod/Lib")
 endif()
 
+set_source_files_properties(${SOURCE_FILES} PROPERTIES COMPILE_FLAGS -std=c++11)
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${RC_FILES})
 
-AddLinkerDependencies(ContinuousCollision SofaComponentMain SofaSimulationGraph gtest gtest_main)
+# AddLinkerDependencies(ContinuousCollision SofaComponentMain SofaSimulationGraph SofaTest)
+AddLinkerDependencies(ContinuousCollision SofaTest)
 
-if(WIN32)
-	AddCompilerFlags("/MT")
-endif()
+AddCompilerDefinitions("CCD_TEST_SCENES_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/scenes\"")
 
-if(UNIX)
-    AddLinkerDependencies("dl")
-endif()
 
 include(${SOFA_CMAKE_DIR}/postProject.cmake)
