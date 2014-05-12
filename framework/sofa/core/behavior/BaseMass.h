@@ -108,9 +108,9 @@ public:
     virtual void exportGnuplot(const MechanicalParams* mparams /* PARAMS FIRST  = MechanicalParams::defaultInstance()*/, double time)=0;
 
     /// return the mass relative to the DOF #index
-    virtual double getElementMass(unsigned int index) const =0;
+    virtual double getElementMass(size_type index) const =0;
     /// return the matrix relative to the DOF #index
-    virtual void getElementMass(unsigned int index, defaulttype::BaseMatrix *m) const = 0;
+    virtual void getElementMass(size_type index, defaulttype::BaseMatrix *m) const = 0;
 
     virtual bool isDiagonal() { return false; }
 

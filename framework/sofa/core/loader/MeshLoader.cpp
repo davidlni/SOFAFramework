@@ -277,7 +277,7 @@ void MeshLoader::updatePoints()
 {
     if (onlyAttachedPoints.getValue())
     {
-        std::set<unsigned int> attachedPoints;
+        std::set<size_type> attachedPoints;
         {
             helper::ReadAccessor<Data< helper::vector< Edge > > > elems = edges;
             for (size_t i=0; i<elems.size(); ++i)
@@ -311,12 +311,12 @@ void MeshLoader::updatePoints()
         const size_t newsize = attachedPoints.size();
         if (newsize == positions.getValue().size()) return; // all points are attached
         helper::WriteAccessor<Data<helper::vector<sofa::defaulttype::Vec<3,SReal> > > > waPositions = positions;
-        helper::vector<unsigned int> old2new;
+        helper::vector<size_type> old2new;
         old2new.resize(waPositions.size());
-        unsigned int p = 0;
-        for (std::set<unsigned int>::const_iterator it = attachedPoints.begin(), itend = attachedPoints.end(); it != itend; ++it)
+        size_type p = 0;
+        for (std::set<size_type>::const_iterator it = attachedPoints.begin(), itend = attachedPoints.end(); it != itend; ++it)
         {
-            unsigned int newp = *it;
+            size_type newp = *it;
             old2new[newp] = p;
             if (p != newp) waPositions[p] = waPositions[newp];
             ++p;
@@ -460,7 +460,7 @@ void MeshLoader::addEdge(helper::vector<Edge >* pEdges, const Edge &p)
     pEdges->push_back(p);
 }
 
-void MeshLoader::addEdge(helper::vector<Edge >* pEdges, unsigned int p0, unsigned int p1)
+void MeshLoader::addEdge(helper::vector<Edge >* pEdges, size_type p0, size_type p1)
 {
     addEdge(pEdges, Edge(p0, p1));
 }
@@ -478,7 +478,7 @@ void MeshLoader::addTriangle(helper::vector<Triangle >* pTriangles, const Triang
         pTriangles->push_back(p);
 }
 
-void MeshLoader::addTriangle(helper::vector<Triangle >* pTriangles, unsigned int p0, unsigned int p1, unsigned int p2)
+void MeshLoader::addTriangle(helper::vector<Triangle >* pTriangles, size_type p0, size_type p1, size_type p2)
 {
     addTriangle(pTriangles, Triangle(p0, p1, p2));
 }
@@ -496,16 +496,16 @@ void MeshLoader::addQuad(helper::vector<Quad >* pQuads, const Quad &p)
         pQuads->push_back(p);
 }
 
-void MeshLoader::addQuad(helper::vector<Quad >* pQuads, unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3)
+void MeshLoader::addQuad(helper::vector<Quad >* pQuads, size_type p0, size_type p1, size_type p2, size_type p3)
 {
     addQuad(pQuads, Quad(p0, p1, p2, p3));
 }
 
-void MeshLoader::addPolygon(helper::vector< helper::vector <unsigned int> >* pPolygons, const helper::vector<unsigned int> &p)
+void MeshLoader::addPolygon(helper::vector< helper::vector <size_type> >* pPolygons, const helper::vector<size_type> &p)
 {
     if (flipNormals.getValue())
     {
-        helper::vector<unsigned int> revertP(p.size());
+        helper::vector<size_type> revertP(p.size());
         std::reverse_copy(p.begin(), p.end(), revertP.begin());
 
         pPolygons->push_back(revertP);
@@ -520,14 +520,14 @@ void MeshLoader::addTetrahedron(helper::vector< Tetrahedron >* pTetrahedra, cons
     pTetrahedra->push_back(p);
 }
 
-void MeshLoader::addTetrahedron(helper::vector< Tetrahedron >* pTetrahedra, unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3)
+void MeshLoader::addTetrahedron(helper::vector< Tetrahedron >* pTetrahedra, size_type p0, size_type p1, size_type p2, size_type p3)
 {
     addTetrahedron(pTetrahedra, Tetrahedron(p0, p1, p2, p3));
 }
 
 void MeshLoader::addHexahedron(helper::vector< Hexahedron >* pHexahedra,
-        unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3,
-        unsigned int p4, unsigned int p5, unsigned int p6, unsigned int p7)
+        size_type p0, size_type p1, size_type p2, size_type p3,
+        size_type p4, size_type p5, size_type p6, size_type p7)
 {
     addHexahedron(pHexahedra, Hexahedron(p0, p1, p2, p3, p4, p5, p6, p7));
 }

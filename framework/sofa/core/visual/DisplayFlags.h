@@ -99,6 +99,8 @@ inline tristate difference_tristate(const tristate& previous, const tristate& cu
 
 class SOFA_CORE_API FlagTreeItem
 {
+public:
+  typedef unsigned int size_type;
 protected:
     std::string m_showName;
     std::string m_hideName;

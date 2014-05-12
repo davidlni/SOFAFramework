@@ -46,18 +46,19 @@ class SOFA_DEFAULTTYPE_API BaseMatrix
 {
 public:
     typedef BaseVector::Index Index;
+    typedef BaseVector::size_type size_type;
 
     BaseMatrix();
     virtual ~BaseMatrix();
 
     /// Number of rows
-    virtual unsigned int rowSize(void) const = 0;
+    virtual size_type rowSize(void) const = 0;
     /// Number of columns
-    virtual unsigned int colSize(void) const = 0;
+    virtual size_type colSize(void) const = 0;
     /// Number of rows (Eigen-compatible API)
-    inline unsigned int rows(void) const { return rowSize(); }
+    inline size_type rows(void) const { return rowSize(); }
     /// Number of columns (Eigen-compatible API)
-    inline unsigned int cols(void) const { return colSize(); }
+    inline size_type cols(void) const { return colSize(); }
     /// Read the value of the element at row i, column j (using 0-based indices)
     virtual SReal element(Index i, Index j) const = 0;
     /// Read the value of the element at row i, column j (using 0-based indices). Eigen-compatible API.

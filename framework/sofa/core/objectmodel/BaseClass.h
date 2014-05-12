@@ -54,6 +54,8 @@ class Base;
  */
 class SOFA_CORE_API BaseClass
 {
+public:
+  typedef unsigned int size_type;
 protected:
     BaseClass();
     virtual ~BaseClass();
@@ -69,7 +71,7 @@ public:
     bool hasParent(const BaseClass* c) const
     {
         if (*this == *c) return true;
-        for (unsigned int i=0; i<parents.size(); ++i)
+        for (size_type i=0; i<parents.size(); ++i)
             if (parents[i]->hasParent(c)) return true;
         return false;
     }

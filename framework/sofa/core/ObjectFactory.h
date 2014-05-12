@@ -78,6 +78,9 @@ namespace core
 class SOFA_CORE_API ObjectFactory
 {
 public:
+  typedef objectmodel::BaseObject::size_type size_type;
+
+public:
     class Creator;
     class ClassEntry;
 

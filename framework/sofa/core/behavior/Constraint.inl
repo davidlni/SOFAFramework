@@ -99,7 +99,7 @@ void Constraint<DataTypes>::getConstraintValue(defaulttype::BaseVector * /*resV*
 
 
 template<class DataTypes>
-void Constraint<DataTypes>::buildConstraintMatrix(const ConstraintParams* cParams /* PARAMS FIRST */, MultiMatrixDerivId cId, unsigned int &cIndex)
+void Constraint<DataTypes>::buildConstraintMatrix(const ConstraintParams* cParams /* PARAMS FIRST */, MultiMatrixDerivId cId, size_type &cIndex)
 {
     if (cParams)
     {
@@ -110,10 +110,10 @@ void Constraint<DataTypes>::buildConstraintMatrix(const ConstraintParams* cParam
 
 #ifndef SOFA_DEPRECATE_OLD_API
 template<class DataTypes>
-void Constraint<DataTypes>::buildConstraintMatrix(const ConstraintParams* /*cParams*/ /* PARAMS FIRST */, DataMatrixDeriv &/*c*/, unsigned int &/*cIndex*/, const DataVecCoord &/*x*/)
+void Constraint<DataTypes>::buildConstraintMatrix(const ConstraintParams* /*cParams*/ /* PARAMS FIRST */, DataMatrixDeriv &/*c*/, size_type &/*cIndex*/, const DataVecCoord &/*x*/)
 {
     serr << "ERROR(" << getClassName()
-            << "): buildConstraintMatrix(const ConstraintParams* cParams /* PARAMS FIRST */, DataMatrixDeriv *c, unsigned int &cIndex, const DataVecCoord &x) not implemented." << sendl;
+            << "): buildConstraintMatrix(const ConstraintParams* cParams /* PARAMS FIRST */, DataMatrixDeriv *c, size_type &cIndex, const DataVecCoord &x) not implemented." << sendl;
 }
 #endif
 

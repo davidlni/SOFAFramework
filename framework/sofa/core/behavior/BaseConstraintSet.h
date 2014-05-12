@@ -50,7 +50,7 @@ public:
 protected:
     BaseConstraintSet()
         : group(initData(&group, 0, "group", "ID of the group containing this constraint. This ID is used to specify which constraints are solved by which solver, by specifying in each solver which groups of constraints it should handle."))
-        , m_constraintIndex(initData(&m_constraintIndex, (unsigned int)0, "constraintIndex", "Constraint index (first index in the right hand term resolution vector)"))
+        , m_constraintIndex(initData(&m_constraintIndex, (size_type)0, "constraintIndex", "Constraint index (first index in the right hand term resolution vector)"))
     {
     }
 
@@ -63,7 +63,7 @@ public:
     /// \param cId is the result constraint sparse matrix Id
     /// \param cIndex is the index of the next constraint equation: when building the constraint matrix, you have to use this index, and then update it
     /// \param cParams defines the state vectors to use for positions and velocities. Also defines the order of the constraint (POS, VEL, ACC)
-    virtual void buildConstraintMatrix(const ConstraintParams* cParams, MultiMatrixDerivId cId, unsigned int &cIndex) = 0;
+    virtual void buildConstraintMatrix(const ConstraintParams* cParams, MultiMatrixDerivId cId, size_type &cIndex) = 0;
 
     /// Construct the Constraint violations vector
     ///
@@ -81,7 +81,7 @@ protected:
 
     Data< int > group;
 public:
-    Data< unsigned int > m_constraintIndex; /// Constraint index (first index in the right hand term resolution vector)
+    Data< size_type > m_constraintIndex; /// Constraint index (first index in the right hand term resolution vector)
 };
 
 } // namespace behavior

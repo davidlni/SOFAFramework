@@ -195,7 +195,7 @@ public:
 
     /// Project the global Mechanical Matrix to constrained space using offset parameter
     /// @deprecated
-    virtual void applyConstraint(defaulttype::BaseMatrix* /*matrix*/, unsigned int /*offset*/)
+    virtual void applyConstraint(defaulttype::BaseMatrix* /*matrix*/, size_type /*offset*/)
     {
     }
 
@@ -209,7 +209,7 @@ public:
 
     /// Project the global Mechanical Vector to constrained space using offset parameter
     /// @deprecated
-    virtual void applyConstraint(defaulttype::BaseVector* /*vector*/, unsigned int /*offset*/)
+    virtual void applyConstraint(defaulttype::BaseVector* /*vector*/, size_type /*offset*/)
     {
     }
 
@@ -219,7 +219,7 @@ public:
         int o = matrix->getGlobalOffset(this->mstate.get(mparams));
         if (o >= 0)
         {
-            unsigned int offset = (unsigned int)o;
+            size_type offset = (size_type)o;
             applyConstraint(vector, offset);
         }
     }

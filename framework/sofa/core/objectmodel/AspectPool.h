@@ -58,6 +58,8 @@ SOFA_CORE_API void intrusive_ptr_release(Aspect* b);
 class SOFA_CORE_API Aspect
 {
 public:
+  typedef unsigned int size_type;
+public:
 
     // Only AspectPool is allowed to create and destroy aspects
     friend class AspectPool;
@@ -89,6 +91,8 @@ private:
  */
 class SOFA_CORE_API AspectPool
 {
+public:
+  typedef unsigned int size_type;
 public:
     AspectPool();
     ~AspectPool();

@@ -45,6 +45,9 @@ namespace behavior
 class SOFA_CORE_API MultiMatrixAccessor
 {
 public:
+  typedef unsigned int size_type;
+
+public:
     virtual ~MultiMatrixAccessor();
 
     /// Simple structure holding a reference to the submatrix related to one MechanicalState
@@ -52,7 +55,7 @@ public:
     {
     public:
         defaulttype::BaseMatrix* matrix;
-        unsigned int offset;
+        MultiMatrixAccessor::size_type offset;
         MatrixRef() : matrix(NULL), offset(0) {}
         defaulttype::BaseMatrix* operator->() const { return matrix; }
         bool operator!() const { return matrix == NULL; }
@@ -65,7 +68,7 @@ public:
     {
     public:
         defaulttype::BaseMatrix* matrix;
-        unsigned int offRow, offCol;
+        size_type offRow, offCol;
         InteractionMatrixRef() : matrix(NULL), offRow(0), offCol(0) {}
         defaulttype::BaseMatrix* operator->() const { return matrix; }
         bool operator!() const { return matrix == NULL; }

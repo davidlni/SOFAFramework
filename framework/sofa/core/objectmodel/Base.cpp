@@ -422,7 +422,7 @@ bool Base::parseField( const std::string& attribute, const std::string& value)
         return false; // no field found
     }
     bool ok = true;
-    for (unsigned int d=0; d<dataVec.size(); ++d)
+    for (size_type d=0; d<dataVec.size(); ++d)
     {
         // test if data is a link and can be linked
         if (value[0] == '@' && dataVec[d]->canBeLinked())
@@ -448,7 +448,7 @@ bool Base::parseField( const std::string& attribute, const std::string& value)
             ok = false;
         }
     }
-    for (unsigned int l=0; l<linkVec.size(); ++l)
+    for (size_type l=0; l<linkVec.size(); ++l)
     {
         if( !(linkVec[l]->read( value )) && !value.empty())
         {
@@ -456,8 +456,8 @@ bool Base::parseField( const std::string& attribute, const std::string& value)
             ok = false;
         }
         sout << "Link " << linkVec[l]->getName() << " = " << linkVec[l]->getValueString() << sendl;
-        unsigned int s = linkVec[l]->getSize();
-        for (unsigned int i=0; i<s; ++i)
+        size_type s = linkVec[l]->getSize();
+        for (size_type i=0; i<s; ++i)
         {
             sout  << "  " << linkVec[l]->getLinkedPath(i) << " = ";
             Base* b = linkVec[l]->getLinkedBase(i);
@@ -504,7 +504,7 @@ void  Base::parse ( BaseObjectDescription* arg )
 {
     std::vector< std::string > attributeList;
     arg->getAttributeList(attributeList);
-    for (unsigned int i=0; i<attributeList.size(); ++i)
+    for (size_type i=0; i<attributeList.size(); ++i)
     {
         std::string attrName = attributeList[i];
         // FIX: "type" is already used to define the type of object to instanciate, any Data with

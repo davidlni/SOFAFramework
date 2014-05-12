@@ -69,7 +69,7 @@ void DataFileNameVector::updatePath()
     }
     fullpath = m_values[currentAspect()].getValue();
     if (!fullpath.empty())
-        for (unsigned int i=0 ; i<fullpath.size() ; i++)
+        for (size_type i=0 ; i<fullpath.size() ; i++)
         {
             if (parentDataFileNameVector)
             {

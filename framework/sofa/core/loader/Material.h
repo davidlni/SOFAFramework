@@ -43,6 +43,8 @@ namespace loader
 class Material
 {
 public:
+  typedef unsigned int size_type;
+public:
     std::string 	name;		/* name of material */
     defaulttype::Vec4f  diffuse ;	/* diffuse component */
     defaulttype::Vec4f  ambient ;	/* ambient component */
@@ -106,7 +108,7 @@ public:
 
         std::string element;
         in  >>  m.name ;
-        for (unsigned int i=0; i<5; ++i)
+        for (size_type i=0; i<5; ++i)
         {
             in  >>  element;
             if      (element == std::string("Diffuse")   || element == std::string("diffuse")   ) { in  >>  m.useDiffuse   ; in >> m.diffuse;   }

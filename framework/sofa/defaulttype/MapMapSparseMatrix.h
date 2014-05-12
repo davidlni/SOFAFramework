@@ -46,6 +46,8 @@ template <class T>
 class MapMapSparseMatrix
 {
 public:
+  typedef unsigned int size_type;
+public:
     typedef T Data;
     typedef unsigned int KeyType;
     typedef typename std::map< KeyType, T > RowType;
@@ -92,9 +94,9 @@ public:
     {
         sc.clear();
 
-        unsigned int c_id;
-        unsigned int c_number;
-        unsigned int c_dofIndex;
+        size_type c_id;
+        size_type c_number;
+        size_type c_dofIndex;
         T c_value;
 
         while (!(in.rdstate() & std::istream::eofbit))
@@ -104,7 +106,7 @@ public:
 
             RowIterator c_it = sc.writeLine(c_id);
 
-            for (unsigned int i = 0; i < c_number; i++)
+            for (size_type i = 0; i < c_number; i++)
             {
                 in >> c_dofIndex;
                 in >> c_value;

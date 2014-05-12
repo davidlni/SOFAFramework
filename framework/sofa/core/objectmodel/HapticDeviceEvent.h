@@ -63,7 +63,7 @@ public:
     /**
      * @brief Constructor.
      */
-    HapticDeviceEvent(const unsigned int id, const sofa::defaulttype::Vector3& position, const sofa::defaulttype::Quat& orientation, const unsigned char button);
+    HapticDeviceEvent(const size_type id, const sofa::defaulttype::Vector3& position, const sofa::defaulttype::Quat& orientation, const unsigned char button);
 
     /**
      * @brief Destructor.
@@ -105,12 +105,12 @@ public:
     /**
      * @brief Get the device Id.
      */
-    unsigned int getDeviceId() const {return m_deviceId;}
+    size_type getDeviceId() const {return m_deviceId;}
 
     virtual const char* getClassName() const { return "HapticDeviceEvent"; }
 private:
 
-    unsigned int	m_deviceId;
+    size_type	m_deviceId;
     sofa::defaulttype::Vector3 m_position; ///< Haptic device coordinates in a Vector3 type.
     sofa::defaulttype::Quat m_orientation; ///< Haptic device orientation.
     unsigned char m_buttonState;

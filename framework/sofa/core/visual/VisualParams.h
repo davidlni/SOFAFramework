@@ -172,12 +172,12 @@ public:
     const sofa::helper::gl::Transformation& sceneTransform() const { return m_sceneTransform; }
 
 
-    bool isSupported(unsigned int api) const
+    bool isSupported(size_type api) const
     {
         return (m_supportedAPIs & (1<<api)) != 0;
     }
 
-    void setSupported(unsigned int api, bool val=true)
+    void setSupported(size_type api, bool val=true)
     {
         if (val)
             m_supportedAPIs |= (1<<api);
@@ -201,7 +201,7 @@ protected:
     /// Ids of velocity vector
     ConstMultiVecDerivId m_v;
     /// Mask of supported graphics API
-    unsigned int m_supportedAPIs;
+    size_type m_supportedAPIs;
 
     double m_modelViewMatrix[16];  ///< model view matrix.
     double m_projectionMatrix[16]; ///< projection matrix.

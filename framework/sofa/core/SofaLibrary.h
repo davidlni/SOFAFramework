@@ -45,6 +45,8 @@ namespace core
 class SOFA_CORE_API SofaLibrary
 {
 public:
+  typedef unsigned int size_type;
+public:
     typedef std::vector< CategoryLibrary* > VecCategory;
     typedef VecCategory::const_iterator VecCategoryIterator;
 
@@ -60,11 +62,11 @@ public:
 
     const CategoryLibrary  *getCategory(  const std::string &categoryName ) const;
     const ComponentLibrary *getComponent( const std::string &componentName) const;
-    unsigned int getNumComponents() const {return numComponents;}
+    size_type getNumComponents() const {return numComponents;}
 
 protected:
     virtual CategoryLibrary *createCategory(const std::string &category,
-                                            unsigned int /* numCategory */) {
+                                            size_type /* numCategory */) {
         return new CategoryLibrary(category);
     }
     virtual void addCategory(CategoryLibrary *);
@@ -72,7 +74,7 @@ protected:
 
     VecCategory categories;
     std::vector< std::string > exampleFiles;
-    unsigned int numComponents;
+    size_type numComponents;
 
 };
 

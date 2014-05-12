@@ -70,7 +70,7 @@ public:
     }
 
     /// @deprecated
-    virtual void addKToMatrix(sofa::defaulttype::BaseMatrix * /*matrix*/, double /*kFact*/, unsigned int &/*offset*/)
+    virtual void addKToMatrix(sofa::defaulttype::BaseMatrix * /*matrix*/, double /*kFact*/, size_type &/*offset*/)
     {
         serr << "ERROR("<<getClassName()<<"): addKToMatrix not implemented." << sendl;
     }

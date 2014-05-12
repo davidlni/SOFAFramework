@@ -118,7 +118,7 @@ public:
     *
     * \param ancestorElems are the ancestors topology info used in the points modifications
     */
-    virtual void initPointsAdded(const helper::vector< unsigned int > &indices, const helper::vector< PointAncestorElem > &ancestorElems
+    virtual void initPointsAdded(const helper::vector< size_type > &indices, const helper::vector< PointAncestorElem > &ancestorElems
         , const helper::vector< core::VecCoordId >& coordVecs, const helper::vector< core::VecDerivId >& derivVecs );
 };
 
@@ -171,7 +171,7 @@ public:
 
     /** \brief Generic method to remove a list of items.
     */
-    virtual void removeItems(sofa::helper::vector< unsigned int >& /*items*/);
+    virtual void removeItems(sofa::helper::vector< size_type >& /*items*/);
 
 protected:
     /** \brief Adds a TopologyChange object to the list of the topology this object describes.

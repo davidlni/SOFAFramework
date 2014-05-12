@@ -127,7 +127,7 @@ int BaseContext::getFinestLevel() const
 {
     return 0;
 }
-// unsigned int BaseContext::nbLevels() const
+// size_type BaseContext::nbLevels() const
 // {
 // 	return getCoarsestLevel() - getFinestLevel() + 1;
 // }

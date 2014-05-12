@@ -126,17 +126,17 @@ public:
     {
         //Not optimized at all...
         helper::vector<OutVecCoord*> vecOutPos;
-        for(unsigned int i=0; i<dataVecOutPos.size(); i++)
+        for(size_type i=0; i<dataVecOutPos.size(); i++)
             vecOutPos.push_back(dataVecOutPos[i]->beginEdit(mparams));
 
         helper::vector<const InVecCoord*> vecInPos;
-        for(unsigned int i=0; i<dataVecInPos.size(); i++)
+        for(size_type i=0; i<dataVecInPos.size(); i++)
             vecInPos.push_back(&dataVecInPos[i]->getValue(mparams));
 
         this->apply(vecOutPos, vecInPos);
 
         //Really Not optimized at all...
-        for(unsigned int i=0; i<dataVecOutPos.size(); i++)
+        for(size_type i=0; i<dataVecOutPos.size(); i++)
             dataVecOutPos[i]->endEdit(mparams);
 
     }
@@ -162,17 +162,17 @@ public:
     {
         //Not optimized at all...
         helper::vector<OutVecDeriv*> vecOutVel;
-        for(unsigned int i=0; i<dataVecOutVel.size(); i++)
+        for(size_type i=0; i<dataVecOutVel.size(); i++)
             vecOutVel.push_back(dataVecOutVel[i]->beginEdit(mparams));
 
         helper::vector<const InVecDeriv*> vecInVel;
-        for(unsigned int i=0; i<dataVecInVel.size(); i++)
+        for(size_type i=0; i<dataVecInVel.size(); i++)
             vecInVel.push_back(&dataVecInVel[i]->getValue(mparams));
 
         this->applyJ(vecOutVel, vecInVel);
 
         //Really Not optimized at all...
-        for(unsigned int i=0; i<dataVecOutVel.size(); i++)
+        for(size_type i=0; i<dataVecOutVel.size(); i++)
             dataVecOutVel[i]->endEdit(mparams);
 
     }
@@ -198,17 +198,17 @@ public:
     {
         //Not optimized at all...
         helper::vector<InVecDeriv*> vecOutForce;
-        for(unsigned int i=0; i<dataVecOutForce.size(); i++)
+        for(size_type i=0; i<dataVecOutForce.size(); i++)
             vecOutForce.push_back(dataVecOutForce[i]->beginEdit(mparams));
 
         helper::vector<const OutVecDeriv*> vecInForce;
-        for(unsigned int i=0; i<dataVecInForce.size(); i++)
+        for(size_type i=0; i<dataVecInForce.size(); i++)
             vecInForce.push_back(&dataVecInForce[i]->getValue(mparams));
 
         this->applyJT(vecOutForce, vecInForce);
 
         //Really Not optimized at all...
-        for(unsigned int i=0; i<dataVecOutForce.size(); i++)
+        for(size_type i=0; i<dataVecOutForce.size(); i++)
             dataVecOutForce[i]->endEdit(mparams);
 
     }
@@ -237,17 +237,17 @@ public:
     {
         //Not optimized at all...
         helper::vector<InMatrixDeriv*> matOutConst;
-        for(unsigned int i=0; i<dataMatOutConst.size(); i++)
+        for(size_type i=0; i<dataMatOutConst.size(); i++)
             matOutConst.push_back(dataMatOutConst[i]->beginEdit(cparams));
 
         helper::vector<const OutMatrixDeriv*> matInConst;
-        for(unsigned int i=0; i<dataMatInConst.size(); i++)
+        for(size_type i=0; i<dataMatInConst.size(); i++)
             matInConst.push_back(&dataMatInConst[i]->getValue(cparams));
 
         this->applyJT(matOutConst, matInConst);
 
         //Really Not optimized at all...
-        for(unsigned int i=0; i<dataMatOutConst.size(); i++)
+        for(size_type i=0; i<dataMatOutConst.size(); i++)
             dataMatOutConst[i]->endEdit(cparams);
     }
     /// Compat Method
@@ -282,20 +282,20 @@ public:
     {
         //Not optimized at all...
         helper::vector<OutVecDeriv*> vecOutAcc;
-        for(unsigned int i=0; i<dataVecOutAcc.size(); i++)
+        for(size_type i=0; i<dataVecOutAcc.size(); i++)
             vecOutAcc.push_back(dataVecOutAcc[i]->beginEdit(mparams));
 
         helper::vector<const InVecDeriv*> vecInVel;
-        for(unsigned int i=0; i<dataVecInVel.size(); i++)
+        for(size_type i=0; i<dataVecInVel.size(); i++)
             vecInVel.push_back(&dataVecInVel[i]->getValue(mparams));
         helper::vector<const InVecDeriv*> vecInAcc;
-        for(unsigned int i=0; i<dataVecInAcc.size(); i++)
+        for(size_type i=0; i<dataVecInAcc.size(); i++)
             vecInAcc.push_back(&dataVecInAcc[i]->getValue(mparams));
 
         this->computeAccFromMapping(vecOutAcc, vecInVel, vecInAcc);
 
         //Really Not optimized at all...
-        for(unsigned int i=0; i<dataVecOutAcc.size(); i++)
+        for(size_type i=0; i<dataVecOutAcc.size(); i++)
             dataVecOutAcc[i]->endEdit(mparams);
     }
     /// Compat Method
@@ -379,30 +379,30 @@ public:
 protected:
 
     void getVecInCoord     (const MultiVecCoordId id,         helper::vector<      InDataVecCoord* > &v) const
-    {   for (unsigned int i=0; i<fromModels.size(); ++i) v.push_back(id[fromModels.get(i)].write()); }
+    {   for (size_type i=0; i<fromModels.size(); ++i) v.push_back(id[fromModels.get(i)].write()); }
     void getConstVecInCoord(const ConstMultiVecCoordId id,    helper::vector<const InDataVecCoord* > &v) const
-    {   for (unsigned int i=0; i<fromModels.size(); ++i) v.push_back(id[fromModels.get(i)].read());  }
+    {   for (size_type i=0; i<fromModels.size(); ++i) v.push_back(id[fromModels.get(i)].read());  }
     void getVecInDeriv      (const MultiVecDerivId id,         helper::vector<      InDataVecDeriv* > &v) const
-    {   for (unsigned int i=0; i<fromModels.size(); ++i) v.push_back(id[fromModels.get(i)].write()); }
+    {   for (size_type i=0; i<fromModels.size(); ++i) v.push_back(id[fromModels.get(i)].write()); }
     void getConstVecInDeriv (const ConstMultiVecDerivId id,    helper::vector<const InDataVecDeriv* > &v) const
-    {   for (unsigned int i=0; i<fromModels.size(); ++i) v.push_back(id[fromModels.get(i)].read());  }
+    {   for (size_type i=0; i<fromModels.size(); ++i) v.push_back(id[fromModels.get(i)].read());  }
     void getMatInDeriv      (const MultiMatrixDerivId id,      helper::vector<      InDataMatrixDeriv* > &v) const
-    {   for (unsigned int i=0; i<fromModels.size(); ++i) v.push_back(id[fromModels.get(i)].write()); }
+    {   for (size_type i=0; i<fromModels.size(); ++i) v.push_back(id[fromModels.get(i)].write()); }
     void getConstMatInDeriv (const ConstMultiMatrixDerivId id, helper::vector<const InDataMatrixDeriv* > &v) const
-    {   for (unsigned int i=0; i<fromModels.size(); ++i) v.push_back(id[fromModels.get(i)].read());  }
+    {   for (size_type i=0; i<fromModels.size(); ++i) v.push_back(id[fromModels.get(i)].read());  }
 
     void getVecOutCoord     (const MultiVecCoordId id,         helper::vector<      OutDataVecCoord* > &v) const
-    {   for (unsigned int i=0; i<toModels.size(); ++i)  v.push_back(id[toModels.get(i)].write());    }
+    {   for (size_type i=0; i<toModels.size(); ++i)  v.push_back(id[toModels.get(i)].write());    }
     void getConstVecOutCoord(const ConstMultiVecCoordId id,    helper::vector<const OutDataVecCoord* > &v) const
-    {   for (unsigned int i=0; i<toModels.size(); ++i)  v.push_back(id[toModels.get(i)].read());     }
+    {   for (size_type i=0; i<toModels.size(); ++i)  v.push_back(id[toModels.get(i)].read());     }
     void getVecOutDeriv     (const MultiVecDerivId id,         helper::vector<      OutDataVecDeriv* > &v) const
-    {   for (unsigned int i=0; i<toModels.size(); ++i)  v.push_back(id[toModels.get(i)].write());    }
+    {   for (size_type i=0; i<toModels.size(); ++i)  v.push_back(id[toModels.get(i)].write());    }
     void getConstVecOutDeriv(const ConstMultiVecDerivId id,    helper::vector<const OutDataVecDeriv* > &v) const
-    {   for (unsigned int i=0; i<toModels.size(); ++i)  v.push_back(id[toModels.get(i)].read());     }
+    {   for (size_type i=0; i<toModels.size(); ++i)  v.push_back(id[toModels.get(i)].read());     }
     void getMatOutDeriv     (const MultiMatrixDerivId id,      helper::vector<      OutDataMatrixDeriv* > &v) const
-    {   for (unsigned int i=0; i<toModels.size(); ++i)  v.push_back(id[toModels.get(i)].write()); }
+    {   for (size_type i=0; i<toModels.size(); ++i)  v.push_back(id[toModels.get(i)].write()); }
     void getConstMatOutDeriv(const ConstMultiMatrixDerivId id, helper::vector<const OutDataMatrixDeriv* > &v) const
-    {   for (unsigned int i=0; i<toModels.size(); ++i)  v.push_back(id[toModels.get(i)].read());  }
+    {   for (size_type i=0; i<toModels.size(); ++i)  v.push_back(id[toModels.get(i)].read());  }
 
 };
 

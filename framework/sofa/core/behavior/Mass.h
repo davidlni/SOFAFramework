@@ -158,12 +158,12 @@ public:
 
     /// @deprecated
     virtual void addKToMatrix(const MechanicalParams* mparams /* PARAMS FIRST */, const sofa::core::behavior::MultiMatrixAccessor* matrix);
-    //virtual void addKToMatrix(sofa::defaulttype::BaseMatrix * matrix, double kFact, unsigned int &offset);
+    //virtual void addKToMatrix(sofa::defaulttype::BaseMatrix * matrix, double kFact, size_type &offset);
 
     virtual void addBToMatrix(const MechanicalParams* mparams /* PARAMS FIRST */, const sofa::core::behavior::MultiMatrixAccessor* matrix);
 
     /// @deprecated
-    virtual void addMToMatrix(sofa::defaulttype::BaseMatrix * matrix, double mFact, unsigned int &offset);
+    virtual void addMToMatrix(sofa::defaulttype::BaseMatrix * matrix, double mFact, size_type &offset);
     virtual void addMToMatrix(const MechanicalParams* mparams /* PARAMS FIRST */, const sofa::core::behavior::MultiMatrixAccessor* matrix);
 
     /// Compute the system matrix corresponding to m M + b B + k K
@@ -174,7 +174,7 @@ public:
     /// \param kFact coefficient for stiffness contributions (i.e. DOFs term in the ODE)
     virtual void addMBKToMatrix(const MechanicalParams* mparams /* PARAMS FIRST */, const sofa::core::behavior::MultiMatrixAccessor* matrix);
     //virtual void addMBKToMatrix(const sofa::core::behavior::MultiMatrixAccessor* matrix, double mFact, double bFact, double kFact);
-    //virtual void addMBKToMatrix(sofa::defaulttype::BaseMatrix * matrix, double mFact, double bFact, double kFact, unsigned int &offset);
+    //virtual void addMBKToMatrix(sofa::defaulttype::BaseMatrix * matrix, double mFact, double bFact, double kFact, size_type &offset);
 
     /// addMBKToMatrix only on the subMatrixIndex
     virtual void addSubMBKToMatrix(const MechanicalParams* mparams /* PARAMS FIRST */, const sofa::core::behavior::MultiMatrixAccessor* matrix, const helper::vector<unsigned> subMatrixIndex);
@@ -194,8 +194,8 @@ public:
 
     //virtual void addGravityToV(double dt)=0;
 
-    virtual double getElementMass(unsigned int) const;
-    virtual void   getElementMass(unsigned int index, defaulttype::BaseMatrix *m) const;
+    virtual double getElementMass(size_type) const;
+    virtual void   getElementMass(size_type index, defaulttype::BaseMatrix *m) const;
 
 protected:
     /// stream to export Kinematic, Potential and Mechanical Energy to gnuplot files

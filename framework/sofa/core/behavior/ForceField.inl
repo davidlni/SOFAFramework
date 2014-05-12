@@ -227,7 +227,7 @@ void ForceField<DataTypes>::addKToMatrix(const MechanicalParams* mparams /* PARA
 }
 
 template<class DataTypes>
-void ForceField<DataTypes>::addKToMatrix(sofa::defaulttype::BaseMatrix * /*mat*/, double /*kFact*/, unsigned int &/*offset*/)
+void ForceField<DataTypes>::addKToMatrix(sofa::defaulttype::BaseMatrix * /*mat*/, double /*kFact*/, size_type &/*offset*/)
 {
     serr << "ERROR("<<getClassName()<<"): addKToMatrix not implemented." << sendl;
 }
@@ -241,7 +241,7 @@ void ForceField<DataTypes>::addSubKToMatrix(const MechanicalParams* mparams /* P
 }
 
 template<class DataTypes>
-void ForceField<DataTypes>::addSubKToMatrix(sofa::defaulttype::BaseMatrix * mat, const helper::vector<unsigned> & /*subMatrixIndex*/, double kFact, unsigned int & offset)
+void ForceField<DataTypes>::addSubKToMatrix(sofa::defaulttype::BaseMatrix * mat, const helper::vector<unsigned> & /*subMatrixIndex*/, double kFact, size_type & offset)
 {
     addKToMatrix(mat,kFact,offset);
 }
@@ -257,7 +257,7 @@ void ForceField<DataTypes>::addBToMatrix(const MechanicalParams* mparams /* PARA
         addBToMatrix(r.matrix, mparams->bFactor() , r.offset);
 }
 template<class DataTypes>
-void ForceField<DataTypes>::addBToMatrix(sofa::defaulttype::BaseMatrix * /*mat*/, double /*bFact*/, unsigned int &/*offset*/)
+void ForceField<DataTypes>::addBToMatrix(sofa::defaulttype::BaseMatrix * /*mat*/, double /*bFact*/, size_type &/*offset*/)
 {
 //    serr << "ERROR("<<getClassName()<<"): addBToMatrix not implemented." << sendl;
 }
@@ -270,7 +270,7 @@ void ForceField<DataTypes>::addSubBToMatrix(const MechanicalParams* mparams /* P
 }
 
 template<class DataTypes>
-void ForceField<DataTypes>::addSubBToMatrix(sofa::defaulttype::BaseMatrix * mat, const helper::vector<unsigned> & /*subMatrixIndex*/, double bFact, unsigned int & offset)
+void ForceField<DataTypes>::addSubBToMatrix(sofa::defaulttype::BaseMatrix * mat, const helper::vector<unsigned> & /*subMatrixIndex*/, double bFact, size_type & offset)
 {
     addBToMatrix(mat,bFact,offset);
 }

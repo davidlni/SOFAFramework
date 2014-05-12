@@ -248,7 +248,7 @@ SOFA_CORE_API std::istream& operator >> (std::istream& in, ElemAncestorElem<NV>&
     if (nsrc > 0)
     {
         d.srcElems.resize(nsrc);
-        for (unsigned int i = 0; i < nsrc; ++i)
+        for (size_type i = 0; i < nsrc; ++i)
             in >> d.srcElems[i];
     }
     */

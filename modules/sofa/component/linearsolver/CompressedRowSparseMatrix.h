@@ -43,7 +43,7 @@ namespace linearsolver
 //#define SPARSEMATRIX_CHECK
 //#define SPARSEMATRIX_VERBOSE
 
-template<typename TBloc, typename TVecBloc = helper::vector<TBloc>, typename TVecIndex = helper::vector<int> >
+template<typename TBloc, typename TVecBloc = helper::vector<TBloc>, typename TVecIndex = helper::vector<defaulttype::BaseMatrix::Index> >
 class CompressedRowSparseMatrix : public defaulttype::BaseMatrix
 {
 public:
@@ -177,13 +177,13 @@ public:
     }
 
     /// \returns the number of row blocs
-    unsigned int rowBSize() const
+    size_type rowBSize() const
     {
         return nBlocRow;
     }
 
     /// \returns the number of col blocs
-    unsigned int colBSize() const
+    size_type colBSize() const
     {
         return nBlocCol;
     }
@@ -671,13 +671,13 @@ public:
     }
 
     ///< Mathematical size of the matrix
-    unsigned int rowSize() const
+    size_type rowSize() const
     {
         return nRow;
     }
 
     ///< Mathematical size of the matrix
-    unsigned int colSize() const
+    size_type colSize() const
     {
         return nCol;
     }
@@ -1449,7 +1449,7 @@ public:
 
         for( Index xi = 0; xi < rowIndex.size(); ++xi )  // for each non-null block row
         {
-            unsigned mr = 0; // block row index in m
+            Index mr = 0; // block row index in m
 
             Index row = rowIndex[xi];      // block row
 
@@ -1503,7 +1503,7 @@ public:
 
         for( Index xi = 0 ; xi < rowIndex.size() ; ++xi )  // for each non-null transpose block column
         {
-            unsigned mr = 0; // block row index in m
+            Index mr = 0; // block row index in m
 
             Index col = rowIndex[xi];      // block col (transposed col = row)
 

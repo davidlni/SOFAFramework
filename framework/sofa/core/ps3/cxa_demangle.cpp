@@ -5164,13 +5164,13 @@ public:
 class __unsigned_int
     : public __node
 {
-    static const size_t n = sizeof("unsigned int") - 1;
+    static const size_t n = sizeof("size_type") - 1;
 public:
 
     virtual size_t first_size() const {return n;}
     virtual char* first_demangled_name(char* buf) const
     {
-        strncpy(buf, "unsigned int", n);
+        strncpy(buf, "size_type", n);
         return buf + n;
     }
 };
@@ -6485,7 +6485,7 @@ __demangle_tree::__parse_cv_qualifiers(const char* first, const char* last,
 //                ::= s    # short
 //                ::= t    # unsigned short
 //                ::= i    # int
-//                ::= j    # unsigned int
+//                ::= j    # size_type
 //                ::= l    # long
 //                ::= m    # unsigned long
 //                ::= x    # long long, __int64

@@ -55,6 +55,8 @@ class BaseObjectDescription;
 class SOFA_CORE_API BaseLink
 {
 public:
+  typedef unsigned int size_type;
+public:
     enum LinkFlagsEnum
     {
         FLAG_NONE       = 0,
@@ -127,10 +129,10 @@ public:
     /// This can be used to efficiently detect changes
     int getCounter(const core::ExecParams* params) const { return m_counters[core::ExecParams::currentAspect(params)]; }
 
-    virtual unsigned int getSize() const = 0;
-    virtual Base* getLinkedBase(unsigned int index=0) const = 0;
-    virtual BaseData* getLinkedData(unsigned int index=0) const = 0;
-    virtual std::string getLinkedPath(unsigned int index=0) const = 0;
+    virtual size_type getSize() const = 0;
+    virtual Base* getLinkedBase(size_type index=0) const = 0;
+    virtual BaseData* getLinkedData(size_type index=0) const = 0;
+    virtual std::string getLinkedPath(size_type index=0) const = 0;
 
     /// @name Serialization API
     /// @{
@@ -182,12 +184,12 @@ public:
     /// @}
 
 protected:
-    unsigned int m_flags;
+    size_type m_flags;
     std::string m_name;
     const char* m_help;
     /// Number of changes since creation
     helper::fixed_array<int, SOFA_DATA_MAX_ASPECTS> m_counters;
-    void updateCounter(unsigned int aspect)
+    void updateCounter(size_type aspect)
     {
         ++m_counters[aspect];
     }

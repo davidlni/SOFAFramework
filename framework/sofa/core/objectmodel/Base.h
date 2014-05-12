@@ -65,6 +65,7 @@ class SOFA_CORE_API Base
 public:
     typedef Base* Ptr;
     typedef boost::intrusive_ptr<Base> SPtr;
+    typedef unsigned int size_type;
 
     typedef TClass< Base, void > MyClass;
     static const MyClass* GetClass() { return MyClass::get(); }

@@ -262,7 +262,7 @@ void Mass<DataTypes>::addMToMatrix(const MechanicalParams* mparams /* PARAMS FIR
 }
 
 template<class DataTypes>
-void Mass<DataTypes>::addMToMatrix(sofa::defaulttype::BaseMatrix * /*mat*/, double /*mFact*/, unsigned int &/*offset*/)
+void Mass<DataTypes>::addMToMatrix(sofa::defaulttype::BaseMatrix * /*mat*/, double /*mFact*/, size_type &/*offset*/)
 {
     serr << "ERROR("<<getClassName()<<"): addMToMatrix not implemented." << sendl;
 }
@@ -316,16 +316,16 @@ void Mass<DataTypes>::exportGnuplot(const MechanicalParams* mparams /* PARAMS FI
 
 /// return the mass relative to the DOF #index
 template <class DataTypes>
-double Mass<DataTypes>::getElementMass(unsigned int ) const
+double Mass<DataTypes>::getElementMass(size_type ) const
 {
     serr << "ERROR("<<getClassName()<<"): getElementMass with Scalar not implemented" << sendl;
     return 0.0;
 }
 
 template <class DataTypes>
-void Mass<DataTypes>::getElementMass(unsigned int , defaulttype::BaseMatrix *m) const
+void Mass<DataTypes>::getElementMass(size_type , defaulttype::BaseMatrix *m) const
 {
-    static unsigned int dimension = (unsigned int) defaulttype::DataTypeInfo<Coord>::size();
+    static size_type dimension = (size_type) defaulttype::DataTypeInfo<Coord>::size();
     if (m->rowSize() != dimension || m->colSize() != dimension) m->resize(dimension,dimension);
 
     m->clear();

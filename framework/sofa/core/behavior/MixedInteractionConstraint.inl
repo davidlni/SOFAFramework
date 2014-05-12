@@ -75,7 +75,7 @@ void MixedInteractionConstraint<DataTypes1, DataTypes2>::getConstraintViolation(
 }
 
 template<class DataTypes1, class DataTypes2>
-void MixedInteractionConstraint<DataTypes1, DataTypes2>::buildConstraintMatrix(const ConstraintParams* cParams /* PARAMS FIRST */, MultiMatrixDerivId cId, unsigned int &cIndex)
+void MixedInteractionConstraint<DataTypes1, DataTypes2>::buildConstraintMatrix(const ConstraintParams* cParams /* PARAMS FIRST */, MultiMatrixDerivId cId, size_type &cIndex)
 {
     if (cParams)
     {

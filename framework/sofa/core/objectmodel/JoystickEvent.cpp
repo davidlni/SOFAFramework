@@ -137,10 +137,10 @@ JoystickEvent::~JoystickEvent()
 {
     if (buttonEvent) delete buttonEvent;
 
-    for (unsigned int i=0; i < axisEvents.size(); i++)
+    for (size_type i=0; i < axisEvents.size(); i++)
         delete axisEvents[i];
 
-    for (unsigned int i=0; i < hatEvents.size(); i++)
+    for (size_type i=0; i < hatEvents.size(); i++)
         delete hatEvents[i];
 }
 
@@ -148,7 +148,7 @@ const JoystickEvent::AxisEvent *JoystickEvent::getAxisEvent(const int index) con
 {
     assert( (index < (int)axisEvents.size()) && "AxisEvents index out of range" );
 
-    for (unsigned int i = 0; i < axisEvents.size(); i++)
+    for (size_type i = 0; i < axisEvents.size(); i++)
     {
         if (axisEvents[i]->getIndex() == index)
             return axisEvents[i];
@@ -166,9 +166,9 @@ const std::vector<JoystickEvent::AxisEvent*> &JoystickEvent::getAxisEvents(void)
 
 
 
-unsigned int JoystickEvent::getAxisEventsSize(void) const
+JoystickEvent::size_type JoystickEvent::getAxisEventsSize(void) const
 {
-    return (unsigned int) axisEvents.size();
+    return (size_type) axisEvents.size();
 }
 
 
@@ -187,7 +187,7 @@ JoystickEvent::ButtonEvent *JoystickEvent::getButtonEvent(void) const
 
 
 
-bool JoystickEvent::getButton(unsigned int buttonIndex) const
+bool JoystickEvent::getButton(size_type buttonIndex) const
 {
     if (getButtonEvent())
         return getButtonEvent()->getButton(buttonIndex);
@@ -208,7 +208,7 @@ const JoystickEvent::HatEvent *JoystickEvent::getHatEvent(const int index) const
 {
     assert( (index < (int)hatEvents.size()) && "HatEvents index out of range" );
 
-    for (unsigned int i = 0; i < hatEvents.size(); i++)
+    for (size_type i = 0; i < hatEvents.size(); i++)
     {
         if (hatEvents[i]->getIndex() == index)
             return hatEvents[i];
@@ -226,9 +226,9 @@ const std::vector<JoystickEvent::HatEvent *> &JoystickEvent::getHatEvents(void) 
 
 
 
-unsigned int JoystickEvent::getHatEventsSize(void) const
+JoystickEvent::size_type JoystickEvent::getHatEventsSize(void) const
 {
-    return (unsigned int) hatEvents.size();
+    return (size_type) hatEvents.size();
 }
 
 

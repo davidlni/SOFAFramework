@@ -89,12 +89,12 @@ public:
         data.resize(nbRow);
     }
 
-    unsigned int rowSize(void) const
+    size_type rowSize(void) const
     {
         return data.size();
     }
 
-    unsigned int colSize(void) const
+    size_type colSize(void) const
     {
         return data.size();
     }
@@ -147,7 +147,7 @@ public:
         data.resize(nbRow);
     }
 
-    unsigned int size() const
+    size_type size() const
     {
         return data.size();
     }
@@ -365,22 +365,22 @@ public:
         //for (Index i=0;i<data.size();i++) data[i].ReSize(LC,LC);
     }
 
-    unsigned rowSize(void) const
+    size_type rowSize(void) const
     {
         return cSize;
     }
 
-    unsigned colSize(void) const
+    size_type colSize(void) const
     {
         return cSize;
     }
 
-    unsigned rowBSize(void) const
+    size_type rowBSize(void) const
     {
         return data.size();
     }
 
-    unsigned colBSize(void) const
+    size_type colBSize(void) const
     {
         return data.size();
     }

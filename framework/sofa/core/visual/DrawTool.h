@@ -49,8 +49,8 @@ namespace visual
 
 class SOFA_CORE_API DrawTool
 {
-
 public:
+    typedef unsigned int size_type;
     typedef sofa::defaulttype::Vec4f   Vec4f;
     typedef sofa::defaulttype::Vec3f   Vec3f;
     typedef sofa::defaulttype::Vector3 Vector3;

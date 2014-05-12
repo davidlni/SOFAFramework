@@ -192,7 +192,7 @@ objectmodel::BaseObject::SPtr ObjectFactory::createObject(objectmodel::BaseConte
         {
 //                 std::cerr<<"WARNING: ObjectFactory: Several possibilities found for type "<<classname<<"<"<<templatename<<">:\n"; //<<std::endl;
             std::string w= "Template Unknown: <"+templatename+std::string("> : default used: <")+object->getTemplateName()+std::string("> in the list: ");
-            for(unsigned int i=0; i<creators.size(); ++i)
+            for(size_type i=0; i<creators.size(); ++i)
             {
                 w += std::string("\n\t* ") + creators[i].first; //creatorsobjectmodel::Base::decodeTemplateName(creators[i]->type());
             }
@@ -243,7 +243,7 @@ std::string ObjectFactory::listClassesFromTarget(std::string target, std::string
     std::vector<ClassEntry*> entries;
     getEntriesFromTarget(entries, target);
     std::ostringstream oss;
-    for (unsigned int i=0; i<entries.size(); ++i)
+    for (size_type i=0; i<entries.size(); ++i)
     {
         if (i) oss << separator;
         oss << entries[i]->className;
@@ -289,7 +289,7 @@ void ObjectFactory::dump(std::ostream& out)
 static std::string xmlencode(const std::string& str)
 {
     std::string res;
-    for (unsigned int i=0; i<str.length(); ++i)
+    for (ObjectFactory::size_type i=0; i<str.length(); ++i)
     {
         switch(str[i])
         {

@@ -82,7 +82,7 @@ void PairInteractionConstraint<DataTypes>::getConstraintViolation(const Constrai
 
 
 template<class DataTypes>
-void PairInteractionConstraint<DataTypes>::buildConstraintMatrix(const ConstraintParams* cParams /* PARAMS FIRST */, MultiMatrixDerivId cId, unsigned int &cIndex)
+void PairInteractionConstraint<DataTypes>::buildConstraintMatrix(const ConstraintParams* cParams /* PARAMS FIRST */, MultiMatrixDerivId cId, size_type &cIndex)
 {
     if (cParams)
     {

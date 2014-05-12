@@ -192,13 +192,13 @@ public:
         return ret;
     }
 
-    virtual const std::string& getRelativePath(unsigned int i) { return getValue()[i]; }
-    virtual const std::string& getFullPath(unsigned int i) const
+    virtual const std::string& getRelativePath(size_type i) { return getValue()[i]; }
+    virtual const std::string& getFullPath(size_type i) const
     {
         this->updateIfDirty();
         return fullpath[i];
     }
-    virtual const std::string& getAbsolutePath(unsigned int i) const
+    virtual const std::string& getAbsolutePath(size_type i) const
     {
         this->updateIfDirty();
         return fullpath[i];

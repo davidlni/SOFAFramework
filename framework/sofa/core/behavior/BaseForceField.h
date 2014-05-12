@@ -139,7 +139,7 @@ public:
     /// \param matrix matrix to add the result to
     /// \param mparams->kFactor() coefficient for stiffness contributions (i.e. DOFs term in the ODE)
     virtual void addKToMatrix(const MechanicalParams* mparams /* PARAMS FIRST */, const sofa::core::behavior::MultiMatrixAccessor* matrix ) = 0;
-    //virtual void addKToMatrix(sofa::defaulttype::BaseMatrix * matrix, double kFact, unsigned int &offset);
+    //virtual void addKToMatrix(sofa::defaulttype::BaseMatrix * matrix, double kFact, size_type &offset);
 
     virtual void addSubKToMatrix(const MechanicalParams* mparams /* PARAMS FIRST */, const sofa::core::behavior::MultiMatrixAccessor* matrix, const helper::vector<unsigned> & subMatrixIndex);
 
@@ -148,7 +148,7 @@ public:
     /// \param matrix matrix to add the result to
     /// \param mparams->bFactor() coefficient for damping contributions (i.e. first derivatives term in the ODE)
     virtual void addBToMatrix(const MechanicalParams* mparams /* PARAMS FIRST */, const sofa::core::behavior::MultiMatrixAccessor* matrix );
-    //virtual void addBToMatrix(sofa::defaulttype::BaseMatrix * matrix, double bFact, unsigned int &offset);
+    //virtual void addBToMatrix(sofa::defaulttype::BaseMatrix * matrix, double bFact, size_type &offset);
 
     virtual void addSubBToMatrix(const MechanicalParams* mparams /* PARAMS FIRST */, const sofa::core::behavior::MultiMatrixAccessor* matrix, const helper::vector<unsigned> & vecIds);
 
@@ -159,7 +159,7 @@ public:
     /// \param mparams->bFactor() coefficient for damping contributions (i.e. first derivatives term in the ODE)
     /// \param mparams->kFactor() coefficient for stiffness contributions (i.e. DOFs term in the ODE)
     virtual void addMBKToMatrix(const MechanicalParams* mparams /* PARAMS FIRST */, const sofa::core::behavior::MultiMatrixAccessor* matrix );
-    ////virtual void addMBKToMatrix(sofa::defaulttype::BaseMatrix * matrix, double mFact, double bFact, double kFact, unsigned int &offset);
+    ////virtual void addMBKToMatrix(sofa::defaulttype::BaseMatrix * matrix, double mFact, double bFact, double kFact, size_type &offset);
 
     /// addMBKToMatrix only on the subMatrixIndex
     virtual void addSubMBKToMatrix(const MechanicalParams* mparams /* PARAMS FIRST */, const sofa::core::behavior::MultiMatrixAccessor* matrix, const helper::vector<unsigned> subMatrixIndex);

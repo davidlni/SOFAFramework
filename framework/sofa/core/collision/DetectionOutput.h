@@ -60,7 +60,7 @@ public:
     /// Clear the content of this vector
     virtual void clear() = 0;
     /// Current size (number of detected contacts
-    virtual unsigned int size() const = 0;
+    virtual std::size_t size() const = 0;
     /// Test if the vector is empty
     bool empty() const { return size()==0; }
     /// Delete this vector from memory once the contact pair is no longer active
@@ -89,9 +89,11 @@ public:
 class DetectionOutput
 {
 public:
+  typedef unsigned int size_type;
+public:
     /// Pair of colliding elements.
     std::pair<core::CollisionElementIterator, core::CollisionElementIterator> elem;
-    typedef int64_t ContactId;
+    typedef size_type ContactId;
     /// Unique id of the contact for the given pair of collision models.
     ContactId id;
     /// Contact points on the surface of each model. They are expressed in the local coordinate system of the model if any is defined..
@@ -138,9 +140,9 @@ public:
         return this->Vector::clear();
     }
     /// Current size (number of detected contacts)
-    virtual unsigned int size() const
+    virtual std::size_t size() const
     {
-        return (unsigned int)this->Vector::size();
+        return this->Vector::size();
     }
 };
 

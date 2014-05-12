@@ -50,6 +50,8 @@ namespace behavior
 class ConstraintResolution
 {
 public:
+    typedef unsigned int size_type;
+public:
     ConstraintResolution()
         : nbLines(1), tolerance(0.0) {}
 
@@ -75,7 +77,7 @@ public:
     virtual void store(int /*line*/, double* /*force*/, bool /*convergence*/) {}
 
     /// Number of dof used by this particular constraint. To be modified in the object's constructor.
-    unsigned int nbLines;
+    size_type nbLines;
 
     /// Custom tolerance, used for the convergence of this particular constraint instead of the global tolerance
     double tolerance;
@@ -149,12 +151,12 @@ public:
 
     /// Add the corresponding ConstraintResolution using the offset parameter
 	/// @deprecated
-    virtual void getConstraintResolution(std::vector<ConstraintResolution*>& /*resTab*/, unsigned int& /*offset*/) {};
+    virtual void getConstraintResolution(std::vector<ConstraintResolution*>& /*resTab*/, size_type& /*offset*/) {};
 
 	/// Add the corresponding ConstraintResolution using the offset parameter
 	/// \param cParams defines the state vectors to use for positions and velocities. Also defines the order of the constraint (POS, VEL, ACC) and resolution parameters (smoothness, ...)
 	/// \param resTab is the result vector that contains the contraint resolution algorithms
-    virtual void getConstraintResolution(const ConstraintParams* /*cParams*/, std::vector<ConstraintResolution*> &resTab, unsigned int &offset)
+    virtual void getConstraintResolution(const ConstraintParams* /*cParams*/, std::vector<ConstraintResolution*> &resTab, size_type &offset)
 	{
 		getConstraintResolution(resTab, offset);
 	};

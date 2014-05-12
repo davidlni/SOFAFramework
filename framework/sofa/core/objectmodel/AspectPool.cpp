@@ -99,7 +99,7 @@ AspectPool::AspectPool()
  */
 AspectPool::~AspectPool()
 {
-    for(unsigned int i = 0; i < aspects.size(); ++i)
+    for(size_type i = 0; i < aspects.size(); ++i)
     {
         delete aspects[i];
     }

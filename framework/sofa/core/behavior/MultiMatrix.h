@@ -40,6 +40,8 @@ namespace behavior
 ///
 class SOFA_CORE_API MechanicalMatrix
 {
+public:
+  typedef unsigned int size_type;
 protected:
     enum { MFACT = 0, BFACT = 1, KFACT = 2 };
     defaulttype::Vec<3,double> factors;
@@ -65,7 +67,7 @@ public:
     {
         out << '(';
         bool first = true;
-        for (unsigned int i=0; i<m.factors.size(); ++i)
+        for (size_type i=0; i<m.factors.size(); ++i)
         {
             double f = m.factors[i];
             if (f!=0.0)

@@ -40,7 +40,7 @@ ConstraintGroup::ConstraintGroup(ConstraintParams::ConstOrder idConstraint)
 {
 }
 
-void ConstraintGroup::addConstraint( unsigned int &constraintId, unsigned int idx, SReal c)
+void ConstraintGroup::addConstraint( size_type &constraintId, size_type idx, SReal c)
 {
     equations.resize(equations.size()+1);
     ConstraintEquation &eq=equations.back();
@@ -58,12 +58,12 @@ BaseLMConstraint::BaseLMConstraint()
 {
 }
 
-unsigned int BaseLMConstraint::getNumConstraint(ConstraintParams::ConstOrder Order)
+BaseLMConstraint::size_type BaseLMConstraint::getNumConstraint(ConstraintParams::ConstOrder Order)
 {
     size_t result=0;
     const helper::vector< ConstraintGroup* > &vec = constraintOrder[Order];
     for (size_t i=0; i<vec.size(); ++i) result+=vec[i]->getNumConstraint();
-    return static_cast<unsigned int>(result);
+    return static_cast<size_type>(result);
 }
 
 ConstraintGroup* BaseLMConstraint::addGroupConstraint(ConstraintParams::ConstOrder id)

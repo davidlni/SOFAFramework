@@ -48,6 +48,8 @@ enum { SOFA_DATA_MAX_ASPECTS = 1 };
 class SOFA_CORE_API ExecParams
 {
 public:
+  typedef unsigned int size_type;
+public:
 
     /// Modes of execution
     enum ExecMode

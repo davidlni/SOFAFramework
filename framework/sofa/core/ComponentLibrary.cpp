@@ -33,8 +33,9 @@ namespace core
 
 std::string caseInsensitive(const std::string &text)
 {
+    typedef unsigned int size_type;
     std::string result; result.resize(text.size());
-    for (unsigned int i=0; i<text.size(); ++i) result[i] = toupper(text[i]);
+    for (size_type i=0; i<text.size(); ++i) result[i] = toupper(text[i]);
     return result;
 }
 
@@ -54,7 +55,7 @@ ComponentLibrary::ComponentLibrary( const std::string &componentN, const std::st
     //Find a scene
     std::string nameComponentCaseInsensitive = caseInsensitive(entry->className);
 
-    for (unsigned int i=0; i<exampleFiles.size(); ++i)
+    for (size_type i=0; i<exampleFiles.size(); ++i)
     {
         std::string exampleCaseInsensitive = caseInsensitive(exampleFiles[i]);
 //             if (exampleFiles[i].findRev(entry->className.c_str()) >= 0 )
@@ -82,7 +83,7 @@ ComponentLibrary::ComponentLibrary( const std::string &componentN, const std::st
     if (possiblePaths.size() != 0)
     {
         description += std::string("<li><b>Example: </b><ul>");
-        for (unsigned int i=0; i<possiblePaths.size(); ++i)
+        for (size_type i=0; i<possiblePaths.size(); ++i)
         {
             description += std::string("<li><a href=\"")+possiblePaths[i]+std::string("\">") + possiblePaths[i] + std::string("</a></li>");
         }

@@ -93,7 +93,7 @@ public:
     Data< helper::vector< Edge > > edges;
     Data< helper::vector< Triangle > > triangles;
     Data< helper::vector< Quad > > quads;
-    Data< helper::vector< helper::vector <unsigned int> > > polygons;
+    Data< helper::vector< helper::vector <size_type> > > polygons;
 
     // Tab of 3D elements composition
     Data< helper::vector< Tetrahedron > > tetrahedra;
@@ -135,23 +135,23 @@ protected:
     void addPosition(helper::vector<sofa::defaulttype::Vec<3,SReal> >* pPositions,  SReal x, SReal y, SReal z);
 
     void addEdge(helper::vector<Edge>* pEdges, const Edge &p);
-    void addEdge(helper::vector<Edge>* pEdges, unsigned int p0, unsigned int p1);
+    void addEdge(helper::vector<Edge>* pEdges, size_type p0, size_type p1);
 
     void addTriangle(helper::vector<Triangle>* pTriangles, const Triangle &p);
-    void addTriangle(helper::vector<Triangle>* pTriangles, unsigned int p0, unsigned int p1, unsigned int p2);
+    void addTriangle(helper::vector<Triangle>* pTriangles, size_type p0, size_type p1, size_type p2);
 
     void addQuad(helper::vector<Quad>* pQuads, const Quad &p);
-    void addQuad(helper::vector<Quad>* pQuads, unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3);
+    void addQuad(helper::vector<Quad>* pQuads, size_type p0, size_type p1, size_type p2, size_type p3);
 
-    void addPolygon(helper::vector< helper::vector <unsigned int> >* pPolygons, const helper::vector<unsigned int> &p);
+    void addPolygon(helper::vector< helper::vector <size_type> >* pPolygons, const helper::vector<size_type> &p);
 
     void addTetrahedron(helper::vector<Tetrahedron>* pTetrahedra, const Tetrahedron &p);
-    void addTetrahedron(helper::vector<Tetrahedron>* pTetrahedra, unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3);
+    void addTetrahedron(helper::vector<Tetrahedron>* pTetrahedra, size_type p0, size_type p1, size_type p2, size_type p3);
 
     void addHexahedron(helper::vector< Hexahedron>* pHexahedra, const Hexahedron &p);
     void addHexahedron(helper::vector< Hexahedron>* pHexahedra,
-            unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3,
-            unsigned int p4, unsigned int p5, unsigned int p6, unsigned int p7);
+            size_type p0, size_type p1, size_type p2, size_type p3,
+            size_type p4, size_type p5, size_type p6, size_type p7);
 
 };
 

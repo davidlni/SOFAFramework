@@ -101,12 +101,12 @@ public:
     /// @{
 
     /// Read access to current position vector
-    template<class Owner, class S, unsigned int flags>
+    template<class Owner, class S, size_type flags>
     const Data<typename S::VecCoord>* readX(const SingleLink<Owner,S,flags>& state) const
     {   return m_x[state.get(this)].read();    }
 
     /// Read access to current velocity vector
-    template<class Owner, class S, unsigned int flags>
+    template<class Owner, class S, size_type flags>
     const Data<typename S::VecDeriv>* readV(const SingleLink<Owner,S,flags>& state) const
     {   return m_v[state.get(this)].read();    }
 

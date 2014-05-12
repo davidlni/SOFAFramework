@@ -279,7 +279,7 @@ public:
     /// Checks if the topology has only one connected component. @return Return true if so.
     virtual bool checkConnexity() {return true;}
     /// Returns the number of connected component.
-    virtual unsigned int getNumberOfConnectedComponent() {return 0;}
+    virtual size_type getNumberOfConnectedComponent() {return 0;}
     /// Returns the set of element indices connected to an input one (i.e. which can be reached by topological links)
     virtual const sofa::helper::vector<index_type> getConnectedElement(index_type elem);
     /// @}

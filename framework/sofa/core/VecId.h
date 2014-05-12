@@ -191,9 +191,12 @@ class TStandardVec<V_ALL, vaccess>
     , public TStandardVec<V_MATDERIV,vaccess>
 {
 public:
+    typedef unsigned int size_type;
+
+public:
     typedef TVecId<V_ALL, vaccess> MyVecId;
 
-    static unsigned int getFirstDynamicIndex(VecType t)
+    static size_type getFirstDynamicIndex(VecType t)
     {
         switch(t)
         {
@@ -234,9 +237,11 @@ template <VecType vtype, VecAccess vaccess>
 class TVecId : public TStandardVec<vtype, vaccess>
 {
 public:
-    unsigned int index;
+  typedef unsigned int size_type;
+public:
+    size_type index;
     TVecId() : index(0) { }
-    TVecId(unsigned int i) : index(i) { }
+    TVecId(size_type i) : index(i) { }
     /// Copy from another VecId, possibly with another type of access, with the
     /// constraint that the access must be compatible (i.e. cannot create
     /// a write-access VecId from a read-only VecId.
@@ -256,7 +261,7 @@ public:
     }
 
     VecType getType() const { return vtype; }
-    unsigned int getIndex() const { return index; }
+    size_type getIndex() const { return index; }
 
     template<VecType vtype2, VecAccess vaccess2>
     bool operator==(const TVecId<vtype2, vaccess2>& v) const
@@ -289,11 +294,14 @@ template<VecAccess vaccess>
 class TVecId<V_ALL, vaccess> : public TStandardVec<V_ALL, vaccess>
 {
 public:
+  typedef unsigned int size_type;
+
+public:
     typedef VecType Type;
     VecType type;
-    unsigned int index;
+    size_type index;
     TVecId() : type(V_ALL), index(0) { }
-    TVecId(VecType t, unsigned int i) : type(t), index(i) { }
+    TVecId(VecType t, size_type i) : type(t), index(i) { }
     template<VecType vtype2, VecAccess vaccess2>
     /// Create a generic VecId from a specific or generic one, with the
     /// constraint that the access must be compatible (i.e. cannot create
@@ -306,7 +314,7 @@ public:
     //operator TVecId<V_ALL, V_READ>() const { return TVecId<V_ALL, V_READ>(getType(), getIndex()); }
 
     VecType getType() const { return type; }
-    unsigned int getIndex() const { return index; }
+    size_type getIndex() const { return index; }
 
     template<VecType vtype2, VecAccess vaccess2>
     bool operator==(const TVecId<vtype2, vaccess2>& v) const

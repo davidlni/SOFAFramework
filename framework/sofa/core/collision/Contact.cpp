@@ -78,7 +78,7 @@ Contact::SPtr Contact::Create(const std::string& type, core::CollisionModel* mod
                 if (v.empty() && verbose)
                     std::cerr << "ERROR: parameter " << var << " not found in contact type " << otype << std::endl;
                 else
-                    for (unsigned int i=0; i<v.size(); ++i)
+                    for (size_type i=0; i<v.size(); ++i)
                         v[i]->read(val);
             }
             args = next;

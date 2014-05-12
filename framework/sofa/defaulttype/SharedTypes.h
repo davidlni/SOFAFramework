@@ -53,6 +53,7 @@ using sofa::helper::vector;
 template<class T>
 struct sparseCumul
 {
+    typedef unsigned int size_type;
     void operator()(T& result, const T& value)
     {
         if (!value.index)
@@ -60,8 +61,8 @@ struct sparseCumul
             result+=value;
             return;
         }
-        helper::vector<unsigned int>::iterator i=value.index->begin();
-        helper::vector<unsigned int>::iterator iend=value.index->end();
+        helper::vector<size_type>::iterator i=value.index->begin();
+        helper::vector<size_type>::iterator iend=value.index->end();
         for (; i!=iend; i++)
         {
 
@@ -85,6 +86,9 @@ template< class T, class MemoryManager = helper::CPUMemoryManager<T> >
 class SharedVector: public helper::vector<T,MemoryManager>
 {
 public:
+    typedef unsigned int size_type;
+
+public:
     typedef helper::CPUMemoryManager<T> Alloc;
     typedef typename helper::vector<T,Alloc>::size_type size_type;
     /// reference to a value (read-write)
@@ -92,7 +96,7 @@ public:
     /// const reference to a value (read only)
     typedef typename helper::vector<T,Alloc>::const_reference const_reference;
     typedef sparseCumul<vector<T> > CumulOperator;
-    helper::vector<unsigned int > *index;
+    helper::vector<size_type > *index;
     Shared<vector<T,Alloc> > * sharedData;
     /// Basic onstructor
 
@@ -127,7 +131,7 @@ public:
     SharedVector<T, Alloc>& operator+=(const helper::vector<T, Alloc>& x)
     {
         // do stuff.
-        for (unsigned int i=0; i<x.size()&&i<this->size(); i++)
+        for (size_type i=0; i<x.size()&&i<this->size(); i++)
             (*this)[i]+=x[i];
         return *this;
     }
@@ -135,10 +139,10 @@ public:
     {
         if (!index)
         {
-            index=new helper::vector<unsigned int >();
+            index=new helper::vector<size_type >();
 
         }
-        for (unsigned int i=0; i<index->size(); i++)
+        for (size_type i=0; i<index->size(); i++)
             (*this)[(*index)[i]]=T();
         index->clear();
 

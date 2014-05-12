@@ -69,7 +69,7 @@ void DrawToolGL::drawPoints(const std::vector<Vector3> &points, float size, cons
     glDisable(GL_LIGHTING);
     glBegin(GL_POINTS);
     {
-        for (unsigned int i=0; i<points.size(); ++i)
+        for (size_type i=0; i<points.size(); ++i)
         {
             drawPoint(points[i], colour);
         }
@@ -85,7 +85,7 @@ void DrawToolGL::drawPoints(const std::vector<Vector3> &points, float size, cons
     glDisable(GL_LIGHTING);
     glBegin(GL_POINTS);
     {
-        for (unsigned int i=0; i<points.size(); ++i)
+        for (size_type i=0; i<points.size(); ++i)
         {
             setMaterial(colour[i]);
             drawPoint(points[i], colour[i]);
@@ -104,7 +104,7 @@ void DrawToolGL::drawLines(const std::vector<Vector3> &points, float size, const
     glDisable(GL_LIGHTING);
     glBegin(GL_LINES);
     {
-        for (unsigned int i=0; i<points.size()/2; ++i)
+        for (size_type i=0; i<points.size()/2; ++i)
         {
             drawPoint(points[2*i]  , colour );
             drawPoint(points[2*i+1], colour );
@@ -124,7 +124,7 @@ void DrawToolGL::drawLines(const std::vector<Vector3> &points, const std::vector
     glDisable(GL_LIGHTING);
     glBegin(GL_LINES);
     {
-        for (unsigned int i=0; i<index.size(); ++i)
+        for (size_type i=0; i<index.size(); ++i)
         {
             drawPoint(points[ index[i][0] ], colour );
             drawPoint(points[ index[i][1] ], colour );
@@ -142,7 +142,7 @@ void DrawToolGL::drawTriangles(const std::vector<Vector3> &points, const Vec<4,f
     setMaterial(colour);
     glBegin(GL_TRIANGLES);
     {
-        for (unsigned int i=0; i<points.size()/3; ++i)
+        for (size_type i=0; i<points.size()/3; ++i)
         {
             const Vector3& a = points[ 3*i+0 ];
             const Vector3& b = points[ 3*i+1 ];
@@ -162,7 +162,7 @@ void DrawToolGL::drawTriangles(const std::vector<Vector3> &points, const Vector3
     setMaterial(colour);
     glBegin(GL_TRIANGLES);
     {
-        for (unsigned int i=0; i<points.size()/3; ++i)
+        for (size_type i=0; i<points.size()/3; ++i)
             drawTriangle(points[ 3*i+0 ],points[ 3*i+1 ],points[ 3*i+2 ], normal, colour);
     } glEnd();
     resetMaterial(colour);
@@ -176,7 +176,7 @@ void DrawToolGL::drawTriangles(const std::vector<Vector3> &points, const std::ve
     setMaterial(colour);
     glBegin(GL_TRIANGLES);
     {
-        for (unsigned int i=0; i<index.size(); ++i)
+        for (size_type i=0; i<index.size(); ++i)
         {
             drawTriangle(points[ index[i][0] ],points[ index[i][1] ],points[ index[i][2] ],normal[i],colour);
         }
@@ -232,7 +232,7 @@ void DrawToolGL::drawTriangleStrip(const std::vector<Vector3> &points,
     setMaterial(colour);
     glBegin(GL_TRIANGLE_STRIP);
     {
-        for (unsigned int i=0; i<normal.size(); ++i)
+        for (size_type i=0; i<normal.size(); ++i)
         {
             glNormalT(normal[i]);
             glVertexNv<3>(points[2*i].ptr());
@@ -257,7 +257,7 @@ void DrawToolGL::drawTriangleFan(const std::vector<Vector3> &points,
     glVertexNv<3>(points[1].ptr());
     glVertexNv<3>(points[2].ptr());
 
-    for (unsigned int i=3; i<points.size(); ++i)
+    for (size_type i=3; i<points.size(); ++i)
     {
         glNormalT(normal[i]);
         glVertexNv<3>(points[i].ptr());
@@ -284,7 +284,7 @@ void DrawToolGL::drawFrame(const Vector3& position, const Quaternion &orientatio
 void DrawToolGL::drawSpheres(const std::vector<Vector3> &points, float radius, const Vec<4,float> colour)
 {
     setMaterial(colour);
-    for (unsigned int i=0; i<points.size(); ++i)
+    for (size_type i=0; i<points.size(); ++i)
         drawSphere(points[i], radius);
 
     resetMaterial(colour);
@@ -295,7 +295,7 @@ void DrawToolGL::drawSpheres(const std::vector<Vector3> &points, float radius, c
 void DrawToolGL::drawSpheres(const std::vector<Vector3> &points, const std::vector<float>& radius, const Vec<4,float> colour)
 {
     setMaterial(colour);
-    for (unsigned int i=0; i<points.size(); ++i)
+    for (size_type i=0; i<points.size(); ++i)
         drawSphere(points[i], radius[i]);
 
     resetMaterial(colour);

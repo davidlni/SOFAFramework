@@ -53,7 +53,7 @@ class SSORPreconditioner : public sofa::component::linearsolver::MatrixLinearSol
 {
 public:
     SOFA_CLASS(SOFA_TEMPLATE3(SSORPreconditioner,TMatrix,TVector,TThreadManager),SOFA_TEMPLATE3(sofa::component::linearsolver::MatrixLinearSolver,TMatrix,TVector,TThreadManager));
-
+    typedef typename sofa::component::linearsolver::MatrixLinearSolver<TMatrix,TVector,TThreadManager>::size_type size_type;
     typedef TMatrix Matrix;
     typedef TVector Vector;
     typedef TThreadManager ThreadManager;
@@ -78,7 +78,7 @@ protected :
     class SSORPreconditionerInvertData : public MatrixInvertData
     {
     public :
-        unsigned bsize;
+        size_type bsize;
         std::vector<double> inv_diag;
     };
 

@@ -38,7 +38,7 @@ void GeometryAlgorithms::init()
 {
 }
 
-void GeometryAlgorithms::initPointsAdded(const helper::vector< unsigned int >& /*indices*/, const helper::vector< PointAncestorElem >& /*ancestorElems*/
+void GeometryAlgorithms::initPointsAdded(const helper::vector< size_type >& /*indices*/, const helper::vector< PointAncestorElem >& /*ancestorElems*/
     , const helper::vector< core::VecCoordId >& /*coordVecs*/, const helper::vector< core::VecDerivId >& /*derivVecs */)
 {
 }
@@ -75,7 +75,7 @@ void TopologyModifier::addStateChange(const TopologyChange *topologyChange)
 void TopologyModifier::propagateStateChanges() {}
 void TopologyModifier::propagateTopologicalChanges() {}
 void TopologyModifier::notifyEndingEvent() {}
-void TopologyModifier::removeItems(sofa::helper::vector< unsigned int >& /*items*/) {}
+void TopologyModifier::removeItems(sofa::helper::vector< size_type >& /*items*/) {}
 
 // TopologyContainer implementation
 

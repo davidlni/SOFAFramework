@@ -170,10 +170,10 @@ public:
     /// addToMatrix only on the subMatrixIndex
     virtual void addSubKToMatrix(const MechanicalParams* mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix, const helper::vector<unsigned> & subMatrixIndex);
 
-    virtual void addKToMatrix(sofa::defaulttype::BaseMatrix * matrix, double kFact, unsigned int &offset);
+    virtual void addKToMatrix(sofa::defaulttype::BaseMatrix * matrix, double kFact, size_type &offset);
 
     /// addToMatrix only on the subMatrixIndex
-    virtual void addSubKToMatrix(sofa::defaulttype::BaseMatrix * matrix, const helper::vector<unsigned> & subMatrixIndex, double kFact, unsigned int &offset);
+    virtual void addSubKToMatrix(sofa::defaulttype::BaseMatrix * matrix, const helper::vector<unsigned> & subMatrixIndex, double kFact, size_type &offset);
 
 
 
@@ -182,10 +182,10 @@ public:
     /// addBToMatrix only on the subMatrixIndex
     virtual void addSubBToMatrix(const MechanicalParams* mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix, const helper::vector<unsigned> & subMatrixIndex );
 
-    virtual void addBToMatrix(sofa::defaulttype::BaseMatrix * matrix, double bFact, unsigned int &offset);
+    virtual void addBToMatrix(sofa::defaulttype::BaseMatrix * matrix, double bFact, size_type &offset);
 
     /// addBToMatrix only on the subMatrixIndex
-    virtual void addSubBToMatrix(sofa::defaulttype::BaseMatrix * matrix, const helper::vector<unsigned> & subMatrixIndex, double bFact, unsigned int &offset);
+    virtual void addSubBToMatrix(sofa::defaulttype::BaseMatrix * matrix, const helper::vector<unsigned> & subMatrixIndex, double bFact, size_type &offset);
 
 
     /** Accumulate an element matrix to a global assembly matrix. This is a helper for addKToMatrix, to accumulate each (square) element matrix in the (square) assembled matrix.

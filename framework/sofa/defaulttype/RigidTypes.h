@@ -64,7 +64,7 @@ class RigidDeriv<3, real>
 {
 public:
     typedef real value_type;
-    typedef int size_type;
+    typedef unsigned int size_type;;
     typedef real Real;
     typedef Vec<3,Real> Pos;
     typedef Vec<3,Real> Rot;
@@ -200,7 +200,7 @@ public:
     {
         return helper::rsqrt( vCenter*vCenter + vOrientation*vOrientation);
     }
-    
+
 
     Vec3& getVCenter() { return vCenter; }
     Vec3& getVOrientation() { return vOrientation; }
@@ -244,7 +244,7 @@ public:
     real* ptr() { return vCenter.ptr(); }
     const real* ptr() const { return vCenter.ptr(); }
 
-    static unsigned int size() {return 6;}
+    static size_type size() {return 6;}
 
     /// Access to i-th element.
     real& operator[](int i)
@@ -342,7 +342,7 @@ class RigidCoord<3,real>
 {
 public:
     typedef real value_type;
-    typedef int size_type;
+    typedef unsigned int size_type;;
     typedef real Real;
     typedef Vec<3,Real> Pos;
     typedef helper::Quater<Real> Rot;
@@ -622,7 +622,7 @@ public:
     real* ptr() { return center.ptr(); }
     const real* ptr() const { return center.ptr(); }
 
-    static unsigned int size() {return 7;}
+    static size_type size() {return 7;}
 
     /// Access to i-th element.
     real& operator[](int i)
@@ -641,7 +641,7 @@ public:
         else
             return this->orientation[i-3];
     }
-    
+
     /// @name Tests operators
     /// @{
 
@@ -766,6 +766,7 @@ class StdRigidTypes<3, real>
 {
 public:
     typedef real Real;
+    typedef unsigned int size_type;
     typedef RigidCoord<3,real> Coord;
     typedef RigidDeriv<3,real> Deriv;
     typedef typename Coord::Vec3 Vec3;
@@ -872,7 +873,7 @@ public:
 
         Coord c;
 
-        for (unsigned int i = 0; i < ancestors.size(); i++)
+        for (size_type i = 0; i < ancestors.size(); i++)
         {
             // Position interpolation.
             c.getCenter() += ancestors[i].getCenter() * coefs[i];
@@ -910,7 +911,7 @@ public:
 
         Deriv d;
 
-        for (unsigned int i = 0; i < ancestors.size(); i++)
+        for (size_type i = 0; i < ancestors.size(); i++)
         {
             d += ancestors[i] * coefs[i];
         }
@@ -984,7 +985,7 @@ class RigidDeriv<2,real>
 {
 public:
     typedef real value_type;
-    typedef int size_type;
+    typedef unsigned int size_type;;
     typedef real Real;
     typedef Vec<2,Real> Pos;
     typedef Real Rot;
@@ -1157,7 +1158,7 @@ public:
     real* ptr() { return vCenter.ptr(); }
     const real* ptr() const { return vCenter.ptr(); }
 
-    static unsigned int size() {return 3;}
+    static size_type size() {return 3;}
 
     /// Access to i-th element.
     real& operator[](int i)
@@ -1177,10 +1178,10 @@ public:
             return this->vOrientation;
     }
 
-    
+
     /// @name Tests operators
     /// @{
-    
+
     bool operator==(const RigidDeriv<2,real>& b) const
     {
         return vCenter == b.vCenter && vOrientation == b.vOrientation;
@@ -1208,7 +1209,7 @@ class RigidCoord<2,real>
 {
 public:
     typedef real value_type;
-    typedef int size_type;
+    typedef unsigned int size_type;;
     typedef real Real;
     typedef Vec<2,Real> Pos;
     typedef Real Rot;
@@ -1449,7 +1450,7 @@ public:
     real* ptr() { return center.ptr(); }
     const real* ptr() const { return center.ptr(); }
 
-    static unsigned int size() {return 3;}
+    static size_type size() {return 3;}
 
     /// Access to i-th element.
     real& operator[](int i)
@@ -1600,6 +1601,7 @@ class StdRigidTypes<2, real>
 {
 public:
     typedef real Real;
+    typedef unsigned int size_type;
     typedef Vec<2,real> Vec2;
 
     typedef RigidDeriv<2,Real> Deriv;
@@ -1699,7 +1701,7 @@ public:
 
         Coord c;
 
-        for (unsigned int i = 0; i < ancestors.size(); i++)
+        for (size_type i = 0; i < ancestors.size(); i++)
         {
             c += ancestors[i] * coefs[i];
         }
@@ -1713,7 +1715,7 @@ public:
 
         Deriv d;
 
-        for (unsigned int i = 0; i < ancestors.size(); i++)
+        for (size_type i = 0; i < ancestors.size(); i++)
         {
             d += ancestors[i] * coefs[i];
         }

@@ -65,7 +65,7 @@ public:
 class SOFA_CORE_API DDGNode
 {
 public:
-
+    typedef unsigned int size_type;
     typedef MultiLink<DDGNode, DDGNode, BaseLink::FLAG_DOUBLELINK|BaseLink::FLAG_DATALINK> DDGLink;
     typedef DDGLink::Container DDGLinkContainer;
     typedef DDGLink::const_iterator DDGLinkIterator;

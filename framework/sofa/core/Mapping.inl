@@ -339,7 +339,7 @@ bool Mapping<In,Out>::checkApplyJ( OutVecDeriv& out, const InVecDeriv& in, const
     // compare out and out2
     const int NOut = sofa::defaulttype::DataTypeInfo<typename Out::Deriv>::Size;
     double diff_mean = 0, diff_max = 0, val1_mean = 0, val2_mean = 0;
-    for (unsigned int i=0; i<out.size(); ++i)
+    for (size_type i=0; i<out.size(); ++i)
         for (int j=0; j<NOut; ++j)
         {
             double v1 = out[i][j];
@@ -396,7 +396,7 @@ void Mapping<In,Out>::matrixApplyJ( OutVecDeriv& out, const InVecDeriv& in, cons
     {
         // we must copy the values
         in_alloc = new OutReal[in.size()*NIn];
-        for (unsigned int i=0; i<in.size(); ++i)
+        for (size_type i=0; i<in.size(); ++i)
             for (int j=0; j<NIn; ++j)
                 in_alloc[i*NIn+j] = (OutReal)in[i][j];
         in_buffer = in_alloc;
@@ -410,7 +410,7 @@ void Mapping<In,Out>::matrixApplyJ( OutVecDeriv& out, const InVecDeriv& in, cons
     {
         // we must copy the values
         out_alloc = new OutReal[out.size()*NOut];
-        for (unsigned int i=0; i<out.size(); ++i)
+        for (size_type i=0; i<out.size(); ++i)
             for (int j=0; j<NOut; ++j)
                 out_alloc[i*NOut+j] = (OutReal)0; //out[i][j];
         out_buffer = out_alloc;
@@ -423,7 +423,7 @@ void Mapping<In,Out>::matrixApplyJ( OutVecDeriv& out, const InVecDeriv& in, cons
     }
     if (out_alloc)
     {
-        for (unsigned int i=0; i<out.size(); ++i)
+        for (size_type i=0; i<out.size(); ++i)
             for (int j=0; j<NOut; ++j)
                 out[i][j] = out_alloc[i*NOut+j];
         delete[] out_alloc;
@@ -457,7 +457,7 @@ bool Mapping<In,Out>::checkApplyJT( InVecDeriv& out, const OutVecDeriv& in, cons
     applyJT(tmp, in);
     if (tmp.size() > out.size())
         out.resize(tmp.size());
-    for (unsigned int i=0; i<tmp.size(); ++i)
+    for (size_type i=0; i<tmp.size(); ++i)
         out[i] += tmp[i];
 
     InVecDeriv tmp2;
@@ -468,7 +468,7 @@ bool Mapping<In,Out>::checkApplyJT( InVecDeriv& out, const OutVecDeriv& in, cons
     // compare tmp and tmp2
     const int NOut = sofa::defaulttype::DataTypeInfo<typename In::Deriv>::Size;
     double diff_mean = 0, diff_max = 0, val1_mean = 0, val2_mean = 0;
-    for (unsigned int i=0; i<tmp.size(); ++i)
+    for (size_type i=0; i<tmp.size(); ++i)
         for (int j=0; j<NOut; ++j)
         {
             double v1 = tmp[i][j];
@@ -525,7 +525,7 @@ void Mapping<In,Out>::matrixApplyJT( InVecDeriv& out, const OutVecDeriv& in, con
     {
         // we must copy the values
         in_alloc = new InReal[in.size()*NOut];
-        for (unsigned int i=0; i<in.size(); ++i)
+        for (size_type i=0; i<in.size(); ++i)
             for (int j=0; j<NOut; ++j)
                 in_alloc[i*NOut+j] = (InReal)in[i][j];
         in_buffer = in_alloc;
@@ -539,7 +539,7 @@ void Mapping<In,Out>::matrixApplyJT( InVecDeriv& out, const OutVecDeriv& in, con
     {
         // we must copy the values
         out_alloc = new InReal[out.size()*NIn];
-        for (unsigned int i=0; i<out.size(); ++i)
+        for (size_type i=0; i<out.size(); ++i)
             for (int j=0; j<NIn; ++j)
                 out_alloc[i*NIn+j] = (InReal)0; //out[i][j];
         out_buffer = out_alloc;
@@ -552,7 +552,7 @@ void Mapping<In,Out>::matrixApplyJT( InVecDeriv& out, const OutVecDeriv& in, con
     }
     if (out_alloc)
     {
-        for (unsigned int i=0; i<out.size(); ++i)
+        for (size_type i=0; i<out.size(); ++i)
             for (int j=0; j<NIn; ++j)
                 out[i][j] += out_alloc[i*NIn+j];
         delete[] out_alloc;

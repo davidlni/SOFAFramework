@@ -149,7 +149,7 @@ public:
     virtual int getFinestLevel() const;
 
     /// Multiresolution support (UNSTABLE)
-    //     virtual unsigned int nbLevels() const;
+    //     virtual size_type nbLevels() const;
 #endif
 
     /// @}

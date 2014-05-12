@@ -46,6 +46,9 @@ typedef sofa::core::ObjectFactory::ClassEntry ClassEntry;
 class SOFA_CORE_API ComponentLibrary
 {
 public:
+  typedef unsigned int size_type;
+
+public:
     ComponentLibrary(const std::string& componentName, const std::string& categoryName, ClassEntry* entry, const std::vector< std::string >& exampleFiles);
     virtual ~ComponentLibrary() {};
 

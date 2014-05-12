@@ -56,6 +56,9 @@ namespace objectmodel
 class SOFA_CORE_API JoystickEvent : public sofa::core::objectmodel::Event
 {
 public:
+  typedef unsigned int size_type;
+  
+public:
 
     /**
      * @brief	Implements an event that notifies about axis positions (like analog controls of a joystick).
@@ -218,7 +221,7 @@ public:
 
     const std::vector<AxisEvent*> &getAxisEvents(void) const;
 
-    unsigned int getAxisEventsSize(void) const;
+    size_type getAxisEventsSize(void) const;
 
     void addAxisEvent( AxisEvent * );
 
@@ -231,7 +234,7 @@ public:
 
     ButtonEvent *getButtonEvent(void) const;
 
-    bool getButton(unsigned int /*index*/) const;
+    bool getButton(size_type /*index*/) const;
 
     void setButtonEvent( ButtonEvent * );
 
@@ -246,7 +249,7 @@ public:
 
     const std::vector<HatEvent*> &getHatEvents(void) const;
 
-    unsigned int getHatEventsSize(void) const;
+    size_type getHatEventsSize(void) const;
 
     void addHatEvent( HatEvent * );
 

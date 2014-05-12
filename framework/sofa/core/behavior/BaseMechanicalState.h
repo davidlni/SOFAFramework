@@ -221,7 +221,7 @@ public:
     virtual void resetConstraint(const ExecParams* params = ExecParams::defaultInstance()) = 0;
 
     /// build the jacobian of the constraint in a baseMatrix
-    virtual void getConstraintJacobian(const ExecParams* params, sofa::defaulttype::BaseMatrix* J,unsigned int & off) = 0;
+    virtual void getConstraintJacobian(const ExecParams* params, sofa::defaulttype::BaseMatrix* J,size_type & off) = 0;
 
     /// Renumber the constraint ids with the given permutation vector
     virtual void renumberConstraintId(const sofa::helper::vector<unsigned>& renumbering) = 0;
@@ -229,22 +229,22 @@ public:
     class ConstraintBlock
     {
     public:
-        ConstraintBlock( unsigned int c, defaulttype::BaseMatrix *m):column(c),matrix(m) {}
+        ConstraintBlock( size_type c, defaulttype::BaseMatrix *m):column(c),matrix(m) {}
 
-        unsigned int getColumn() const {return column;}
+        size_type getColumn() const {return column;}
         const defaulttype::BaseMatrix &getMatrix() const {return *matrix;};
         defaulttype::BaseMatrix *getMatrix() {return matrix;};
     protected:
-        unsigned int column;
+        size_type column;
         defaulttype::BaseMatrix *matrix;
     };
 
     /// Express the matrix L in term of block of matrices, using the indices of the lines in the MatrixDeriv container
-    virtual std::list<ConstraintBlock> constraintBlocks( const std::list<unsigned int> &/* indices */) const
+    virtual std::list<ConstraintBlock> constraintBlocks( const std::list<size_type> &/* indices */) const
     {  return std::list<ConstraintBlock>();  }
 
     /// Compute the error given a state vector and a line of the Jacobian (line in vector C)
-    virtual SReal getConstraintJacobianTimesVecDeriv( unsigned int /*line*/, ConstVecId /*id*/)
+    virtual SReal getConstraintJacobianTimesVecDeriv( size_type /*line*/, ConstVecId /*id*/)
     {  this->serr << "NOT IMPLEMENTED YET" << this->sendl; return (SReal)0;  }
 
     /// @}
@@ -269,8 +269,8 @@ public:
     /// Write current state to the given output stream
     virtual void writeState( std::ostream& out );
 
-    virtual unsigned int getCoordDimension() const { return 0; }
-    virtual unsigned int getDerivDimension() const { return 0; }
+    virtual size_type getCoordDimension() const { return 0; }
+    virtual size_type getDerivDimension() const { return 0; }
 
     /// Translate the current state
     virtual void applyTranslation(const double dx, const double dy, const double dz)=0;
@@ -319,44 +319,44 @@ public:
 
     /// Get the number of scalars per Deriv value, as necessary to build mechanical matrices and vectors.
     /// If not all Derivs have the same number of scalars, then return 1 here and overload the getMatrixSize() method.
-    virtual unsigned int getMatrixBlockSize() const { return getDerivDimension(); }
+    virtual size_type getMatrixBlockSize() const { return getDerivDimension(); }
 
     /// Get the number of rows necessary to build mechanical matrices and vectors.
     /// In most cases this is equivalent to getSize() * getMatrixBlockSize().
-    virtual unsigned int getMatrixSize() const { return getSize() * getMatrixBlockSize(); }
+    virtual size_type getMatrixSize() const { return getSize() * getMatrixBlockSize(); }
 
     /// Copy data to a global BaseVector from the state stored in a local vector
     /// @param offset the offset in the BaseVector where the scalar values will be used. It will be updated to the first scalar value after the ones used by this operation when this method returns
-    virtual void copyToBaseVector(defaulttype::BaseVector* dest, ConstVecId src, unsigned int &offset) = 0;
+    virtual void copyToBaseVector(defaulttype::BaseVector* dest, ConstVecId src, size_type &offset) = 0;
 
     /// Copy data to a local vector from the state stored in a global BaseVector
     /// @param offset the offset in the BaseVector where the scalar values will be used. It will be updated to the first scalar value after the ones used by this operation when this method returns
-    virtual void copyFromBaseVector(VecId dest, const defaulttype::BaseVector* src, unsigned int &offset) = 0;
+    virtual void copyFromBaseVector(VecId dest, const defaulttype::BaseVector* src, size_type &offset) = 0;
 
     /// Copy data to an external, user-allocated buffer. *Exact*
     /// element count must be provided for consistency checks.
-    virtual void copyToBuffer(SReal* dst, ConstVecId src, unsigned int n) const = 0;
+    virtual void copyToBuffer(SReal* dst, ConstVecId src, size_type n) const = 0;
 
     /// Copy data from an external, user-allocated buffer. *Exact*
     /// element count must be provided for consistency checks.
-    virtual void copyFromBuffer(VecId dst, const SReal* src, unsigned int n) = 0;
+    virtual void copyFromBuffer(VecId dst, const SReal* src, size_type n) = 0;
 
     /// Add data from an external, user-allocated buffer. *Exact*
     /// element count must be provided for consistency checks.
-    virtual void addFromBuffer(VecId dst, const SReal* src, unsigned int n) = 0;
+    virtual void addFromBuffer(VecId dst, const SReal* src, size_type n) = 0;
     
     /// Add data to a global BaseVector from the state stored in a local vector
     /// @param offset the offset in the BaseVector where the scalar values will be used. It will be updated to the first scalar value after the ones used by this operation when this method returns
-    virtual void addToBaseVector(defaulttype::BaseVector* dest, ConstVecId src, unsigned int &offset) = 0;
+    virtual void addToBaseVector(defaulttype::BaseVector* dest, ConstVecId src, size_type &offset) = 0;
 
     /// Performs dest[i][j] += src[offset + i][j] 0<= i < src_entries 0<= j < 3 (for 3D objects) 0 <= j < 2 (for 2D objects)
     /// @param offset the offset in the BaseVector where the scalar values will be used. It will be updated to the first scalar value after the ones used by this operation when this method returns
-    virtual void addFromBaseVectorSameSize(VecId dest, const defaulttype::BaseVector* src, unsigned int &offset) = 0;
+    virtual void addFromBaseVectorSameSize(VecId dest, const defaulttype::BaseVector* src, size_type &offset) = 0;
 
 
     /// Performs dest[ offset + i ][j] += src[i][j]  0<= i < src_entries  0<= j < 3 (for 3D objects) 0 <= j < 2 (for 2D objects)
     /// @param offset the offset in the MechanicalObject local vector specified by VecId dest. It will be updated to the first scalar value after the ones used by this operation when this method returns.
-    virtual void addFromBaseVectorDifferentSize(VecId dest, const defaulttype::BaseVector* src, unsigned int &offset ) = 0;
+    virtual void addFromBaseVectorDifferentSize(VecId dest, const defaulttype::BaseVector* src, size_type &offset ) = 0;
     /// @}
 
     /// @name Data output

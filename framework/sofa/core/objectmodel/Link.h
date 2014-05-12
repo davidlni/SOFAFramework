@@ -122,6 +122,8 @@ class LinkTraitsContainer;
 template < class T, class TPtr = T* >
 class SinglePtr
 {
+public:
+  typedef unsigned int size_type;
 protected:
     TPtr elems[1];
 public:
@@ -166,7 +168,7 @@ public:
     {
         return rend();
     }
-    unsigned int size() const
+    size_type size() const
     {
         return (!elems[0])?0:1;
     }
@@ -186,19 +188,19 @@ public:
     {
         return elems[0];
     }
-    const TPtr& operator[](unsigned int i) const
+    const TPtr& operator[](size_type i) const
     {
         return elems[i];
     }
-    TPtr& operator[](unsigned int i)
+    TPtr& operator[](size_type i)
     {
         return elems[i];
     }
-    const TPtr& operator()(unsigned int i) const
+    const TPtr& operator()(size_type i) const
     {
         return elems[i];
     }
-    TPtr& operator()(unsigned int i)
+    TPtr& operator()(size_type i)
     {
         return elems[i];
     }
@@ -216,18 +218,19 @@ template<class TDestType, class TDestPtr, class TValueType>
 class LinkTraitsContainer<TDestType, TDestPtr, TValueType, false>
 {
 public:
+    typedef unsigned int size_type;
     typedef SinglePtr<TDestType, TValueType> T;
     //typedef helper::fixed_array<TValueType,1> T;
     static void clear(T& c)
     {
         c.clear();
     }
-    static unsigned int add(T& c, TDestPtr v)
+    static size_type add(T& c, TDestPtr v)
     {
         c.get() = v;
         return 0;
     }
-    static unsigned int find(const T& c, TDestPtr v)
+    static size_type find(const T& c, TDestPtr v)
     {
         if (c.get() == v) return 0;
         else return 1;
@@ -243,6 +246,7 @@ template<class TDestType, class TDestPtr, class TValueType>
 class LinkTraitsContainer<TDestType, TDestPtr, TValueType, true>
 {
 public:
+    typedef unsigned int size_type;
     /// Container type.
     /// We use stable_vector to allow insertion/removal of elements
     /// while iterators are used (required to add/remove objects
@@ -253,18 +257,18 @@ public:
     {
         c.clear();
     }
-    static unsigned int add(T& c, TDestPtr v)
+    static size_type add(T& c, TDestPtr v)
     {
-        unsigned int index = static_cast<unsigned int>(c.size());
+        size_type index = static_cast<size_type>(c.size());
         c.push_back(TValueType(v));
         return index;
     }
-    static unsigned int find(const T& c, TDestPtr v)
+    static size_type find(const T& c, TDestPtr v)
     {
         size_t s = c.size();
         for (size_t i=0; i<s; ++i)
-            if (c[i] == v) return static_cast<unsigned int>(i);
-        return static_cast<unsigned int>(s);
+            if (c[i] == v) return static_cast<size_type>(i);
+        return static_cast<size_type>(s);
     }
     static void remove(T& c, unsigned index)
     {
@@ -348,9 +352,9 @@ public:
     {
     }
 
-    unsigned int size(const core::ExecParams* params = 0) const
+    size_type size(const core::ExecParams* params = 0) const
     {
-        return (unsigned int)m_value[core::ExecParams::currentAspect(params)].size();
+        return (size_type)m_value[core::ExecParams::currentAspect(params)].size();
     }
 
     bool empty(const core::ExecParams* params = 0) const
@@ -387,7 +391,7 @@ public:
     {
         if (!v) return false;
         const int aspect = core::ExecParams::currentAspect();
-        unsigned int index = TraitsContainer::add(m_value[aspect],v);
+        size_type index = TraitsContainer::add(m_value[aspect],v);
         this->updateCounter(aspect);
         added(v, index);
         return true;
@@ -397,7 +401,7 @@ public:
     {
         if (!v && path.empty()) return false;
         const int aspect = core::ExecParams::currentAspect();
-        unsigned int index = TraitsContainer::add(m_value[aspect],v);
+        size_type index = TraitsContainer::add(m_value[aspect],v);
         TraitsValueType::setPath(m_value[aspect][index],path);
         this->updateCounter(aspect);
         added(v, index);
@@ -417,7 +421,7 @@ public:
     {
         if (!v) return false;
         const int aspect = core::ExecParams::currentAspect();
-        unsigned int index = TraitsContainer::find(m_value[aspect],v);
+        size_type index = TraitsContainer::find(m_value[aspect],v);
         if (index >= m_value[aspect].size()) return false;
         TraitsContainer::remove(m_value[aspect],index);
         this->updateCounter(aspect);
@@ -429,8 +433,8 @@ public:
     {
         if (path.empty()) return false;
         const int aspect = core::ExecParams::currentAspect();
-        unsigned int n = m_value[aspect].size();
-        for (unsigned int index=0; index<n; ++index)
+        size_type n = m_value[aspect].size();
+        for (size_type index=0; index<n; ++index)
         {
             std::string p = getPath(index);
             if (p == path)
@@ -455,12 +459,12 @@ public:
         return OwnerType::GetClass();
     }
 
-    unsigned int getSize() const
+    size_type getSize() const
     {
         return size();
     }
 
-    std::string getPath(unsigned int index) const
+    std::string getPath(size_type index) const
     {
         const int aspect = core::ExecParams::currentAspect();
         if (index >= m_value[aspect].size())
@@ -477,15 +481,15 @@ public:
         return path;
     }
 
-    Base* getLinkedBase(unsigned int index=0) const
+    Base* getLinkedBase(size_type index=0) const
     {
         return TraitsDestCasts::getBase(getIndex(index));
     }
-    BaseData* getLinkedData(unsigned int index=0) const
+    BaseData* getLinkedData(size_type index=0) const
     {
         return TraitsDestCasts::getData(getIndex(index));
     }
-    std::string getLinkedPath(unsigned int index=0) const
+    std::string getLinkedPath(size_type index=0) const
     {
         return getPath(index);
     }
@@ -591,7 +595,7 @@ protected:
     OwnerType* m_owner;
     helper::fixed_array<Container, SOFA_DATA_MAX_ASPECTS> m_value;
 
-    DestType* getIndex(unsigned int index) const
+    DestType* getIndex(size_type index) const
     {
         const int aspect = core::ExecParams::currentAspect();
         if (index < m_value[aspect].size())
@@ -600,8 +604,8 @@ protected:
             return NULL;
     }
 
-    virtual void added(DestPtr ptr, unsigned int index) = 0;
-    virtual void removed(DestPtr ptr, unsigned int index) = 0;
+    virtual void added(DestPtr ptr, size_type index) = 0;
+    virtual void removed(DestPtr ptr, size_type index) = 0;
 };
 
 /**
@@ -612,6 +616,7 @@ template<class TOwnerType, class TDestType, unsigned TFlags>
 class MultiLink : public TLink<TOwnerType,TDestType,TFlags|BaseLink::FLAG_MULTILINK>
 {
 public:
+    typedef unsigned int size_type;
     typedef TLink<TOwnerType,TDestType,TFlags|BaseLink::FLAG_MULTILINK> Inherit;
     typedef TOwnerType OwnerType;
     typedef TDestType DestType;
@@ -625,7 +630,7 @@ public:
     typedef typename Inherit::TraitsDestCasts TraitsDestCasts;
     typedef typename Inherit::TraitsFindDest TraitsFindDest;
 
-    typedef void (OwnerType::*ValidatorFn)(DestPtr v, unsigned int index, bool add);
+    typedef void (OwnerType::*ValidatorFn)(DestPtr v, size_type index, bool add);
 
     MultiLink(const BaseLink::InitLink<OwnerType>& init)
         : Inherit(init), m_validator(NULL)
@@ -670,8 +675,8 @@ public:
         if (!this->m_owner) return false;
         bool ok = true;
         const int aspect = core::ExecParams::currentAspect();
-        unsigned int n = this->size();
-        for (unsigned int i=0; i<n; ++i)
+        size_type n = this->size();
+        for (size_type i=0; i<n; ++i)
         {
             ValueType& value = this->m_value[aspect][i];
             std::string path;
@@ -698,7 +703,7 @@ public:
         return ok;
     }
 
-    DestType* get(unsigned int index, const core::ExecParams* params = 0) const
+    DestType* get(size_type index, const core::ExecParams* params = 0) const
     {
         const int aspect = core::ExecParams::currentAspect(params);
         if (index < this->m_value[aspect].size())
@@ -707,7 +712,7 @@ public:
             return NULL;
     }
 
-    DestType* operator[](unsigned int index) const
+    DestType* operator[](size_type index) const
     {
         return get(index);
     }
@@ -715,13 +720,13 @@ public:
 protected:
     ValidatorFn m_validator;
 
-    void added(DestPtr val, unsigned int index)
+    void added(DestPtr val, size_type index)
     {
         if (m_validator)
             (this->m_owner->*m_validator)(val, index, true);
     }
 
-    void removed(DestPtr val, unsigned int index)
+    void removed(DestPtr val, size_type index)
     {
         if (m_validator)
             (this->m_owner->*m_validator)(val, index, false);
@@ -736,6 +741,7 @@ template<class TOwnerType, class TDestType, unsigned TFlags>
 class SingleLink : public TLink<TOwnerType,TDestType,TFlags&~BaseLink::FLAG_MULTILINK>
 {
 public:
+    typedef unsigned int size_type;
     typedef TLink<TOwnerType,TDestType,TFlags&~BaseLink::FLAG_MULTILINK> Inherit;
     typedef TOwnerType OwnerType;
     typedef TDestType DestType;
@@ -880,7 +886,7 @@ protected:
     ValidatorFn m_validator;
 
 
-    void added(DestPtr val, unsigned int /*index*/)
+    void added(DestPtr val, size_type /*index*/)
     {
         if (m_validator)
         {
@@ -891,7 +897,7 @@ protected:
         }
     }
 
-    void removed(DestPtr val, unsigned int /*index*/)
+    void removed(DestPtr val, size_type /*index*/)
     {
         if (m_validator)
         {

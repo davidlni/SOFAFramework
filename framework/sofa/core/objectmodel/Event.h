@@ -46,6 +46,8 @@ namespace objectmodel
 class SOFA_CORE_API Event
 {
 public:
+  typedef unsigned int size_type;
+public:
     Event();
 
     virtual ~Event();

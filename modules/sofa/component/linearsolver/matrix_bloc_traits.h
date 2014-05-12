@@ -41,7 +41,8 @@ template<int TN> class bloc_index_func
 {
 public:
     enum { N = TN };
-    static void split(int& index, int& modulo)
+    template<typename size_type>
+    static void split(size_type& index, size_type& modulo)
     {
         modulo = index % N;
         index  = index / N;
@@ -51,8 +52,9 @@ public:
 template<> class bloc_index_func<1>
 {
 public:
-    enum { N = 1 };
-    static void split(int&, int&)
+  enum { N = 1 };
+  template<typename size_type>
+  static void split(size_type& , size_type& )
     {
     }
 };
@@ -61,7 +63,8 @@ template<> class bloc_index_func<2>
 {
 public:
     enum { N = 2 };
-    static void split(int& index, int& modulo)
+    template<typename size_type>
+    static void split(size_type& index, size_type& modulo)
     {
         modulo = index & 1;
         index  = index >> 1;
@@ -72,7 +75,8 @@ template<> class bloc_index_func<4>
 {
 public:
     enum { N = 2 };
-    static void split(int& index, int& modulo)
+    template<typename size_type>
+    static void split(size_type& index, size_type& modulo)
     {
         modulo = index & 3;
         index  = index >> 2;
@@ -83,7 +87,8 @@ template<> class bloc_index_func<8>
 {
 public:
     enum { N = 2 };
-    static void split(int& index, int& modulo)
+    template<typename size_type>
+    static void split(size_type& index, size_type& modulo)
     {
         modulo = index & 7;
         index  = index >> 3;
@@ -112,8 +117,10 @@ public:
     }
     static void invert(Bloc& result, const Bloc& b) { result.invert(b); }
 
-    static void split_row_index(int& index, int& modulo) { bloc_index_func<NL>::split(index, modulo); }
-    static void split_col_index(int& index, int& modulo) { bloc_index_func<NC>::split(index, modulo); }
+    template<typename index_type>
+    static void split_row_index(index_type& index, index_type& modulo) { bloc_index_func<NL>::split(index, modulo); }
+    template<typename index_type>
+    static void split_col_index(index_type& index, index_type& modulo) { bloc_index_func<NC>::split(index, modulo); }
 
     static sofa::defaulttype::BaseMatrix::ElementType getElementType() { return matrix_bloc_traits<Real>::getElementType(); }
     static const char* Name();
@@ -139,8 +146,10 @@ public:
     }
     static void invert(Bloc& result, const Bloc& b) { result.invert(b); }
 
-    static void split_row_index(int& index, int& modulo) { bloc_index_func<NL>::split(index, modulo); }
-    static void split_col_index(int& index, int& modulo) { bloc_index_func<NC>::split(index, modulo); }
+    template<typename index_type>
+    static void split_row_index(index_type& index, index_type& modulo) { bloc_index_func<NL>::split(index, modulo); }
+    template<typename index_type>
+    static void split_col_index(index_type& index, index_type& modulo) { bloc_index_func<NC>::split(index, modulo); }
 
     static sofa::defaulttype::BaseMatrix::ElementType getElementType() { return matrix_bloc_traits<Real>::getElementType(); }
     static const char* Name();
@@ -180,8 +189,10 @@ public:
     }
     static void invert(Bloc& result, const Bloc& b) { result = 1.0f/b; }
 
-    static void split_row_index(int& index, int& modulo) { bloc_index_func<NL>::split(index, modulo); }
-    static void split_col_index(int& index, int& modulo) { bloc_index_func<NC>::split(index, modulo); }
+    template<typename index_type>
+    static void split_row_index(index_type& index, index_type& modulo) { bloc_index_func<NL>::split(index, modulo); }
+    template<typename index_type>
+    static void split_col_index(index_type& index, index_type& modulo) { bloc_index_func<NC>::split(index, modulo); }
 
     static const char* Name() { return "f"; }
     static sofa::defaulttype::BaseMatrix::ElementType getElementType() { return sofa::defaulttype::BaseMatrix::ELEMENT_FLOAT; }
@@ -205,8 +216,10 @@ public:
     }
     static void invert(Bloc& result, const Bloc& b) { result = 1.0/b; }
 
-    static void split_row_index(int& index, int& modulo) { bloc_index_func<NL>::split(index, modulo); }
-    static void split_col_index(int& index, int& modulo) { bloc_index_func<NC>::split(index, modulo); }
+    template<typename index_type>
+    static void split_row_index(index_type& index, index_type& modulo) { bloc_index_func<NL>::split(index, modulo); }
+    template<typename index_type>
+    static void split_col_index(index_type& index, index_type& modulo) { bloc_index_func<NC>::split(index, modulo); }
 
     static sofa::defaulttype::BaseMatrix::ElementType getElementType() { return sofa::defaulttype::BaseMatrix::ELEMENT_FLOAT; }
     static const char* Name() { return "d"; }
@@ -229,8 +242,10 @@ public:
     }
     static void invert(Bloc& result, const Bloc& b) { result = 1.0f/b; }
 
-    static void split_row_index(int& index, int& modulo) { bloc_index_func<NL>::split(index, modulo); }
-    static void split_col_index(int& index, int& modulo) { bloc_index_func<NC>::split(index, modulo); }
+    template<typename index_type>
+    static void split_row_index(index_type& index, index_type& modulo) { bloc_index_func<NL>::split(index, modulo); }
+    template<typename index_type>
+    static void split_col_index(index_type& index, index_type& modulo) { bloc_index_func<NC>::split(index, modulo); }
 
     static sofa::defaulttype::BaseMatrix::ElementType getElementType() { return sofa::defaulttype::BaseMatrix::ELEMENT_INT; }
     static const char* Name() { return "f"; }

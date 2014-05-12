@@ -50,9 +50,10 @@ namespace behavior
 **/
 struct  SOFA_CORE_API ConstraintEquation
 {
+    typedef unsigned int size_type;
     int idx;
     SReal correction;
-    unsigned int constraintId;
+    size_type constraintId;
 };
 
 
@@ -68,7 +69,9 @@ struct  SOFA_CORE_API ConstraintEquation
  **/
 class SOFA_CORE_API  ConstraintGroup
 {
-    typedef sofa::helper::vector< ConstraintEquation > VecEquations;
+  typedef sofa::helper::vector< ConstraintEquation > VecEquations;
+public:
+  typedef unsigned int size_type;
 public:
     typedef VecEquations::const_iterator EquationConstIterator;
     typedef VecEquations::iterator       EquationIterator;
@@ -80,19 +83,19 @@ public:
     * @param idx index of the equation
      * @param c  correction we need to apply in order to solve the constraint
      **/
-    void addConstraint( unsigned int &constraintId, unsigned int idx, SReal c);
+    void addConstraint( size_type &constraintId, size_type idx, SReal c);
 
 
 
     /// Random Access to an equation
-    const ConstraintEquation &getConstraint(const unsigned int i) const
+    const ConstraintEquation &getConstraint(const size_type i) const
     {
         EquationConstIterator it=equations.begin();
         std::advance(it,i);
         return *it;
     }
 
-    ConstraintEquation &getConstraint(const unsigned int i)
+    ConstraintEquation &getConstraint(const size_type i)
     {
         EquationIterator it=equations.begin();
         std::advance(it,i);
@@ -148,7 +151,7 @@ protected:
 public:
 
     /// Called by MechanicalWriteLMConstaint: The Object will compute the constraints present in the current state, and create the ConstraintGroup related.
-    virtual void writeConstraintEquations(unsigned int& lineNumber, MultiVecId id, ConstraintParams::ConstOrder order)=0;
+    virtual void writeConstraintEquations(size_type& lineNumber, MultiVecId id, ConstraintParams::ConstOrder order)=0;
 
     /// Compute the new Lagrange Multiplier given a block of the compliance matrix W, and the current correction (left hand term) and previous Lagrange Multiplier
     virtual void LagrangeMultiplierEvaluation(const SReal* /*W*/,
@@ -191,7 +194,7 @@ public:
         if (g == constraintOrder.end()) return;
 
         const helper::vector< ConstraintGroup* > &constraints = g->second;
-        for (unsigned int idxGroupConstraint=0; idxGroupConstraint<constraints.size(); ++idxGroupConstraint)
+        for (size_type idxGroupConstraint=0; idxGroupConstraint<constraints.size(); ++idxGroupConstraint)
         {
             ConstraintGroup *group=constraints[idxGroupConstraint];
             getEquationsUsed(group, used0);
@@ -201,7 +204,7 @@ public:
 
 
     /// get the number of expressed constraints of a given order
-    virtual unsigned int getNumConstraint(ConstraintParams::ConstOrder Order);
+    virtual size_type getNumConstraint(ConstraintParams::ConstOrder Order);
 
 
     /// get Mechanical State 1 where the constraint will be expressed (can be a Mapped mechanical state)

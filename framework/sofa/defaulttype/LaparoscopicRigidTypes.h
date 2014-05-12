@@ -42,6 +42,9 @@ namespace defaulttype
 class LaparoscopicRigid3Types
 {
 public:
+  typedef unsigned int size_type;
+
+public:
 
     typedef SReal Real;
 
@@ -128,7 +131,7 @@ public:
         Real* ptr() { return &vTranslation; }
         const Real* ptr() const { return &vTranslation; }
 
-        static unsigned int size() { return 4; }
+        static size_type size() { return 4; }
         Real& operator[](int i)
         {
             if (i < 1) return this->vTranslation;
@@ -264,7 +267,7 @@ public:
         Real* ptr() { return &translation; }
         const Real* ptr() const { return &translation; }
 
-        static unsigned int size() { return 5; }
+        static size_type size() { return 5; }
         Real& operator[](int i)
         {
             if (i < 1) return this->translation;
@@ -349,7 +352,7 @@ public:
 
         Coord c;
 
-        for (unsigned int i = 0; i < ancestors.size(); i++)
+        for (size_type i = 0; i < ancestors.size(); i++)
         {
             c += ancestors[i] * coefs[i];
         }
@@ -363,7 +366,7 @@ public:
 
         Deriv d;
 
-        for (unsigned int i = 0; i < ancestors.size(); i++)
+        for (size_type i = 0; i < ancestors.size(); i++)
         {
             d += ancestors[i] * coefs[i];
         }

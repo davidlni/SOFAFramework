@@ -63,9 +63,8 @@ class SOFA_CORE_API Topology : public virtual core::objectmodel::BaseObject
 {
 public:
     /// Topology global typedefs
-    //typedef int index_type;
-    typedef unsigned int index_type;
-    enum { InvalidID = (unsigned)-1 };
+    typedef size_type index_type;
+    enum { InvalidID = index_type(-1) };
     typedef index_type	        	    PointID;
     typedef index_type          		    EdgeID;
     typedef index_type                          TriangleID;
@@ -191,31 +190,31 @@ namespace defaulttype
 {
 
 template<>
-struct DataTypeInfo< sofa::core::topology::Topology::Edge > : public FixedArrayTypeInfo<sofa::helper::fixed_array<unsigned int,2> >
+struct DataTypeInfo< sofa::core::topology::Topology::Edge > : public FixedArrayTypeInfo<sofa::helper::fixed_array<sofa::core::topology::Topology::index_type,2> >
 {
     static std::string name() { return "Edge"; }
 };
 
 template<>
-struct DataTypeInfo< sofa::core::topology::Topology::Triangle > : public FixedArrayTypeInfo<sofa::helper::fixed_array<unsigned int,3> >
+struct DataTypeInfo< sofa::core::topology::Topology::Triangle > : public FixedArrayTypeInfo<sofa::helper::fixed_array<sofa::core::topology::Topology::index_type,3> >
 {
     static std::string name() { return "Triangle"; }
 };
 
 template<>
-struct DataTypeInfo< sofa::core::topology::Topology::Quad > : public FixedArrayTypeInfo<sofa::helper::fixed_array<unsigned int,4> >
+struct DataTypeInfo< sofa::core::topology::Topology::Quad > : public FixedArrayTypeInfo<sofa::helper::fixed_array<sofa::core::topology::Topology::index_type,4> >
 {
     static std::string name() { return "Quad"; }
 };
 
 template<>
-struct DataTypeInfo< sofa::core::topology::Topology::Tetrahedron > : public FixedArrayTypeInfo<sofa::helper::fixed_array<unsigned int,4> >
+struct DataTypeInfo< sofa::core::topology::Topology::Tetrahedron > : public FixedArrayTypeInfo<sofa::helper::fixed_array<sofa::core::topology::Topology::index_type,4> >
 {
     static std::string name() { return "Tetrahedron"; }
 };
 
 template<>
-struct DataTypeInfo< sofa::core::topology::Topology::Hexahedron > : public FixedArrayTypeInfo<sofa::helper::fixed_array<unsigned int,8> >
+struct DataTypeInfo< sofa::core::topology::Topology::Hexahedron > : public FixedArrayTypeInfo<sofa::helper::fixed_array<sofa::core::topology::Topology::index_type,8> >
 {
     static std::string name() { return "Hexahedron"; }
 };
