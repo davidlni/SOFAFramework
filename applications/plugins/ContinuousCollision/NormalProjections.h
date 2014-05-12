@@ -25,6 +25,7 @@
  ******************************************************************************/
 
 #include<sofa/defaulttype/Vec3Types.h>
+#include <eigen3/Eigen/Sparse>
 #include<array>
 #include<algorithm>
 #include<type_traits>
@@ -87,7 +88,7 @@ struct NormalProjections<6>
     template<int K, typename T>
     inline static void Compute(const defaulttype::Vector3 &p, std::array<T,K/2> &d)
     {
-        static_assert(K >= 6,"Projection requested is can't be computed.");
+        static_assert(K >= 6,"Projection requested can't be computed.");
         for(size_t i = 0; i < 3; ++i)
             d[i] = p[i];
     }
@@ -95,7 +96,7 @@ struct NormalProjections<6>
     template<int K, typename T>
     inline static void Compute(const defaulttype::Vector3 &p, std::array<T,K> &d)
     {
-        static_assert(K >= 6,"Projection requested is can't be computed.");
+        static_assert(K >= 6,"Projection requested can't be computed.");
         for(size_t i = 0; i < 3; ++i)
             d[i] = d[i+K/2] = p[i];
     }
@@ -103,7 +104,7 @@ struct NormalProjections<6>
     template<int K, typename T>
     inline static void Compute(const defaulttype::Vector3 &p, const defaulttype::Vector3 &q, std::array<T,K> &d)
     {
-        static_assert(K >= 6,"Projection requested is can't be computed.");
+        static_assert(K >= 6,"Projection requested can't be computed.");
         std::pair<T,T> minmax;
         for(size_t i = 0; i < 3; ++i)
         {
@@ -133,7 +134,7 @@ struct NormalProjections<12>
     template<int K, typename T>
     inline static void Compute(const defaulttype::Vector3 &p, std::array<T,K/2> &d)
     {
-        static_assert(K >= 12,"Projection requested is can't be computed.");
+        static_assert(K >= 12,"Projection requested can't be computed.");
         for(size_t i = 0, idx = 3; i < 2; ++i)
             for(size_t j = i+1; j < 3; ++j, ++idx)
                 d[idx] = p[i]+p[j];
@@ -142,7 +143,7 @@ struct NormalProjections<12>
     template<int K, typename T>
     inline static void Compute(const defaulttype::Vector3 &p, std::array<T,K> &d)
     {
-        static_assert(K >= 12,"Projection requested is can't be computed.");
+        static_assert(K >= 12,"Projection requested can't be computed.");
         for(size_t i = 0, idx = 3; i < 2; ++i)
             for(size_t j = i+1; j < 3; ++j, ++idx)
                 d[idx] = d[idx+K/2] = p[i]+p[j];
@@ -151,7 +152,7 @@ struct NormalProjections<12>
     template<int K, typename T>
     inline static void Compute(const defaulttype::Vector3 &p, const defaulttype::Vector3 &q, std::array<T,K> &d)
     {
-        static_assert(K >= 12,"Projection requested is can't be computed.");
+        static_assert(K >= 12,"Projection requested can't be computed.");
         std::pair<T,T> minmax;
         for(size_t i = 0, idx = 3; i < 2; ++i)
             for(size_t j = i+1; j < 3; ++j, ++idx)
@@ -191,7 +192,7 @@ struct NormalProjections<18>
     template<int K, typename T>
     inline static void Compute(const defaulttype::Vector3 &p, std::array<T,K/2> &d)
     {
-        static_assert(K >= 18,"Projection requested is can't be computed.");
+        static_assert(K >= 18,"Projection requested can't be computed.");
         for(size_t i = 0, idx = 6; i < 2; ++i)
             for(size_t j = i+1; j < 3; ++j, ++idx)
                 d[idx] = p[i]-p[j];
@@ -200,7 +201,7 @@ struct NormalProjections<18>
     template<int K, typename T>
     inline static void Compute(const defaulttype::Vector3 &p, std::array<T,K> &d)
     {
-        static_assert(K >= 18,"Projection requested is can't be computed.");
+        static_assert(K >= 18,"Projection requested can't be computed.");
         for(size_t i = 0, idx = 6; i < 2; ++i)
             for(size_t j = i+1; j < 3; ++j, ++idx)
                 d[idx] = d[idx+K/2] = p[i]-p[j];
@@ -209,7 +210,7 @@ struct NormalProjections<18>
     template<int K, typename T>
     inline static void Compute(const defaulttype::Vector3 &p, const defaulttype::Vector3 &q, std::array<T,K> &d)
     {
-        static_assert(K >= 18,"Projection requested is can't be computed.");
+        static_assert(K >= 18,"Projection requested can't be computed.");
         std::pair<T,T> minmax;
         for(size_t i = 0, idx = 6; i < 2; ++i)
             for(size_t j = i+1; j < 3; ++j, ++idx)
@@ -244,6 +245,11 @@ struct NormalProjections<18>
         Compute<18>(p,q,d);
     }
 
+    inline static void GetVertices(helper::vector<defaulttype::Vector3> &vertices)
+    {
+
+    }
+
 };
 
 template<>
@@ -252,7 +258,7 @@ struct NormalProjections<24>
     template<int K, typename T>
     inline static void Compute(const defaulttype::Vector3 &p, std::array<T,K/2> &d)
     {
-        static_assert(K >= 24,"Projection requested is can't be computed.");
+        static_assert(K >= 24,"Projection requested can't be computed.");
         for(size_t i = 0, idx = 9; i < 2; ++i)
             for(size_t j = i+1; j < 3; ++j, ++idx)
                 d[idx] = p[i]+p[j]-p[3-(i+j)];
@@ -261,7 +267,7 @@ struct NormalProjections<24>
     template<int K, typename T>
     inline static void Compute(const defaulttype::Vector3 &p, std::array<T,K> &d)
     {
-        static_assert(K >= 24,"Projection requested is can't be computed.");
+        static_assert(K >= 24,"Projection requested can't be computed.");
         for(size_t i = 0, idx = 9; i < 2; ++i)
             for(size_t j = i+1; j < 3; ++j, ++idx)
                 d[idx] = d[idx+K/2] = p[i]+p[j]-p[3-(i+j)];
@@ -270,7 +276,7 @@ struct NormalProjections<24>
     template<int K, typename T>
     inline static void Compute(const defaulttype::Vector3 &p, const defaulttype::Vector3 &q, std::array<T,K> &d)
     {
-        static_assert(K >= 24,"Projection requested is can't be computed.");
+        static_assert(K >= 24,"Projection requested can't be computed.");
         std::pair<T,T> minmax;
         for(size_t i = 0, idx = 9; i < 2; ++i)
             for(size_t j = i+1; j < 3; ++j)

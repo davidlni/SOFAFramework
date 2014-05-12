@@ -68,10 +68,17 @@ void TPolytopeModel<TDataTypes,K>::resize(size_t s)
 }
 
 template<typename TDataTypes, size_t K>
-void TPolytopeModel<TDataTypes,K>::setParentOf(size_t childIndex, const Vector3& p)
+inline void TPolytopeModel<TDataTypes,K>::enlarge(size_t childIndex, const Real& p)
 {
     size_t i = parentOf[childIndex];
     this->polytopes[i] += p;
+}
+
+template<typename TDataTypes, size_t K>
+inline void TPolytopeModel<TDataTypes,K>::setParentOf(size_t childIndex, const Vector3& p)
+{
+  size_t i = parentOf[childIndex];
+  this->polytopes[i] += p;
 }
 
 template<typename TDataTypes, size_t K>

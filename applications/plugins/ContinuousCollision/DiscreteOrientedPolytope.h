@@ -43,7 +43,7 @@ namespace component
 namespace collision
 {
 
-template<typename T, size_t NumberOfPlanes = 6>
+template<typename T, size_t NumberOfPlanes = 18>
 class DiscreteOrientedPolytope
 {
 public:
@@ -122,6 +122,16 @@ public:
         return *this;
     }
 
+    DiscreteOrientedPolytope<T,K> &operator+=(const T &distance)
+    {
+      for(size_t i = 0; i < KHalf; ++i)
+      {
+        this->Distance[i] -= distance;
+        this->Distance[i+KHalf] += distance;
+      }
+      return *this;
+    }
+
     DiscreteOrientedPolytope<T,K> &operator+=(const DiscreteOrientedPolytope<T,K> &other)
     {
         for(size_t i = 0; i < KHalf; ++i)
@@ -136,6 +146,12 @@ public:
     {
         DiscreteOrientedPolytope<T,K> result(*this);
         return (result += other);
+    }
+
+    inline DiscreteOrientedPolytope<T,K> operator+(const T &other)
+    {
+      DiscreteOrientedPolytope<T,K> result(*this);
+      return (result += other);
     }
 
     inline DiscreteOrientedPolytope<T,K> &operator*=(const defaulttype::Vector3 &p)
@@ -242,6 +258,11 @@ public:
     inline DistanceArrayType& GetDistance()
     {
         return this->Distance;
+    }
+
+    inline DistanceArrayType& Enlarge(const T &distance)
+    {
+      return this->Distance;
     }
 
 protected:

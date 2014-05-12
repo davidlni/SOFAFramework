@@ -93,7 +93,7 @@ public:
     };
 
     typedef typename sofa::helper::vector<PolytopeData> ElementListType;
-    
+
 protected:
     TPolytopeModel();
 
@@ -101,6 +101,9 @@ public:
     virtual void resize(size_t size);
 
     void setParentOf(size_t childIndex, const Vector3& p);
+
+    // For continuous collision
+    void enlarge(size_t childIndex, const Real &distance);
     void setLeafPolytope(size_t polytopeIndex, size_t childIndex);
     void setLeafPolytope(size_t polytopeIndex, std::pair<ChildIterator,ChildIterator> children, const Vector3& p);
 
@@ -178,7 +181,7 @@ inline TPolytope<TDataTypes,K>::TPolytope(const core::CollisionElementIterator& 
 template<typename TDataTypes, size_t K>
 inline const typename TPolytopeModel<TDataTypes,K>::PolytopeData& TPolytope<TDataTypes,K>::getElement() const
 {
-    return this->getCollisionModel()->polytopes[this->index];
+    return this->model->polytopes[this->index];
 }
 
 template<typename TDataTypes, size_t K>
