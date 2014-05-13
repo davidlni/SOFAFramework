@@ -22,20 +22,17 @@
  *                                                                             *
  * Contact information: contact@sofa-framework.org                             *
  ******************************************************************************/
-#ifndef SOFA_COMPONENT_COLLISION_CONTINUOUSINTERSECTION_H
-#define SOFA_COMPONENT_COLLISION_CONTINUOUSINTERSECTION_H
+#ifndef SOFA_COMPONENT_COLLISION_BRUTEFORCEDETECTION_H
+#define SOFA_COMPONENT_COLLISION_BRUTEFORCEDETECTION_H
 
-#include <sofa/core/collision/Intersection.h>
-#include <sofa/core/collision/IntersectorFactory.h>
-#include <sofa/helper/FnDispatcher.h>
-#include <sofa/component/collision/SphereModel.h>
+#include <sofa/core/collision/BroadPhaseDetection.h>
+#include <sofa/core/collision/NarrowPhaseDetection.h>
+#include <sofa/core/CollisionElement.h>
+#include <sofa/component/component.h>
 #include <sofa/component/collision/CubeModel.h>
-#include <sofa/component/collision/CapsuleModel.h>
-#include <sofa/component/collision/CapsuleIntTool.h>
-#include <sofa/component/collision/OBBModel.h>
-#include <sofa/component/collision/OBBIntTool.h>
-#include <sofa/component/collision/BaseIntTool.h>
-#include <sofa/component/collision/RigidCapsuleModel.h>
+#include <sofa/defaulttype/Vec.h>
+#include <set>
+
 
 namespace sofa
 {
@@ -45,44 +42,61 @@ namespace component
 
 namespace collision
 {
-class SOFA_BASE_COLLISION_API ContinuousIntersection : public core::collision::Intersection, public core::collision::BaseIntersector
+
+using namespace sofa::defaulttype;
+
+class SOFA_BASE_COLLISION_API ContinuousDetection :
+    public core::collision::BroadPhaseDetection,
+    public core::collision::NarrowPhaseDetection
 {
 public:
-    SOFA_CLASS(ContinuousIntersection,sofa::core::collision::Intersection);
+    SOFA_CLASS2(ContinuousDetection, core::collision::BroadPhaseDetection, core::collision::NarrowPhaseDetection);
+
+private:
+    bool _is_initialized;
+    sofa::helper::vector<core::CollisionModel*> collisionModels;
+    Data<bool> bDraw;
+
+    Data< helper::fixed_array<Vector3,2> > box;
+
+    CubeModel::SPtr boxModel;
+
+
 protected:
-    ContinuousIntersection();
+    ContinuousDetection();
+
+    ~ContinuousDetection();
+
+    virtual bool keepCollisionBetween(core::CollisionModel *cm1, core::CollisionModel *cm2);
+
 public:
-    /// Return the intersector class handling the given pair of collision models, or NULL if not supported.
-    /// @param swapModel output value set to true if the collision models must be swapped before calling the intersector.
-    virtual core::collision::ElementIntersector* findIntersector(core::CollisionModel* object1, core::CollisionModel* object2, bool& swapModels);
-
-    core::collision::IntersectorMap intersectors;
-    typedef core::collision::IntersectorFactory<ContinuousIntersection> IntersectorFactory;
-
-    template <class Elem1,class Elem2>
-    int computeIntersection(Elem1 & e1,Elem2 & e2,OutputVector* contacts) {
-        return BaseIntTool::computeIntersection(e1,e2,e1.getProximity() + e2.getProximity() + getAlarmDistance(),e1.getProximity() + e2.getProximity() + getContactDistance(),contacts);
+    void setDraw(bool val) {
+        bDraw.setValue(val);
     }
 
-    template <class Elem1,class Elem2>
-    int testIntersection(Elem1& e1,Elem2& e2) {
-        return BaseIntTool::testIntersection(e1,e2,this->getAlarmDistance());
+    void init();
+    void reinit();
+
+    void addCollisionModel (core::CollisionModel *cm);
+    void addCollisionPair (const std::pair<core::CollisionModel*, core::CollisionModel*>& cmPair);
+
+    virtual void beginBroadPhase()
+    {
+        core::collision::BroadPhaseDetection::beginBroadPhase();
+        collisionModels.clear();
+    }
+
+    /* for debugging */
+    void draw(const core::visual::VisualParams* vparams);
+
+    inline virtual bool needsDeepBoundingTree()const {
+        return true;
     }
 };
 
 } // namespace collision
 
 } // namespace component
-
-namespace core
-{
-namespace collision
-{
-#if defined(SOFA_EXTERN_TEMPLATE) && !defined(SOFA_BUILD_BASE_COLLISION)
-extern template class SOFA_BASE_COLLISION_API IntersectorFactory<component::collision::ContinuousIntersection>;
-#endif
-}
-}
 
 } // namespace sofa
 

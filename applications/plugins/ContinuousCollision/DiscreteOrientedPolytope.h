@@ -62,7 +62,7 @@ public:
     {
       for(size_t i = 0; i < KHalf; ++i )
       {
-        this->Distance[i] = std::numeric_limits<T>::infinity();
+        this->Distance[i] = std::numeric_limits<T>::max();
         this->Distance[i+KHalf] = -this->Distance[i];
       }
     }
@@ -240,7 +240,7 @@ public:
     {
         for(size_t i = 0; i < KHalf; ++i )
         {
-            this->Distance[i] = std::numeric_limits<T>::infinity();
+            this->Distance[i] = std::numeric_limits<T>::max();
             this->Distance[i+KHalf] = -this->Distance[i];
         }
     }

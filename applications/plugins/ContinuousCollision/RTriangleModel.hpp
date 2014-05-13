@@ -104,7 +104,7 @@ void TRTriangleModel<DataTypes>::init()
     triangles = &_topology->getTriangles();
     resize(_topology->getNbTriangles());
 
-    updateFromTopology();
+    updateFromTopology(this->getContext()->getDt());
     updateNormals();
 }
 
@@ -125,7 +125,7 @@ void TRTriangleModel<DataTypes>::updateNormals()
 }
 
 template<class DataTypes>
-void TRTriangleModel<DataTypes>::updateFromTopology()
+void TRTriangleModel<DataTypes>::updateFromTopology(const double &dt)
 {
     //    needsUpdate = false;
     const unsigned npoints = mstate->getX()->size();
@@ -237,7 +237,7 @@ void TRTriangleModel<DataTypes>::updateFromTopology()
         this->vertexBoxes.resize(npoints);
         this->edgeBoxes.resize(this->edgeFeatures.size());
         this->faceBoxes.resize(newsize);
-        this->updateFeatureBoxes();
+        this->updateFeatureBoxes(dt);
 
     }
     updateFlags();
@@ -251,10 +251,10 @@ void TRTriangleModel<DataTypes>::updateFlags(int /*ntri*/)
 }
 
 template<class DataTypes>
-void TRTriangleModel<DataTypes>::handleTopologyChange()
+void TRTriangleModel<DataTypes>::handleTopologyChange(const double &dt)
 {
     //bool debug_mode = false;
-    updateFromTopology();
+    updateFromTopology(dt);
     if (triangles != &mytriangles)
     {
         // We use the same triangle array as the topology -> only resize and recompute flags
@@ -385,7 +385,7 @@ void TRTriangleModel<DataTypes>::computeBoundingTree(size_t maxDepth)
     cubeModel->resize(this->size);  // size = number of triangles
     if (!this->empty())
     {
-        const SReal distance = (SReal)this->proximity.getValue();
+        const SReal distance = this->proximity.getValue();
         for (size_t i = 0; i < this->size; ++i)
         {
             Element t(this,i);
@@ -442,9 +442,10 @@ void TRTriangleModel<DataTypes>::updateFeatureBoxes(double dt)
     for(size_t i = 0; i < this->size; ++i)
     {
         Element t(this,i);
-        size_t id0 = t.p1Index();
-        size_t id1 = this->triangleEdgeFeatures[i].VertexId(1);
-        this->faceBoxes[i] = this->vertexBoxes[id0] + edgeBoxes[id1];
+        const size_t &id0 = t.p1Index();
+        const size_t &id1 = this->triangleEdgeFeatures[i].VertexId(1);
+        this->faceBoxes[i] = this->vertexBoxes[id0];
+        this->faceBoxes[i] += this->edgeBoxes[id1];
     }
 }
 
@@ -452,71 +453,82 @@ void TRTriangleModel<DataTypes>::updateFeatureBoxes(double dt)
 template<class DataTypes>
 void TRTriangleModel<DataTypes>::bufferAdjacentLists()
 {
-    adjacentPairList[1].clear();
+    adjacentPairs[1].clear();
     for(size_t i = 0, end = this->edgeFeatures.size(); i < end; ++i)
     {
-        std::pair<size_t,size_t> trianglePair(this->edgeFeatures[i].FaceId(0),this->edgeFeatures[i].FaceId(1));
+        index_pair_type trianglePair(this->edgeFeatures[i].FaceId(0),this->edgeFeatures[i].FaceId(1));
         if (trianglePair.first == -1 || trianglePair.second == -1) continue;
         if (trianglePair.first < trianglePair.second)
         {   //Swap
-            size_t tmp = trianglePair.first;
+            index_type tmp = trianglePair.first;
             trianglePair.first = trianglePair.second;
             trianglePair.second = tmp;
         }
 
-        std::pair<size_t,size_t> vertexPair;
-        size_t cov = this->covertexFace(trianglePair,vertexPair);
+        index_pair_type vertexPair;
+        index_type cov = this->covertexFace(trianglePair,vertexPair);
         assert(cov == 2);
 
         char status = this->getStatus2(trianglePair,vertexPair);
-        //if (status == 3) continue;
 
-        adjacentPairList[1].push_back(AdjacentPairs(trianglePair.first, trianglePair.second, vertexPair.first, vertexPair.second, status));
+        adjacentPairs[1].push_back(AdjacentPair(trianglePair.first, trianglePair.second, vertexPair.first, vertexPair.second, status));
     }
 
-    adjacentPairList[2].clear();
-    for (size_t i=0; i<_num_vtx; i++) {
-      for (id_list::iterator it1=_vtx_fids[i].begin(); it1!=_vtx_fids[i].end(); it1++) {
-        for (id_list::iterator it2=it1; it2!=_vtx_fids[i].end(); it2++) {
-          if (it1 == it2) continue;
+    helper::set<AdjacentPair> adjacentPairSet;
+    for (size_t i = 0, end = this->vertexTriangleFeatures.size(); i < end; ++i)
+    {
+      for (VertexTriangleFeatures::iterator it = this->vertexTriangleFeatures[i].begin(), it_end = this->vertexTriangleFeatures[i].end(); it != it_end; ++it)
+        {
+          for (VertexTriangleFeatures::iterator it2 = it; it2 != it_end; ++it2)
+            {
+                if (it == it2) continue;
 
-          size_t id1 = *it1;
-          size_t id2 = *it2;
-          if (id1 < id2) swapI(id1, id2);
+                index_pair_type trianglePair(*it,*it2);
+                if (trianglePair.first < trianglePair.second)
+                {   //Swap
+                  index_type tmp = trianglePair.first;
+                  trianglePair.first = trianglePair.second;
+                  trianglePair.second = tmp;
+                }
 
-          size_t st1 = 0, st2 = 0;
-          size_t cov = Covertex_F(id1, id2, st1, st2);
-          if (cov == 2) continue;
+                index_pair_type vertexPair;
+                index_type cov = this->covertexFace(trianglePair,vertexPair);
+                if (cov == 2) continue;
 
-          char status = get_status_1(id1, id2, st1, st2);
-          //if (status == 3) continue;
+                char status = this->getStatus1(trianglePair,vertexPair);
 
-          adj_1_list.push_back(adjacent_pair(id1, id2, st1, st2, status));
+                adjacentPairSet.insert(AdjacentPair(trianglePair.first, trianglePair.second, vertexPair.first, vertexPair.second, status));
+            }
         }
-      }
     }
+
+    adjacentPairs[0].clear();
+    adjacentPairs[0].resize(adjacentPairSet.size());
+    std::copy(adjacentPairSet.begin(),adjacentPairSet.end(),adjacentPairs[0].begin());
+
+    this->setOrphans();
 }
 
 template<class DataTypes>
-char  TRTriangleModel<DataTypes>::getStatus1(const std::pair<size_t,size_t> &triangleIndices,
-        std::pair<size_t,size_t> &vertexPair)
+char  TRTriangleModel<DataTypes>::getStatus1(const typename TRTriangleModel<DataTypes>::index_pair_type &triangleIndices,
+        const typename TRTriangleModel<DataTypes>::index_pair_type &vertexPair)
 {
-    size_t edge0 = this->triangleEdgeFeatures[triangleIndices.first].EdgeId(vertexPair.first);
-    size_t face0 = this->edgeFeatures[edge0].FaceId(0);
+    index_type edge0 = this->triangleEdgeFeatures[triangleIndices.first].EdgeId(vertexPair.first);
+    index_type face0 = this->edgeFeatures[edge0].FaceId(0);
     if(face0 == triangleIndices.first)
         face0 = this->edgeFeatures[edge0].FaceId(1);
 
-    size_t edge1 = this->triangleEdgeFeatures[triangleIndices.second].EdgeId(vertexPair.second);
-    size_t e11 = this->triangleEdgeFeatures[triangleIndices.second].EdgeId((vertexPair.second+2)%3);
+    index_type edge1 = this->triangleEdgeFeatures[triangleIndices.second].EdgeId(vertexPair.second);
+    index_type e11 = this->triangleEdgeFeatures[triangleIndices.second].EdgeId((vertexPair.second+2)%3);
 
     if (this->edgeFeatures[edge0].Covertex(this->edgeFeatures[edge1]))
     {   // Swap
-        size_t tmp = edge1;
+        index_type tmp = edge1;
         edge1 = e11;
         e11 = tmp;
     }
 
-    size_t face1 = this->edgeFeatures[e11].FaceId(0);
+    index_type face1 = this->edgeFeatures[e11].FaceId(0);
     if(face1 == triangleIndices.second)
         face1 = this->edgeFeatures[e11].FaceId(1);
 
@@ -532,16 +544,16 @@ char  TRTriangleModel<DataTypes>::getStatus1(const std::pair<size_t,size_t> &tri
 }
 
 template<class DataTypes>
-char TRTriangleModel<DataTypes>::getStatus2(const std::pair<size_t,size_t> &triangleIndices,
-        std::pair<size_t,size_t> &vertexPair)
+char TRTriangleModel<DataTypes>::getStatus2(const typename TRTriangleModel<DataTypes>::index_pair_type &triangleIndices,
+        const typename TRTriangleModel<DataTypes>::index_pair_type &vertexPair)
 {
-    size_t edge = this->triangleEdgeFeatures[triangleIndices.first].EdgeId((vertexPair.first+1)%3);
-    size_t face0 = this->edgeFeatures[edge].FaceId(0);
+    index_type edge = this->triangleEdgeFeatures[triangleIndices.first].EdgeId((vertexPair.first+1)%3);
+    index_type face0 = this->edgeFeatures[edge].FaceId(0);
     if(face0 == triangleIndices.first)
         face0 = this->edgeFeatures[edge].FaceId(1);
 
     edge = this->triangleEdgeFeatures[triangleIndices.second].EdgeId((vertexPair.second+1)%3);
-    size_t face1 = this->edgeFeatures[edge].FaceId(0);
+    index_type face1 = this->edgeFeatures[edge].FaceId(0);
     if(face1 == triangleIndices.second)
         face1 = this->edgeFeatures[edge].FaceId(1);
 
@@ -557,13 +569,169 @@ char TRTriangleModel<DataTypes>::getStatus2(const std::pair<size_t,size_t> &tria
 }
 
 template<class DataTypes>
-size_t TRTriangleModel<DataTypes>::covertexFace(const std::pair<size_t,size_t> &triangleIndices,
-        std::pair<size_t,size_t> &vertexPair)
+typename TRTriangleModel<DataTypes>::index_type
+TRTriangleModel<DataTypes>::covertexFace(const typename TRTriangleModel<DataTypes>::index_pair_type &triangleIndices,
+        typename TRTriangleModel<DataTypes>::index_pair_type &vertexPair)
 {
     Element face[2] = { Element(this,triangleIndices.first),
                         Element(this,triangleIndices.second)
                       };
     return face[0].covertex(face[1],vertexPair);
+}
+
+template<class DataTypes>
+void TRTriangleModel<DataTypes>::setOrphans()
+{
+  index_type id1, id2, st1, st2;
+
+  for (helper::vector<AdjacentPair>::iterator i=adjacentPairs[0].begin(); i!=adjacentPairs[0].end(); ++i)
+  {
+    i->GetParamaters(id1, id2, st1, st2);
+    this->getFeature1(id1, id2, st1, st2);
+  }
+
+  for (helper::vector<AdjacentPair>::iterator i=adjacentPairs[1].begin(); i!=adjacentPairs[1].end(); ++i)
+  {
+    i->GetParamaters(id1, id2, st1, st2);
+    this->getFeature1(id1, id2, st1, st2);
+  }
+
+}
+
+template<class DataTypes>
+void TRTriangleModel<DataTypes>::testOrphans()
+{
+  for (helper::set<FeaturePair>::iterator i=this->edgeEdgeFeaturePairs.begin(), end=this->edgeEdgeFeaturePairs.end(); i!=end; ++i)
+  {
+    index_type e1, e2;
+    i->GetParamaters(e1,e2);
+    this->intersect_ee(e1,e2);
+  }
+  for (helper::set<FeaturePair>::iterator i=this->vertexFaceFeaturePairs.begin(), end=this->vertexFaceFeaturePairs.end(); i!=end; ++i)
+  {
+    index_type v, f;
+    i->GetParamaters(f, v);
+    this->intersect_vf(f, v);
+  }
+}
+
+template<class DataTypes>
+bool TRTriangleModel<DataTypes>::testOrphansEdgeToEdge(const index_type &i1, const index_type &i2)
+{
+  for (index_type i=0; i<2; i++)
+  {
+    index_type f1 = this->edgeFeatures[i1].FaceId(i);
+    if (f1 == -1) continue;
+
+    for (index_type j=0; j<2; j++)
+    {
+      index_type f2 = this->edgeFeatures[i2].FaceId(j);
+      if (f2 == -1) continue;
+
+      if (!Element(this,f1).covertices(Element(this,f2)))
+        return false;
+    }
+  }
+
+  return true;
+}
+
+template<class DataTypes>
+bool TRTriangleModel<DataTypes>::testOrphansVertexToFace(const index_type &i1, const index_type &i2)
+{
+  for (VertexTriangleFeatures::iterator i=vertexTriangleFeatures[i1].begin(),
+    end = vertexTriangleFeatures[i2].end(); i != end; i++)
+  {
+    index_type f2 = *i;
+    if (!Element(this,f2).covertices(Element(this,vertexFaceIndices.second)))
+      return false;
+  }
+  return true;
+}
+
+template<class DataTypes>
+void TRTriangleModel<DataTypes>::getFeature1(const index_pair_type &triangleIndices,
+        const index_pair_type &indexPair)
+{
+    // 2 VF test
+    Element t = Element(this,triangleIndices.second);
+    for (int i=0; i<3; i++)
+    {
+        if (i == indexPair.second) continue; // skip one
+        this->insertVertexToFaceFeature(triangleIndices.first, t.Index(i));
+    }
+
+    // 2 EE test
+    index_type e1 = this->triangleEdgeFeatures[triangleIndices.second].EdgeId((indexPair.second+1)%3);
+    index_type e0 = this->triangleEdgeFeatures[triangleIndices.first].EdgeId((indexPair.first)%3);
+    this->insertEdgeToEdgeFeature(e0, e1);
+    e0 = this->triangleEdgeFeatures[triangleIndices.first].EdgeId((indexPair.first+2)%3);
+    this->insertEdgeToEdgeFeature(e0, e1);
+
+    // 2 VF test
+    t = Element(this,triangleIndices.first);
+    for (int i=0; i<3; i++)
+    {
+        if (i == indexPair.first) continue; // skip one
+        this->insertVertexToFaceFeature(triangleIndices.second, t.Index(i));
+    }
+
+    // 3 EE test
+    index_type e0 = this->triangleEdgeFeatures[triangleIndices.first].id((indexPair.first+1)%3);
+    for (int i=0; i<3; i++)
+    {
+        index_type e1 = this->triangleEdgeFeatures[triangleIndices.second].id(i);
+        this->insertEdgeToEdgeFeature(e0, e1);
+    }
+}
+
+template<class DataTypes>
+void TRTriangleModel<DataTypes>::getFeature2(const index_pair_type &triangleIndices,
+                                              const index_pair_type &indexPair)
+{
+  index_type e0 = this->triangleEdgeFeatures[triangleIndices.first].EdgeId(indexPair.first);
+  index_type e00 = this->triangleEdgeFeatures[triangleIndices.first].EdgeId((indexPair.first+2)%3);
+  index_type e1 = this->triangleEdgeFeatures[triangleIndices.second].EdgeId(indexPair.second);
+  index_type e11 = this->triangleEdgeFeatures[triangleIndices.second].EdgeId((indexPair.second+2)%3);
+
+  if (this->edgeFeatures[e0].Covertex(this->edgeFeatures[e1]))
+  { // Swap
+    index_type tmp = e1;
+    e1 = e11;
+    e11 = tmp;
+  }
+
+  Element face = Element(this,triangleIndices.first);
+  index_type fid = triangleIndices.second;
+  index_type vid = face.Index(indexPair.first);
+  this->insertVertexToFaceFeature(fid, vid);
+  this->insertEdgeToEdgeFeature(e0, e1);
+
+  // 2 VF test
+  face = Element(this,triangleIndices.second);
+  fid = triangleIndices.first;
+  vid = face.Index(indexPair.second);
+  this->insertVertexToFaceFeature(fid, vid);
+  this->insertEdgeToEdgeFeature(e00, e11);
+
+}
+
+template<class DataTypes>
+void TRTriangleModel<DataTypes>::insertEdgeToEdgeFeature(const index_type &e1, const index_type &e2)
+{
+  if (this->testOrphansEdgeToEdge(e1, e2))
+  {
+    this->edgeEdgeFeaturePairs.insert(FeaturePair(e1, e2));
+  }
+}
+
+template<class DataTypes>
+void TRTriangleModel<DataTypes>::insertVertexToFaceFeature(const index_type &f, const index_type &v)
+{
+  if (this->testOrphansVertexToFace(f, v))
+  {
+    this->vertexFaceFeaturePairs.insert(FeaturePair(f, v));
+  }
 }
 
 template<class DataTypes>
