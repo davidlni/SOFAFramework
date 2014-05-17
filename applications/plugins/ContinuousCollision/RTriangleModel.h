@@ -53,6 +53,108 @@ class TRTriangleModel;
 class TriangleLocalMinDistanceFilter;
 
 template<class TDataTypes>
+class TREdge : public core::TCollisionElementIterator< TRTriangleModel<TDataTypes> >
+{
+public:
+  typedef sofa::core::topology::BaseMeshTopology::index_type index_type;
+  typedef std::pair<index_type,index_type> index_pair_type;
+  typedef TDataTypes DataTypes;
+  typedef typename DataTypes::Coord Coord;
+  typedef typename DataTypes::Deriv Deriv;
+  typedef TREdgeModel<DataTypes> ParentModel;
+  typedef typename DataTypes::Real Real;
+
+  TREdge(ParentModel* model, index_type index);
+  TREdge() {}
+  explicit TREdge(const core::CollisionElementIterator& i);
+
+  const Coord& p1() const;
+  const Coord& p2() const;
+  const Coord& p(index_type i) const;
+
+  const index_type &p1Index() const;
+  const index_type &p2Index() const;
+  const index_type &Index(int i) const;
+
+  const Coord& p1Free() const;
+  const Coord& p2Free() const;
+
+  const index_type &e1Index() const;
+
+  const Coord& operator[](int i) const;
+
+  index_type covertices(const TREdge &other, helper::vector<index_pair_type> &verticesPairs);
+  bool covertices(const TREdge &other);
+  bool coedge(const TREdge &other);
+
+  const Deriv& v1() const;
+  const Deriv& v2() const;
+  const Deriv& v(int i) const;
+
+  const Deriv& n() const;
+  Deriv& n();
+
+  /// Return true if the element stores a free position vector
+  bool hasFreePosition() const;
+
+  int flags() const;
+
+  TREdge& shape() {
+    return *this;
+  }
+  const TREdge& shape() const {
+    return *this;
+  }
+
+  Coord interpX(defaulttype::Vec<2,Real> bary) const
+  {
+    return (p1()*(1-bary[0]-bary[1])) + (p2()*bary[0]) + (p3()*bary[1]);
+  }
+
+};
+
+template<class TDataTypes>
+class TRVertex : public core::TCollisionElementIterator< TRTriangleModel<TDataTypes> >
+{
+public:
+  typedef sofa::core::topology::BaseMeshTopology::index_type index_type;
+  typedef std::pair<index_type,index_type> index_pair_type;
+  typedef TDataTypes DataTypes;
+  typedef typename DataTypes::Coord Coord;
+  typedef typename DataTypes::Deriv Deriv;
+  typedef TRTriangleModel<DataTypes> ParentModel;
+  typedef typename DataTypes::Real Real;
+
+  TRVertex(ParentModel* model, index_type index);
+  TRVertex() {}
+  explicit TRVertex(const core::CollisionElementIterator& i);
+
+  const Coord& p() const;
+  const index_type &Index() const;
+  const Coord& pFree() const;
+  const Coord& operator[](int i) const;
+
+  index_type covertices(const TRVertex &other, helper::vector<index_pair_type> &vertexPair);
+  bool covertices(const TRVertex &other);
+  bool coedge(const TRVertex &other);
+
+  const Deriv& v() const;
+
+  /// Return true if the element stores a free position vector
+  bool hasFreePosition() const;
+
+  int flags() const;
+
+  TRVertex& shape() {
+    return *this;
+  }
+  const TRVertex& shape() const {
+    return *this;
+  }
+
+};
+
+template<class TDataTypes>
 class TRTriangle : public core::TCollisionElementIterator< TRTriangleModel<TDataTypes> >
 {
 public:
@@ -132,7 +234,10 @@ public:
     typedef typename DataTypes::VecDeriv VecDeriv;
     typedef typename DataTypes::Coord Coord;
     typedef typename DataTypes::Deriv Deriv;
-    typedef TRTriangle<DataTypes> Element;
+    typedef TRTriangle<DataTypes> TriangleElement;
+    typedef TREdge<DataTypes> EdgeElement;
+    typedef TRVertex<DataTypes> VertexElement;
+//     typedef TRTriangle<DataTypes> Element;
     friend class TRTriangle<DataTypes>;
 
     enum TriangleFlag
@@ -437,6 +542,7 @@ public:
     // -- CollisionModel interface
 
     virtual void resize(int size);
+
     virtual void computeContinuousBoundingTree(double dt, size_t maxDepth=0);
     void updateFeatureBoxes(double dt);
     void bufferAdjacentLists();
@@ -457,7 +563,27 @@ public:
     bool testOrphansVertexToFace(const index_type &i1, const index_type &i2);
     void insertEdgeToEdgeFeature(const index_type &i1, const index_type &i2);
     void insertVertexToFaceFeature(const index_type &i1, const index_type &i2);
+    float intersectVertexFace(const double &dt, const index_type &v, const index_type &f);
+    float intersectVertexFace(const double &dt, const index_type &v, const index_type &f1, const index_type &f2);
 
+    float intersectEdgeEdge(const double &dt, const index_type &e1, const index_type &e2);
+    float intersectEdgeEdge(const double &dt, const index_type &e1, const index_type &e2, const index_type &f1, const index_type &f2);
+    bool testVertexFace(const double &dt, const index_type &e, const index_type &e);
+    bool testEdgeEdge(const double &dt, const index_type &e, const index_type &e);
+    bool testCoplanarity(const Vector3 &p0, const Vector3 &p1, const Vector3 &p2,
+                         const Vector3 &p3, const Vector3 &p4, const Vector3 &p5,
+                         const Vector3 &p6, const Vector3 &p7);
+    float vertexFaceIntersection(const double &dt, const index_type &v, const index_type &f);
+    float edgeEdgeIntersection(const double &dt, const index_type &e1, const index_type &e2);
+    void computeCubicCoefficients(const Vector3 &a0, const Vector3 &ad, const Vector3 &b0, const Vector3 &bd,
+                                  const Vector3 &c0, const Vector3 &cd, const Vector3 &p0, const Vector3 &pd,
+                                  Real &a, Real &b, Real &c, Real &d);
+    void computeCubicCoefficientsVertexFace(const Vector3 &a0, const Vector3 &ad, const Vector3 &b0, const Vector3 &bd,
+                                       const Vector3 &c0, const Vector3 &cd, const Vector3 &p0, const Vector3 &pd,
+                                       Real &a, Real &b, Real &c, Real &d);
+    void computeCubicCoefficientsEdgeEdge(const Vector3 &a0, const Vector3 &ad, const Vector3 &b0, const Vector3 &bd,
+                                     const Vector3 &c0, const Vector3 &cd, const Vector3 &d0, const Vector3 &dd,
+                                     Real &a, Real &b, Real &c, Real &d);
     void draw(const core::visual::VisualParams*,int index);
 
     void draw(const core::visual::VisualParams* vparams);

@@ -24,6 +24,8 @@
  *                                                                             *
  ******************************************************************************/
 
+#include <stack>
+
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/ObjectFactory.h>
 
@@ -165,18 +167,18 @@ void TPolytopeModel<TDataTypes,K>::computeBoundingTree(size_t maxDepth)
     if(maxDepth <= 0)
         return;
 
-    //sout << ">PolytopeModel::computeBoundingTree("<<maxDepth<<")"<<sendl;
-    std::list<MyType*> levels;
-    levels.push_front(this->createPrevious<MyType>());
+    std::stack<MyType*> levelStack;
+    levelStack.push(this->createPrevious<MyType>());
     for (size_t i = 0; i < maxDepth; i++)
-        levels.push_front(levels.front()->createPrevious<MyType>());
+      levelStack.push(levelStack.top()->createPrevious<MyType>());
 
-    MyType* root = levels.front();
-    if (root->empty() || root->getPrevious() != NULL)
+    MyType* root = levelStack.top();
+    levelStack.pop();
+    if (root->empty() || root->getPrevious())
     {
         // Tree must be reconstructed
         // First remove extra levels
-        while(root->getPrevious() != NULL)
+        while(root->getPrevious())
         {
             core::CollisionModel::SPtr m = root->getPrevious();
             root->setPrevious(m->getPrevious());
@@ -184,34 +186,30 @@ void TPolytopeModel<TDataTypes,K>::computeBoundingTree(size_t maxDepth)
             m.reset();
         }
 
-        // Clear all existing levels
-        typename std::list<MyType*>::iterator it;
-        typename std::list<MyType*>::iterator end = levels.end();
-        for (it = levels.begin(); it != end; ++it)
-            (*it)->resize(0);
-
         // Build root cell
-        //sout << "PolytopeModel: add root cube"<<sendl;
+        // Root only contains one polytope at the 0 level with all the elements
+        root->resize(0);
         root->addPolytope(Element(this,0),Element(this,this->getSize()));
+
+        // Expand/contract the root polytope to cover the set of elements it contains
+        // Probably unnecesary...
         PolytopeData &rootPolytope = root->getPolytopeData(0);
         for(size_t i = 0, i_end = this->getSize(); i < i_end; ++i)
             rootPolytope += this->polytopes[i];
 
+        // Root is at level 0
+        MyType* previousLevel = root;
+
         // Construct tree by splitting cells along their biggest dimension
-        it = levels.begin();
-        MyType* level = root;
-        ++it;
-        size_t lvl = 0;
-        while(it != end)
+        while(!levelStack.empty())
         {
-            //sout << "PolytopeModel: split level "<<lvl<<sendl;
-            MyType* currentLevel = *it;
-            currentLevel->polytopes.reserve(level->getSize()*2);
-            for(Element cell = Element(level->begin()); cell != level->end() ; ++cell)
+            MyType* currentLevel = levelStack.top();
+            currentLevel->resize(0);
+            currentLevel->polytopes.reserve(previousLevel->getSize()*2);
+            for(Element cell = Element(previousLevel->begin()); cell != previousLevel->end() ; ++cell)
             {
                 const std::pair<Element,Element>& subcells = cell.subcells();
                 size_t ncells = subcells.second.getIndex() - subcells.first.getIndex();
-                //sout << "PolytopeModel: level "<<lvl<<" cell "<<cell.getIndex()<<": current subcells "<<subcells.first.getIndex() << " - "<<subcells.second.getIndex()<<sendl;
                 // Only split cells with more than 4 childs
                 if (ncells > 4)
                 {
@@ -220,25 +218,25 @@ void TPolytopeModel<TDataTypes,K>::computeBoundingTree(size_t maxDepth)
                     Real center = cell.getElement().GetCenter(splitAxis);
 
                     // Separate cells on each side of the median cell
-                    typename ElementListType::iterator start, mid, elementEnd;
+                    typename ElementListType::iterator start, mid, finish;
                     start = this->polytopes.begin()+subcells.first.getIndex();
-                    elementEnd = this->polytopes.begin()+subcells.second.getIndex();
-                    mid = std::partition(start,elementEnd,PolytopeSortPredicate(splitAxis,center));
+                    finish = this->polytopes.begin()+subcells.second.getIndex();
+                    mid = std::partition(start,finish,PolytopeSortPredicate(splitAxis,center));
 
-                    size_t middle = std::distance(start,mid);
+                    size_t middleIndex = std::distance(start,mid);
 
-                    // Create the two new subcells
-                    Element cmiddle(this, middle);
+                    // Create the two new polytops in current level containing the splited indices
+                    Element cmiddle(this, middleIndex);
                     size_t c1 = currentLevel->addPolytope(subcells.first, cmiddle);
                     size_t c2 = currentLevel->addPolytope(cmiddle, subcells.second);
-                    //sout << "L"<<lvl<<" cell "<<cell.getIndex()<<" split along "<<(splitAxis==0?'X':splitAxis==1?'Y':'Z')<<" in cell "<<c1<<" getSize() "<<middle-subcells.first.getIndex()<<" and cell "<<c2<<" size "<<subcells.second.getIndex()-middle<<"."<<sendl;
-                    level->polytopes[cell.getIndex()].subcells.first = Element(currentLevel,c1);
-                    level->polytopes[cell.getIndex()].subcells.second = Element(currentLevel,c2+1);
+
+                    // Update subcells of the parent level with the two newly created cells
+                    previousLevel->polytopes[cell.getIndex()].subcells.first = Element(currentLevel,c1);
+                    previousLevel->polytopes[cell.getIndex()].subcells.second = Element(currentLevel,c2+1);
                 }
             }
-            ++it;
-            level = currentLevel;
-            ++lvl;
+            previousLevel = currentLevel;
+            levelStack.pop();
         }
         if (!parentOf.empty())
         {

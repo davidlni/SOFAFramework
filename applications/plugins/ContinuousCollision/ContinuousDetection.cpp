@@ -225,7 +225,8 @@ public:
 
 void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*, core::CollisionModel*>& cmPair)
 {
-    typedef std::pair< std::pair<core::CollisionElementIterator,core::CollisionElementIterator>, std::pair<core::CollisionElementIterator,core::CollisionElementIterator> > TestPair;
+    typedef std::pair< std::pair<core::CollisionElementIterator,core::CollisionElementIterator>,
+                       std::pair<core::CollisionElementIterator,core::CollisionElementIterator> > TestPair;
 
     core::CollisionModel *cm1 = cmPair.first; //->getNext();
     core::CollisionModel *cm2 = cmPair.second; //->getNext();
