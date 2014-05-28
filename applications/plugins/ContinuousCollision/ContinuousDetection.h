@@ -25,10 +25,10 @@
 #ifndef SOFA_COMPONENT_COLLISION_BRUTEFORCEDETECTION_H
 #define SOFA_COMPONENT_COLLISION_BRUTEFORCEDETECTION_H
 
+
 #include <sofa/core/collision/BroadPhaseDetection.h>
 #include <sofa/core/collision/NarrowPhaseDetection.h>
 #include <sofa/core/CollisionElement.h>
-#include <sofa/component/component.h>
 #include <sofa/component/collision/CubeModel.h>
 #include <sofa/defaulttype/Vec.h>
 #include <set>
@@ -45,7 +45,7 @@ namespace collision
 
 using namespace sofa::defaulttype;
 
-class SOFA_BASE_COLLISION_API ContinuousDetection :
+class SOFA_CONTINUOUS_COLLISION_API ContinuousDetection :
     public core::collision::BroadPhaseDetection,
     public core::collision::NarrowPhaseDetection
 {
@@ -81,8 +81,6 @@ public:
         core::collision::BroadPhaseDetection::beginBroadPhase();
         collisionModels.clear();
     }
-
-    virtual void endBroadPhase();
 
     /* for debugging */
     void draw(const core::visual::VisualParams* vparams);

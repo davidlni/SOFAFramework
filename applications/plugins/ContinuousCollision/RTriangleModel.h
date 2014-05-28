@@ -53,6 +53,9 @@ typedef struct {
 template<class DataTypes>
 class TRTriangleModel;
 
+template<class DataTypes>
+class TRTriangle;
+
 class TriangleLocalMinDistanceFilter;
 
 template<class TDataTypes>
@@ -85,13 +88,14 @@ public:
   const index_type &f1Index() const;
   const index_type &f2Index() const;
   const index_type &FaceId(const index_type &i) const;
+  TRTriangle<DataTypes> getTriangle(const index_type &i) const;
 
   const Coord& operator[](int i) const;
 
   index_type covertices(const TREdge &other, helper::vector<index_pair_type> &vertexPair);
   bool covertices(const TREdge &other);
   bool coedge(const TREdge &other);
-  const DiscreteOrientedPolytope<Real> &getBox() const;
+  PolytopeModel::DOPType getBox() const;
 
   const Deriv& v1() const;
   const Deriv& v2() const;
@@ -138,9 +142,9 @@ public:
   index_type covertices(const TRVertex &other, helper::vector<index_pair_type> &vertexPair);
   bool covertices(const TRVertex &other);
   bool coedge(const TRVertex &other);
-  const DiscreteOrientedPolytope<Real> &getBox() const;
+  PolytopeModel::DOPType getBox() const;
 
-  const helper::vector<index_type> &getFaces();
+  const helper::vector<index_type> &getFaces() const;
 
   const Deriv& v() const;
 
@@ -197,7 +201,7 @@ public:
     index_type covertices(const TRTriangle &other, index_pair_type &vertexPair);
     bool covertices(const TRTriangle &other) const;
     bool coedge(const TRTriangle &other) const;
-    const DiscreteOrientedPolytope<Real> &getBox() const;
+    PolytopeModel::DOPType getBox() const;
 
     const Deriv& v1() const;
     const Deriv& v2() const;
@@ -448,7 +452,7 @@ public:
 //           this->State[0] = other.State[0];
 //           this->State[1] = other.State[1];
 //           this->Status = other.Status;
-// 
+//
 //         }
 
         bool operator < (const AdjacentPair &other) const
@@ -556,9 +560,9 @@ protected:
     helper::vector<EdgeFeature> edgeFeatures;
     helper::vector<TriangleEdgesFeature> triangleEdgeFeatures;
     helper::vector<VertexTriangleFeatures> vertexTriangleFeatures;
-    helper::vector<DiscreteOrientedPolytope<Real>> edgeBoxes;
-    helper::vector<DiscreteOrientedPolytope<Real>> vertexBoxes;
-    helper::vector<DiscreteOrientedPolytope<Real>> faceBoxes;
+    helper::vector<PolytopeModel::DOPType> edgeBoxes;
+    helper::vector<PolytopeModel::DOPType> vertexBoxes;
+    helper::vector<PolytopeModel::DOPType> faceBoxes;
     helper::vector<AdjacentPair> adjacentPairs[2];
     helper::vector<NonAdjacentPair> nonAdjacentPairs;
     helper::set<FeaturePair> edgeEdgeFeaturePairs;
@@ -792,9 +796,9 @@ inline bool TRTriangle<DataTypes>::coedge(const TRTriangle &other) const
 }
 
 template<class DataTypes>
-inline const DiscreteOrientedPolytope<typename DataTypes::Real>& TRTriangle<DataTypes>::getBox() const
+inline PolytopeModel::DOPType TRTriangle<DataTypes>::getBox() const
 {
-  return Polytope(this->model->getPrevious(),this->index);
+  return static_cast<PolytopeModel*>(this->model->getPrevious())->getPolytopeData(this->index);
 }
 
 template<class DataTypes>
@@ -988,13 +992,13 @@ inline bool TRVertex<DataTypes>::hasFreePosition() const
 }
 
 template<typename DataTypes>
-inline const helper::vector<typename TRVertex<DataTypes>::index_type> &TRVertex<DataTypes>::getFaces()
+inline const helper::vector<typename TRVertex<DataTypes>::index_type> &TRVertex<DataTypes>::getFaces() const
 {
   return this->model->vertexTriangleFeatures[this->index];
 }
 
 template<class DataTypes>
-inline const DiscreteOrientedPolytope<typename DataTypes::Real> &TRVertex<DataTypes>::getBox() const
+inline PolytopeModel::DOPType TRVertex<DataTypes>::getBox() const
 {
   return this->model->vertexBoxes[this->index];
 }
@@ -1073,8 +1077,17 @@ inline const typename TREdge<DataTypes>::index_type& TREdge<DataTypes>::FaceId(c
   return this->model->edgeFeatures[this->index].FaceId(i);
 }
 
+template<typename DataTypes>
+inline TRTriangle<DataTypes> TREdge<DataTypes>::getTriangle(const index_type &i) const
+{
+  // TODO: comparing unsigned integer with -1 is bad practize, find a beter way...
+  if(this->model->edgeFeatures[this->index].FaceId(i) == -1)
+    return TRTriangle<DataTypes>();
+  return TRTriangle<DataTypes>(this->model,this->model->edgeFeatures[this->index].FaceId(i));
+}
+
 template<class DataTypes>
-inline const DiscreteOrientedPolytope<typename DataTypes::Real>& TREdge<DataTypes>::getBox() const
+inline PolytopeModel::DOPType TREdge<DataTypes>::getBox() const
 {
   return this->model->edgeBoxes[this->index];
 }

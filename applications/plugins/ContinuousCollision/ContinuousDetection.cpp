@@ -22,6 +22,8 @@
  *                                                                             *
  * Contact information: contact@sofa-framework.org                             *
  ******************************************************************************/
+
+#include "initContinuousCollision.h"
 #include "ContinuousDetection.h"
 #include "RTriangleModel.h"
 #include <sofa/core/visual/VisualParams.h>
@@ -48,11 +50,11 @@ namespace component
 namespace collision
 {
 
-using namespace sofa::defaulttype;
-using namespace sofa::helper;
+using namespace defaulttype;
+using namespace helper;
 using namespace collision;
 
-SOFA_DECL_CLASS(BruteForce)
+SOFA_DECL_CLASS(ContinuousDetection)
 
 int ContinuousDetectionClass = core::RegisterObject("Collision detection using extensive pair-wise tests")
                                .add< ContinuousDetection >()
@@ -120,7 +122,7 @@ void ContinuousDetection::addCollisionModel(core::CollisionModel *cm)
             }
     }
 
-    for (sofa::helper::vector<core::CollisionModel*>::iterator it = collisionModels.begin(); it != collisionModels.end(); ++it)
+    for (helper::vector<core::CollisionModel*>::iterator it = collisionModels.begin(); it != collisionModels.end(); ++it)
     {
         core::CollisionModel* cm2 = *it;
 
@@ -147,9 +149,7 @@ void ContinuousDetection::addCollisionModel(core::CollisionModel *cm)
             cmPairs.push_back(std::make_pair(cm1, cm2));
         }
     }
-   
-    static_cast<RTriangleModel*>(cm->getLast())->bufferAdjacentLists();
-    static_cast<RTriangleModel*>(cm->getLast())->setOrphans();
+
     collisionModels.push_back(cm);
 }
 
@@ -239,9 +239,11 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
 
     const bool self = (finalcm1->getContext() == finalcm2->getContext());
     if (self)
+    {
        sout << "SELF: Final intersector " << finalintersector->name() << " for "<<finalcm1->getName()<<" - "<<finalcm2->getName()<<sendl;
-//     this->Collide(cmPair.first,cmPair.second);
-    sofa::core::collision::DetectionOutputVector*& outputs = this->getDetectionOutputs(finalcm1, finalcm2);
+    }
+
+    core::collision::DetectionOutputVector*& outputs = this->getDetectionOutputs(finalcm1, finalcm2);
 
     finalintersector->beginIntersect(finalcm1, finalcm2, outputs);//creates outputs if null
 

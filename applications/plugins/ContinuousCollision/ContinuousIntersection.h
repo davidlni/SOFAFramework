@@ -28,6 +28,8 @@
 #include <sofa/core/collision/Intersection.h>
 #include <sofa/core/collision/IntersectorFactory.h>
 #include <sofa/helper/FnDispatcher.h>
+#include <sofa/component/component.h>
+#include "RTriangleModel.h"
 
 
 namespace sofa
@@ -35,16 +37,17 @@ namespace sofa
 
 namespace component
 {
-
 namespace collision
 {
-class SOFA_BASE_COLLISION_API ContinuousIntersection : public core::collision::Intersection, public core::collision::BaseIntersector
+
+class SOFA_CONTINUOUS_COLLISION_API ContinuousIntersection : public core::collision::Intersection, public core::collision::BaseIntersector
 {
 public:
     SOFA_CLASS(ContinuousIntersection,core::collision::Intersection);
 
 protected:
     ContinuousIntersection();
+    ~ContinuousIntersection();
 public:
     /// Return the intersector class handling the given pair of collision models, or NULL if not supported.
     /// @param swapModel output value set to true if the collision models must be swapped before calling the intersector.
@@ -53,16 +56,23 @@ public:
     core::collision::IntersectorMap intersectors;
     typedef core::collision::IntersectorFactory<ContinuousIntersection> IntersectorFactory;
 
-    template <class Elem1,class Elem2>
-    int computeIntersection(const Elem1 & e1,const Elem2 & e2,OutputVector* contacts);
+    int computeIntersection(const RTriangle & e1,const RTriangle & e2,OutputVector* contacts);
 
-    template <class Elem1,class Elem2>
-    int testIntersection(Elem1& e1,Elem2& e2);
+    int computeIntersection(const Polytope & e1,const Polytope & e2,OutputVector*);
+
+    template<typename elem1, typename elem2>
+    bool testIntersection(elem1& p1,elem2& p2)
+    {
+        return p1.getBox().Overlaps(p2.getBox());
+    }
+
     int beginIntersection(core::CollisionModel* model1, core::CollisionModel* model2, OutputVector* contacts);
     int endIntersection(core::CollisionModel* model1, core::CollisionModel* model2, OutputVector* contacts);
 
     /// returns true if algorithm uses continous detection
-    virtual bool useContinuous() const { return true; }
+    virtual bool useContinuous() const {
+        return true;
+    }
 
     ///
     virtual void beginBroadPhase();
@@ -81,7 +91,7 @@ namespace core
 namespace collision
 {
 #if defined(SOFA_EXTERN_TEMPLATE) && !defined(SOFA_BUILD_BASE_COLLISION)
-extern template class SOFA_BASE_COLLISION_API IntersectorFactory<component::collision::ContinuousIntersection>;
+extern template class SOFA_CONTINUOUS_COLLISION_API IntersectorFactory<component::collision::ContinuousIntersection>;
 #endif
 }
 }

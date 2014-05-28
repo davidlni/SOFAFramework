@@ -53,6 +53,7 @@ public:
     const typename TPolytopeModel<TDataTypes,K>::PolytopeData& getElement() const;
     const std::pair<TPolytope<TDataTypes,K>,TPolytope<TDataTypes,K> >& subcells() const;
     bool overlaps(const TPolytope<TDataTypes,K> &other) const;
+    const typename TPolytopeModel<TDataTypes,K>::DOPType &getBox() const;
 };
 
 template<typename TDataTypes, size_t NumberOfPlanes = 18>
@@ -193,6 +194,12 @@ inline const std::pair<TPolytope<TDataTypes,K>,TPolytope<TDataTypes,K> >& TPolyt
 }
 
 template<typename TDataTypes, size_t K>
+inline const typename TPolytopeModel<TDataTypes,K>::DOPType& TPolytope<TDataTypes,K>::getBox() const
+{
+  return this->model->polytopes[this->index];
+}
+
+template<typename TDataTypes, size_t K>
 inline bool TPolytope<TDataTypes,K>::overlaps(const TPolytope<TDataTypes,K> &other) const
 {
   return this->getElement().overlaps(other.getElement());
@@ -201,14 +208,14 @@ inline bool TPolytope<TDataTypes,K>::overlaps(const TPolytope<TDataTypes,K> &oth
 typedef TPolytopeModel<Vec3Types> PolytopeModel;
 typedef TPolytope<Vec3Types> Polytope;
 
-#if defined(SOFA_EXTERN_TEMPLATE) && !defined(CCD_PLUGIN_POLYTOPE_MODEL)
-#ifndef SOFA_FLOAT
-extern template class SOFA_CONTINUOUS_COLLISION_API TPolytopeModel<defaulttype::Vec3dTypes>;
-#endif
-#ifndef SOFA_DOUBLE
-extern template class SOFA_CONTINUOUS_COLLISION_API TPolytopeModel<defaulttype::Vec3fTypes>;
-#endif
-#endif
+// #if defined(SOFA_EXTERN_TEMPLATE) && !defined(CCD_PLUGIN_POLYTOPE_MODEL)
+// #ifndef SOFA_FLOAT
+// extern template class SOFA_CONTINUOUS_COLLISION_API TPolytopeModel<defaulttype::Vec3dTypes>;
+// #endif
+// #ifndef SOFA_DOUBLE
+// extern template class SOFA_CONTINUOUS_COLLISION_API TPolytopeModel<defaulttype::Vec3fTypes>;
+// #endif
+// #endif
 
 } // namespace collision
 

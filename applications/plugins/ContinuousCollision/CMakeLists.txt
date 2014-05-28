@@ -7,14 +7,15 @@ set(HEADER_FILES
     RTriangleModel.hpp
     initContinuousCollision.h
     ContinuousDetection.h
-
+    ContinuousIntersection.h
 	)
 
 set(SOURCE_FILES
     PolytopeModel.cpp
     RTriangleModel.cpp
     initContinuousCollision.cpp
-#     ContinuousDetection.cpp
+    ContinuousDetection.cpp
+    ContinuousIntersection.cpp
 	)
 
 AddCompilerDefinitions("SOFA_BUILD_PLUGIN_CONTINUOUS_COLLISION")
