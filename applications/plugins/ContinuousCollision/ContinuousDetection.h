@@ -57,10 +57,6 @@ private:
     sofa::helper::vector<core::CollisionModel*> collisionModels;
     Data<bool> bDraw;
 
-    Data< helper::fixed_array<Vector3,2> > box;
-
-    CubeModel::SPtr boxModel;
-
 
 protected:
     ContinuousDetection();
@@ -86,12 +82,18 @@ public:
         collisionModels.clear();
     }
 
+    virtual void endBroadPhase();
+
     /* for debugging */
     void draw(const core::visual::VisualParams* vparams);
 
     inline virtual bool needsDeepBoundingTree()const {
         return true;
     }
+
+    class Impl;
+    Impl *pimpl;
+
 };
 
 } // namespace collision

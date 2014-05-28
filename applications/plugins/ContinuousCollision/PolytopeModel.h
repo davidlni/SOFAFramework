@@ -50,8 +50,9 @@ public:
 
     explicit TPolytope(const core::CollisionElementIterator& i);
 
-    const std::pair<TPolytope<TDataTypes,K>,TPolytope<TDataTypes,K> >& subcells() const;
     const typename TPolytopeModel<TDataTypes,K>::PolytopeData& getElement() const;
+    const std::pair<TPolytope<TDataTypes,K>,TPolytope<TDataTypes,K> >& subcells() const;
+    bool overlaps(const TPolytope<TDataTypes,K> &other) const;
 };
 
 template<typename TDataTypes, size_t NumberOfPlanes = 18>
@@ -60,6 +61,7 @@ class TPolytopeModel : public core::CollisionModel
 public:
     enum { K = NumberOfPlanes };
     SOFA_CLASS(SOFA_TEMPLATE2(TPolytopeModel,TDataTypes,K),sofa::core::CollisionModel);
+    typedef core::topology::BaseMeshTopology::index_type index_type;
 
 public:
     typedef core::CollisionElementIterator ChildIterator;
@@ -83,12 +85,12 @@ public:
 
     struct PolytopeSortPredicate
     {
-        PolytopeSortPredicate(const size_t &_axis, const Real &_center) : axis(_axis), center(_center) {}
+      PolytopeSortPredicate(const index_type &_axis, const Real &_center) : axis(_axis), center(_center) {}
         bool operator()(const PolytopeData& c1) const
         {
             return c1.GetCenter(axis) < center;
         }
-        const size_t &axis;
+        const index_type &axis;
         const Real &center;
     };
 
@@ -100,14 +102,14 @@ protected:
 public:
     virtual void resize(size_t size);
 
-    void setParentOf(size_t childIndex, const Vector3& p);
+    void setParentOf(const index_type &childIndex, const Vector3& p);
 
     // For continuous collision
-    void enlarge(size_t childIndex, const Real &distance);
-    void setLeafPolytope(size_t polytopeIndex, size_t childIndex);
-    void setLeafPolytope(size_t polytopeIndex, std::pair<ChildIterator,ChildIterator> children, const Vector3& p);
+    void enlarge(const index_type &childIndex, const Real &distance);
+    void setLeafPolytope(const index_type &polytopeIndex, const index_type &childIndex);
+    void setLeafPolytope(const index_type &polytopeIndex, const std::pair<ChildIterator,ChildIterator> &children, const Vector3& p);
 
-    size_t getNumberCells() {
+    index_type getNumberCells() {
         return polytopes.size();
     }
 
@@ -116,21 +118,21 @@ public:
         bounding = polytopes;
     }
 
-    size_t getLeafIndex(size_t index) const
+    index_type getLeafIndex(const index_type &index) const
     {
         return polytopes[index].children.first.getIndex();
     }
 
-    size_t getLeafEndIndex(size_t index) const
+    index_type getLeafEndIndex(const index_type &index) const
     {
         return polytopes[index].children.second.getIndex();
     }
 
-    const PolytopeData & getPolytopeData(size_t index) const {
+    const PolytopeData & getPolytopeData(const index_type &index) const {
         return polytopes[index];
     }
 
-    PolytopeData & getPolytopeData(size_t index)  {
+    PolytopeData & getPolytopeData(const index_type &index)  {
         return polytopes[index];
     }
 
@@ -156,14 +158,14 @@ public:
 
     void draw(const core::visual::VisualParams* vparams);
 
-    size_t addPolytope(Element subcellsBegin, Element subcellsEnd);
+    size_t addPolytope(const Element &subcellsBegin, const Element &subcellsEnd);
     void updatePolytope(PolytopeData &element);
-    void updatePolytope(size_t index);
+    void updatePolytope(const index_type &index);
     void updatePolytopes();
 
 protected:
     ElementListType polytopes;
-    sofa::helper::vector<size_t> parentOf; ///< Given the index of a child leaf element, store the index of the parent cube
+    sofa::helper::vector<index_type> parentOf; ///< Given the index of a child leaf element, store the index of the parent cube
 
 };
 
@@ -188,6 +190,12 @@ template<typename TDataTypes, size_t K>
 inline const std::pair<TPolytope<TDataTypes,K>,TPolytope<TDataTypes,K> >& TPolytope<TDataTypes,K>::subcells() const
 {
     return this->getElement().subcells;
+}
+
+template<typename TDataTypes, size_t K>
+inline bool TPolytope<TDataTypes,K>::overlaps(const TPolytope<TDataTypes,K> &other) const
+{
+  return this->getElement().overlaps(other.getElement());
 }
 
 typedef TPolytopeModel<Vec3Types> PolytopeModel;

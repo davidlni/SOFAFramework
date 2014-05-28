@@ -1,18 +1,20 @@
 include(${SOFA_CMAKE_DIR}/preProject.cmake)
 
 set(HEADER_FILES
-
     PolytopeModel.h
     PolytopeModel.hpp
+    RTriangleModel.h
+    RTriangleModel.hpp
     initContinuousCollision.h
+    ContinuousDetection.h
 
 	)
 
 set(SOURCE_FILES
-
-    initContinuousCollision.cpp
     PolytopeModel.cpp
-
+    RTriangleModel.cpp
+    initContinuousCollision.cpp
+#     ContinuousDetection.cpp
 	)
 
 AddCompilerDefinitions("SOFA_BUILD_PLUGIN_CONTINUOUS_COLLISION")

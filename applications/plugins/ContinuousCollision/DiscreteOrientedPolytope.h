@@ -77,7 +77,7 @@ public:
         NormalProjections<K>::ComputeAll(p,q,this->Distance);
     }
 
-    bool Overlaps(const DiscreteOrientedPolytope<T,K> &other)
+    bool Overlaps(const DiscreteOrientedPolytope<T,K> &other) const
     {
         for(size_t i = 0; i < KHalf; ++i)
         {
@@ -87,7 +87,7 @@ public:
         return true;
     }
 
-    bool Overlaps(const DiscreteOrientedPolytope<T,K> &a, DiscreteOrientedPolytope<T,K> &out)
+    bool Overlaps(const DiscreteOrientedPolytope<T,K> &a, DiscreteOrientedPolytope<T,K> &out) const
     {
         if(!this->Overlaps(a))
             return false;
@@ -100,7 +100,7 @@ public:
         return true;
     }
 
-    bool Inside(const defaulttype::Vector3 &p)
+    bool Inside(const defaulttype::Vector3 &p) const
     {
         HalfDistanceArrayType d = {0};
         NormalProjections<K>::ComputeAll(p,d);
@@ -142,16 +142,22 @@ public:
         return *this;
     }
 
-    inline DiscreteOrientedPolytope<T,K> operator+(const DiscreteOrientedPolytope<T,K> &other)
+    inline DiscreteOrientedPolytope<T,K> operator+(const DiscreteOrientedPolytope<T,K> &other) const
     {
         DiscreteOrientedPolytope<T,K> result(*this);
         return (result += other);
     }
 
-    inline DiscreteOrientedPolytope<T,K> operator+(const T &other)
+    inline DiscreteOrientedPolytope<T,K> operator+(const T &other) const
     {
       DiscreteOrientedPolytope<T,K> result(*this);
       return (result += other);
+    }
+
+    inline DiscreteOrientedPolytope<T,K> operator+(const defaulttype::Vector3 &p) const
+    {
+      DiscreteOrientedPolytope<T,K> result(*this);
+      return (result += p);
     }
 
     inline DiscreteOrientedPolytope<T,K> &operator*=(const defaulttype::Vector3 &p)
@@ -168,7 +174,7 @@ public:
         return dop*=(*this);
     }
 
-    inline DiscreteOrientedPolytope<T,K> operator%(const DiscreteOrientedPolytope<T,K> &other)
+    inline bool operator%(const DiscreteOrientedPolytope<T,K> &other)
     {
         return this->Overlaps(other);
     }

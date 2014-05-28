@@ -23,6 +23,7 @@
  * Contact information: contact@sofa-framework.org                             *
  ******************************************************************************/
 #include "ContinuousDetection.h"
+#include "RTriangleModel.h"
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/component/collision/CapsuleModel.h>
 #include <sofa/component/collision/Sphere.h>
@@ -59,14 +60,33 @@ int ContinuousDetectionClass = core::RegisterObject("Collision detection using e
 
 using namespace core::objectmodel;
 
+
+class ContinuousDetection::Impl
+{
+public:
+  void bufferAdjacentList(RTriangleModel *cm);
+  void setOrphans(RTriangleModel *cm);
+};
+
+inline void ContinuousDetection::Impl::bufferAdjacentList(RTriangleModel* cm)
+{
+  cm->bufferAdjacentLists();
+}
+
+inline void ContinuousDetection::Impl::setOrphans(RTriangleModel* cm)
+{
+  cm->setOrphans();
+}
+
 ContinuousDetection::ContinuousDetection()
     : bDraw(initData(&bDraw, false, "draw", "enable/disable display of results"))
-    , box(initData(&box, "box", "if not empty, objects that do not intersect this bounding-box will be ignored"))
 {
+  this->pimpl = new Impl;
 }
 
 ContinuousDetection::~ContinuousDetection()
 {
+  delete this->pimpl;
 }
 
 void ContinuousDetection::init()
@@ -76,16 +96,7 @@ void ContinuousDetection::init()
 
 void ContinuousDetection::reinit()
 {
-    if (box.getValue()[0][0] >= box.getValue()[1][0])
-    {
-        boxModel.reset();
-    }
-    else
-    {
-        if (!boxModel) boxModel = sofa::core::objectmodel::New<CubeModel>();
-        boxModel->resize(1);
-        boxModel->setParentOf(0, box.getValue()[0], box.getValue()[1]);
-    }
+
 }
 
 void ContinuousDetection::addCollisionModel(core::CollisionModel *cm)
@@ -94,20 +105,6 @@ void ContinuousDetection::addCollisionModel(core::CollisionModel *cm)
     if (cm->empty())
         return;
 
-    if (boxModel)
-    {
-        bool swapModels = false;
-        core::collision::ElementIntersector* intersector = intersectionMethod->findIntersector(cm, boxModel.get(), swapModels);
-        if (intersector)
-        {
-            core::CollisionModel* cm1 = (swapModels?boxModel.get():cm);
-            core::CollisionModel* cm2 = (swapModels?cm:boxModel.get());
-
-            // Here we assume a single root element is present in both models
-            if (!intersector->canIntersect(cm1->begin(), cm2->begin()))
-                return;
-        }
-    }
 
     if (cm->isSimulated() && cm->getLast()->canCollideWith(cm->getLast()))
     {
@@ -121,8 +118,8 @@ void ContinuousDetection::addCollisionModel(core::CollisionModel *cm)
                 //sout << "Broad phase Self "<<cm->getLast()->getName()<<sendl;
                 cmPairs.push_back(std::make_pair(cm, cm));
             }
-
     }
+
     for (sofa::helper::vector<core::CollisionModel*>::iterator it = collisionModels.begin(); it != collisionModels.end(); ++it)
     {
         core::CollisionModel* cm2 = *it;
@@ -143,27 +140,6 @@ void ContinuousDetection::addCollisionModel(core::CollisionModel *cm)
         core::CollisionModel* cm1 = (swapModels?cm2:cm);
         cm2 = (swapModels?cm:cm2);
 
-        // // Here we assume multiple root elements are present in both models
-        // bool collisionDetected = false;
-        // core::CollisionElementIterator begin1 = cm->begin();
-        // core::CollisionElementIterator end1 = cm->end();
-        // core::CollisionElementIterator begin2 = cm2->begin();
-        // core::CollisionElementIterator end2 = cm2->end();
-        // for (core::CollisionElementIterator it1 = begin1; it1 != end1; ++it1)
-        // {
-        //     for (core::CollisionElementIterator it2 = begin2; it2 != end2; ++it2)
-        //     {
-        //         //if (!it1->canCollideWith(it2)) continue;
-        //         if (intersector->canIntersect(it1, it2))
-        //         {
-        //             collisionDetected = true;
-        //             break;
-        //         }
-        //     }
-        //     if (collisionDetected) break;
-        // }
-        // if (collisionDetected)
-
         // Here we assume a single root element is present in both models
         if (intersector->canIntersect(cm1->begin(), cm2->begin()))
         {
@@ -171,9 +147,11 @@ void ContinuousDetection::addCollisionModel(core::CollisionModel *cm)
             cmPairs.push_back(std::make_pair(cm1, cm2));
         }
     }
+   
+    static_cast<RTriangleModel*>(cm->getLast())->bufferAdjacentLists();
+    static_cast<RTriangleModel*>(cm->getLast())->setOrphans();
     collisionModels.push_back(cm);
 }
-
 
 bool ContinuousDetection::keepCollisionBetween(core::CollisionModel *cm1, core::CollisionModel *cm2)
 {
@@ -185,54 +163,50 @@ bool ContinuousDetection::keepCollisionBetween(core::CollisionModel *cm1, core::
     return true;
 }
 
-
 class MirrorIntersector : public core::collision::ElementIntersector
 {
 public:
-    core::collision::ElementIntersector* intersector;
+  core::collision::ElementIntersector* intersector;
 
-    /// Test if 2 elements can collide. Note that this can be conservative (i.e. return true even when no collision is present)
-    virtual bool canIntersect(core::CollisionElementIterator elem1, core::CollisionElementIterator elem2)
-    {
-        return intersector->canIntersect(elem2, elem1);
-    }
+  /// Test if 2 elements can collide. Note that this can be conservative (i.e. return true even when no collision is present)
+  virtual bool canIntersect(core::CollisionElementIterator elem1, core::CollisionElementIterator elem2)
+  {
+    return intersector->canIntersect(elem2, elem1);
+  }
 
-    /// Begin intersection tests between two collision models. Return the number of contacts written in the contacts vector.
-    /// If the given contacts vector is NULL, then this method should allocate it.
-    virtual int beginIntersect(core::CollisionModel* model1, core::CollisionModel* model2, core::collision::DetectionOutputVector*& contacts)
-    {
-        return intersector->beginIntersect(model2, model1, contacts);
-    }
+  /// Begin intersection tests between two collision models. Return the number of contacts written in the contacts vector.
+  /// If the given contacts vector is NULL, then this method should allocate it.
+  virtual int beginIntersect(core::CollisionModel* model1, core::CollisionModel* model2, core::collision::DetectionOutputVector*& contacts)
+  {
+    return intersector->beginIntersect(model2, model1, contacts);
+  }
 
-    /// Compute the intersection between 2 elements. Return the number of contacts written in the contacts vector.
-    virtual int intersect(core::CollisionElementIterator elem1, core::CollisionElementIterator elem2, core::collision::DetectionOutputVector* contacts)
-    {
-        return intersector->intersect(elem2, elem1, contacts);
-    }
+  /// Compute the intersection between 2 elements. Return the number of contacts written in the contacts vector.
+  virtual int intersect(core::CollisionElementIterator elem1, core::CollisionElementIterator elem2, core::collision::DetectionOutputVector* contacts)
+  {
+    return intersector->intersect(elem2, elem1, contacts);
+  }
 
-    /// End intersection tests between two collision models. Return the number of contacts written in the contacts vector.
-    virtual int endIntersect(core::CollisionModel* model1, core::CollisionModel* model2, core::collision::DetectionOutputVector* contacts)
-    {
-        return intersector->endIntersect(model2, model1, contacts);
-    }
+  /// End intersection tests between two collision models. Return the number of contacts written in the contacts vector.
+  virtual int endIntersect(core::CollisionModel* model1, core::CollisionModel* model2, core::collision::DetectionOutputVector* contacts)
+  {
+    return intersector->endIntersect(model2, model1, contacts);
+  }
 
-    virtual std::string name() const
-    {
-        return intersector->name() + std::string("<SWAP>");
-    }
+  virtual std::string name() const
+  {
+    return intersector->name() + std::string("<SWAP>");
+  }
 
 };
 
 void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*, core::CollisionModel*>& cmPair)
 {
-    typedef std::pair< std::pair<core::CollisionElementIterator,core::CollisionElementIterator>,
-                       std::pair<core::CollisionElementIterator,core::CollisionElementIterator> > TestPair;
+    typedef std::pair<core::CollisionElementIterator,core::CollisionElementIterator> ElementIteratorPair;
+    typedef std::pair< ElementIteratorPair, ElementIteratorPair > TestPair;
 
     core::CollisionModel *cm1 = cmPair.first; //->getNext();
     core::CollisionModel *cm2 = cmPair.second; //->getNext();
-
-    //int size0 = elemPairs.size();
-    //sout << "Narrow phase "<<cm1->getLast()->getName()<<" - "<<cm2->getLast()->getName()<<sendl;
 
     if (!cm1->isSimulated() && !cm2->isSimulated())
         return;
@@ -240,13 +214,18 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
     if (cm1->empty() || cm2->empty())
         return;
 
-    core::CollisionModel *finalcm1 = cm1->getLast();//get the finnest CollisionModel which is not a CubeModel
+
+    // Get the leaf CollisionModels
+    core::CollisionModel *finalcm1 = cm1->getLast();
     core::CollisionModel *finalcm2 = cm2->getLast();
+
     //sout << "Final phase "<<gettypename(typeid(*finalcm1))<<" - "<<gettypename(typeid(*finalcm2))<<sendl;
+    // Find the interrsection method for the leaf CollisionModels
     bool swapModels = false;
-    core::collision::ElementIntersector* finalintersector = intersectionMethod->findIntersector(finalcm1, finalcm2, swapModels);//find the method for the finnest CollisionModels
+    core::collision::ElementIntersector* finalintersector = intersectionMethod->findIntersector(finalcm1, finalcm2, swapModels);
     if (finalintersector == NULL)
         return;
+
     if (swapModels)
     {
         core::CollisionModel* tmp;
@@ -259,9 +238,9 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
     }
 
     const bool self = (finalcm1->getContext() == finalcm2->getContext());
-    //if (self)
-    //    sout << "SELF: Final intersector " << finalintersector->name() << " for "<<finalcm1->getName()<<" - "<<finalcm2->getName()<<sendl;
-
+    if (self)
+       sout << "SELF: Final intersector " << finalintersector->name() << " for "<<finalcm1->getName()<<" - "<<finalcm2->getName()<<sendl;
+//     this->Collide(cmPair.first,cmPair.second);
     sofa::core::collision::DetectionOutputVector*& outputs = this->getDetectionOutputs(finalcm1, finalcm2);
 
     finalintersector->beginIntersect(finalcm1, finalcm2, outputs);//creates outputs if null
@@ -276,10 +255,10 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
 
     std::queue< TestPair > externalCells;
 
-    std::pair<core::CollisionElementIterator,core::CollisionElementIterator> internalChildren1 = cm1->begin().getInternalChildren();
-    std::pair<core::CollisionElementIterator,core::CollisionElementIterator> internalChildren2 = cm2->begin().getInternalChildren();
-    std::pair<core::CollisionElementIterator,core::CollisionElementIterator> externalChildren1 = cm1->begin().getExternalChildren();
-    std::pair<core::CollisionElementIterator,core::CollisionElementIterator> externalChildren2 = cm2->begin().getExternalChildren();
+    ElementIteratorPair internalChildren1 = cm1->begin().getInternalChildren();
+    ElementIteratorPair internalChildren2 = cm2->begin().getInternalChildren();
+    ElementIteratorPair externalChildren1 = cm1->begin().getExternalChildren();
+    ElementIteratorPair externalChildren2 = cm2->begin().getExternalChildren();
     if (internalChildren1.first != internalChildren1.second)
     {
         if (internalChildren2.first != internalChildren2.second)
@@ -287,6 +266,7 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
         if (externalChildren2.first != externalChildren2.second)
             externalCells.push(std::make_pair(internalChildren1,externalChildren2));
     }
+
     if (externalChildren1.first != externalChildren1.second)
     {
         if (internalChildren2.first != internalChildren2.second)
@@ -294,12 +274,12 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
         if (externalChildren2.first != externalChildren2.second)
             externalCells.push(std::make_pair(externalChildren1,externalChildren2));
     }
-    //externalCells.push(std::make_pair(std::make_pair(cm1->begin(),cm1->end()),std::make_pair(cm2->begin(),cm2->end())));
 
-    //core::collision::ElementIntersector* intersector = intersectionMethod->findIntersector(cm1, cm2);
     core::collision::ElementIntersector* intersector = NULL;
     MirrorIntersector mirror;
-    cm1 = NULL; // force later init of intersector
+
+    // Force later init of intersector
+    cm1 = NULL;
     cm2 = NULL;
 
     while (!externalCells.empty())
@@ -307,7 +287,8 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
         TestPair root = externalCells.front();
         externalCells.pop();
 
-        if (cm1 != root.first.first.getCollisionModel() || cm2 != root.second.first.getCollisionModel())//if the CollisionElements do not belong to cm1 and cm2, update cm1 and cm2
+        // If the CollisionElements do not belong to cm1 and cm2, update cm1 and cm2
+        if (cm1 != root.first.first.getCollisionModel() || cm2 != root.second.first.getCollisionModel())
         {
             cm1 = root.first.first.getCollisionModel();
             cm2 = root.second.first.getCollisionModel();
@@ -348,7 +329,9 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
                     for (core::CollisionElementIterator it2 = begin2; it2 != end2; ++it2)
                     {
                         if (!self || it1.canCollideWith(it2))
+                        {
                             intersector->intersect(it1,it2,outputs);
+                        }
                     }
                 }
             }
@@ -358,15 +341,10 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
                 {
                     for (core::CollisionElementIterator it2 = begin2; it2 != end2; ++it2)
                     {
-                        //if (self && !it1.canCollideWith(it2)) continue;
-                        //if (!it1->canCollideWith(it2)) continue;
-
-                        bool b = intersector->canIntersect(it1,it2);
-                        if (b)
+                        if (intersector->canIntersect(it1,it2))
                         {
                             // Need to test recursively
                             // Note that an element cannot have both internal and external children
-
                             TestPair newInternalTests(it1.getInternalChildren(),it2.getInternalChildren());
                             TestPair newExternalTests(it1.getExternalChildren(),it2.getExternalChildren());
                             if (newInternalTests.first.first != newInternalTests.first.second)
@@ -394,8 +372,8 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
                                 }
                                 else
                                 {
-                                    // end of both internal tree of elements.
-                                    // need to test external children
+                                    // If no internal children exist then we are at the leafs
+                                    // Test leafs
                                     if (newExternalTests.first.first != newExternalTests.first.second)
                                     {
                                         if (newExternalTests.second.first != newExternalTests.second.second)
@@ -410,7 +388,6 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
                                                 {
                                                     for (core::CollisionElementIterator it2 = begin2; it2 != end2; ++it2)
                                                     {
-                                                        //if (!it1->canCollideWith(it2)) continue;
                                                         // Final collision pair
                                                         if (!self || it1.canCollideWith(it2))
                                                             finalintersector->intersect(it1,it2,outputs);
@@ -443,7 +420,7 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
                                     {
                                         // No child -> final collision pair
                                         if (!self || it1.canCollideWith(it2))
-                                            intersector->intersect(it1,it2, outputs);
+                                          finalintersector->intersect(it1,it2, outputs);
                                     }
                                 }
                             }
@@ -453,6 +430,10 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
             }
         }
     }
+
+
+    finalintersector->endIntersect(finalcm1, finalcm2, outputs);
+
     //sout << "Narrow phase "<<cm1->getLast()->getName()<<"("<<gettypename(typeid(*cm1->getLast()))<<") - "<<cm2->getLast()->getName()<<"("<<gettypename(typeid(*cm2->getLast()))<<"): "<<elemPairs.size()-size0<<" contacts."<<sendl;
 }
 

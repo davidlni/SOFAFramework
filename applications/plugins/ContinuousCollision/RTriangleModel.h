@@ -22,8 +22,8 @@
  *                                                                             *
  * Contact information: contact@sofa-framework.org                             *
  ******************************************************************************/
-#ifndef SOFA_COMPONENT_COLLISION_TRIANGLEMODEL_H
-#define SOFA_COMPONENT_COLLISION_TRIANGLEMODEL_H
+#ifndef SOFA_COMPONENT_COLLISION_RTRIANGLEMODEL_H
+#define SOFA_COMPONENT_COLLISION_RTRIANGLEMODEL_H
 
 #include <sofa/core/CollisionModel.h>
 #include <sofa/component/collision/LocalMinDistanceFilter.h>
@@ -32,9 +32,7 @@
 #include <sofa/core/topology/BaseMeshTopology.h>
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/component/collision/PointModel.h>
-#include <CGALPlugin/DecimateMesh.h>
-#include <map>
-#include "DiscreteOrientedPolytope.h"
+#include "PolytopeModel.h"
 
 namespace sofa
 {
@@ -45,7 +43,12 @@ namespace component
 namespace collision
 {
 
-using namespace sofa::defaulttype;
+using namespace defaulttype;
+
+typedef struct {
+  Vector3 ad, bd, cd, pd;
+  Vector3 a0, b0, c0, p0;
+} NewtonCheckData;
 
 template<class DataTypes>
 class TRTriangleModel;
@@ -56,12 +59,12 @@ template<class TDataTypes>
 class TREdge : public core::TCollisionElementIterator< TRTriangleModel<TDataTypes> >
 {
 public:
-  typedef sofa::core::topology::BaseMeshTopology::index_type index_type;
+  typedef core::topology::BaseMeshTopology::index_type index_type;
   typedef std::pair<index_type,index_type> index_pair_type;
   typedef TDataTypes DataTypes;
   typedef typename DataTypes::Coord Coord;
   typedef typename DataTypes::Deriv Deriv;
-  typedef TREdgeModel<DataTypes> ParentModel;
+  typedef TRTriangleModel<DataTypes> ParentModel;
   typedef typename DataTypes::Real Real;
 
   TREdge(ParentModel* model, index_type index);
@@ -70,26 +73,29 @@ public:
 
   const Coord& p1() const;
   const Coord& p2() const;
-  const Coord& p(index_type i) const;
-
-  const index_type &p1Index() const;
-  const index_type &p2Index() const;
-  const index_type &Index(int i) const;
+  const Coord& p(const index_type &i) const;
 
   const Coord& p1Free() const;
   const Coord& p2Free() const;
 
-  const index_type &e1Index() const;
+  const index_type &p1Index() const;
+  const index_type &p2Index() const;
+  const index_type &VertexId(const index_type &i) const;
+
+  const index_type &f1Index() const;
+  const index_type &f2Index() const;
+  const index_type &FaceId(const index_type &i) const;
 
   const Coord& operator[](int i) const;
 
-  index_type covertices(const TREdge &other, helper::vector<index_pair_type> &verticesPairs);
+  index_type covertices(const TREdge &other, helper::vector<index_pair_type> &vertexPair);
   bool covertices(const TREdge &other);
   bool coedge(const TREdge &other);
+  const DiscreteOrientedPolytope<Real> &getBox() const;
 
   const Deriv& v1() const;
   const Deriv& v2() const;
-  const Deriv& v(int i) const;
+  const Deriv& v(const index_type &i) const;
 
   const Deriv& n() const;
   Deriv& n();
@@ -106,18 +112,13 @@ public:
     return *this;
   }
 
-  Coord interpX(defaulttype::Vec<2,Real> bary) const
-  {
-    return (p1()*(1-bary[0]-bary[1])) + (p2()*bary[0]) + (p3()*bary[1]);
-  }
-
 };
 
 template<class TDataTypes>
 class TRVertex : public core::TCollisionElementIterator< TRTriangleModel<TDataTypes> >
 {
 public:
-  typedef sofa::core::topology::BaseMeshTopology::index_type index_type;
+  typedef core::topology::BaseMeshTopology::index_type index_type;
   typedef std::pair<index_type,index_type> index_pair_type;
   typedef TDataTypes DataTypes;
   typedef typename DataTypes::Coord Coord;
@@ -125,7 +126,7 @@ public:
   typedef TRTriangleModel<DataTypes> ParentModel;
   typedef typename DataTypes::Real Real;
 
-  TRVertex(ParentModel* model, index_type index);
+  TRVertex(ParentModel* model, const index_type &index);
   TRVertex() {}
   explicit TRVertex(const core::CollisionElementIterator& i);
 
@@ -137,6 +138,9 @@ public:
   index_type covertices(const TRVertex &other, helper::vector<index_pair_type> &vertexPair);
   bool covertices(const TRVertex &other);
   bool coedge(const TRVertex &other);
+  const DiscreteOrientedPolytope<Real> &getBox() const;
+
+  const helper::vector<index_type> &getFaces();
 
   const Deriv& v() const;
 
@@ -158,7 +162,7 @@ template<class TDataTypes>
 class TRTriangle : public core::TCollisionElementIterator< TRTriangleModel<TDataTypes> >
 {
 public:
-    typedef sofa::core::topology::BaseMeshTopology::index_type index_type;
+    typedef core::topology::BaseMeshTopology::index_type index_type;
     typedef std::pair<index_type,index_type> index_pair_type;
     typedef TDataTypes DataTypes;
     typedef typename DataTypes::Coord Coord;
@@ -166,19 +170,19 @@ public:
     typedef TRTriangleModel<DataTypes> ParentModel;
     typedef typename DataTypes::Real Real;
 
-    TRTriangle(ParentModel* model, index_type index);
+    TRTriangle(ParentModel* model, const index_type &index);
     TRTriangle() {}
     explicit TRTriangle(const core::CollisionElementIterator& i);
 
     const Coord& p1() const;
     const Coord& p2() const;
     const Coord& p3() const;
-    const Coord& p(index_type i) const;
+    const Coord& p(const index_type &i) const;
 
     const index_type &p1Index() const;
     const index_type &p2Index() const;
     const index_type &p3Index() const;
-    const index_type &Index(int i) const;
+    const index_type &Index(const index_type &i) const;
 
     const Coord& p1Free() const;
     const Coord& p2Free() const;
@@ -188,16 +192,17 @@ public:
     const index_type &e2Index() const;
     const index_type &e3Index() const;
 
-    const Coord& operator[](int i) const;
+    const Coord& operator[](const index_type &i) const;
 
-    index_type covertices(const TRTriangle &other, helper::vector<index_pair_type> &verticesPairs);
-    bool covertices(const TRTriangle &other);
-    bool coedge(const TRTriangle &other);
+    index_type covertices(const TRTriangle &other, index_pair_type &vertexPair);
+    bool covertices(const TRTriangle &other) const;
+    bool coedge(const TRTriangle &other) const;
+    const DiscreteOrientedPolytope<Real> &getBox() const;
 
     const Deriv& v1() const;
     const Deriv& v2() const;
     const Deriv& v3() const;
-    const Deriv& v(int i) const;
+    const Deriv& v(const index_type &i) const;
 
     const Deriv& n() const;
     Deriv& n();
@@ -226,7 +231,7 @@ class TRTriangleModel : public core::CollisionModel
 public:
     SOFA_CLASS(SOFA_TEMPLATE(TRTriangleModel, TDataTypes), core::CollisionModel);
 
-    typedef sofa::core::topology::BaseMeshTopology::index_type index_type;
+    typedef core::topology::BaseMeshTopology::index_type index_type;
     typedef std::pair<index_type,index_type> index_pair_type;
     typedef TDataTypes DataTypes;
     typedef DataTypes InDataTypes;
@@ -234,11 +239,14 @@ public:
     typedef typename DataTypes::VecDeriv VecDeriv;
     typedef typename DataTypes::Coord Coord;
     typedef typename DataTypes::Deriv Deriv;
+    typedef TRTriangle<DataTypes> Element;
     typedef TRTriangle<DataTypes> TriangleElement;
     typedef TREdge<DataTypes> EdgeElement;
     typedef TRVertex<DataTypes> VertexElement;
 //     typedef TRTriangle<DataTypes> Element;
     friend class TRTriangle<DataTypes>;
+    friend class TRVertex<DataTypes>;
+    friend class TREdge<DataTypes>;
 
     enum TriangleFlag
     {
@@ -260,9 +268,9 @@ public:
 
     Data<bool> bothSide; // to activate collision on both side of the triangle model
 
-    struct EdgeFeature : public sofa::core::topology::BaseMeshTopology::Edge
+    struct EdgeFeature : public core::topology::BaseMeshTopology::Edge
     {
-        typedef sofa::core::topology::BaseMeshTopology::index_type index_type;
+        typedef core::topology::BaseMeshTopology::index_type index_type;
     private:
         index_type FacesIds[2];
 
@@ -288,14 +296,14 @@ public:
         }
 
         EdgeFeature(const index_type &id0, const index_type &id1, const index_type &fid)
-            : sofa::core::topology::BaseMeshTopology::Edge(id0,id1)
+            : core::topology::BaseMeshTopology::Edge(id0,id1)
         {
             this->FacesIds[0] = fid;
             this->FacesIds[1] = std::numeric_limits<index_type>::max();
         }
 
         EdgeFeature(const index_type &id0, const index_type &id1)
-            : sofa::core::topology::BaseMeshTopology::Edge(id0,id1)
+            : core::topology::BaseMeshTopology::Edge(id0,id1)
         {
             this->FacesIds[0] = 0;
             this->FacesIds[1] = std::numeric_limits<index_type>::max();
@@ -350,9 +358,9 @@ public:
         }
     };
 
-    struct TriangleEdgesFeature : public sofa::core::topology::BaseMeshTopology::EdgesInTriangle
+    struct TriangleEdgesFeature : public core::topology::BaseMeshTopology::EdgesInTriangle
     {
-        typedef sofa::core::topology::BaseMeshTopology::index_type index_type;
+        typedef core::topology::BaseMeshTopology::index_type index_type;
 
     public:
         TriangleEdgesFeature()
@@ -361,7 +369,7 @@ public:
         }
 
         TriangleEdgesFeature(const index_type &id0, const index_type &id1, const index_type &id2)
-            : sofa::core::topology::BaseMeshTopology::EdgesInTriangle(id0,id1,id2)
+            : core::topology::BaseMeshTopology::EdgesInTriangle(id0,id1,id2)
         {
         }
 
@@ -389,14 +397,18 @@ public:
 
     struct AdjacentPair
     {
-        typedef sofa::core::topology::BaseMeshTopology::index_type index_type;
+        typedef core::topology::BaseMeshTopology::index_type index_type;
     private:
         index_type Id[2];
-        char State[2];
+        index_type State[2];
         char Status;
 
     public:
-        AdjacentPair(const index_type &id1, const index_type &id2, const char &state1, const char &state2, const char &status)
+      AdjacentPair()
+      {
+
+      }
+      AdjacentPair(const index_type &id1, const index_type &id2, const index_type &state1, const index_type &state2, const char &status)
         {
             this->Id[0] = id1;
             this->Id[1] = id2;
@@ -405,7 +417,7 @@ public:
             this->Status = status;
         }
 
-        void GetParameters(index_type &id1, index_type &id2, char &state1, char &state2)
+        void GetParameters(index_type &id1, index_type &id2, index_type &state1, index_type &state2)
         {
           id1 = this->Id[0];
           id2 = this->Id[1];
@@ -413,10 +425,15 @@ public:
           state2 = this->State[1];
         }
 
-        void GetParameters(index_type &id1, index_type &id2, char &state1, char &state2, char &status)
+        void GetParameters(index_type &id1, index_type &id2, index_type &state1, index_type &state2, char &status)
         {
             this->GetParameters(id1,id2,state1,state2);
             status = this->Status;
+        }
+
+        void GetParameters(std::pair<index_type,index_type> &trianglePair, std::pair<index_type,index_type> &vertexPair)
+        {
+          this->GetParameters(trianglePair.first,trianglePair.second,vertexPair.first,vertexPair.second);
         }
 
         bool operator == (const AdjacentPair &other) const
@@ -424,15 +441,15 @@ public:
             return  (this->Id[0] == other.Id[0] && this->Id[1] == other.Id[1]);
         }
 
-        bool operator = (const AdjacentPair &other) const
-        {
-          this->Id[0] == other.Id[0];
-          this->Id[1] == other.Id[1];
-          this->State[0] == other.State[0];
-          this->State[1] == other.State[1];
-          this->Status == other.Status;
-
-        }
+//         bool operator = (const AdjacentPair &other) const
+//         {
+//           this->Id[0] = other.Id[0];
+//           this->Id[1] = other.Id[1];
+//           this->State[0] = other.State[0];
+//           this->State[1] = other.State[1];
+//           this->Status = other.Status;
+// 
+//         }
 
         bool operator < (const AdjacentPair &other) const
         {
@@ -445,12 +462,12 @@ public:
 
     struct NonAdjacentPair
     {
-        typedef sofa::core::topology::BaseMeshTopology::index_type index_type;
+        typedef core::topology::BaseMeshTopology::index_type index_type;
     private:
         index_type Id[2];
 
     public:
-        NonAdjacentPairs(const index_type &id1, const index_type &id2)
+        NonAdjacentPair(const index_type &id1, const index_type &id2)
         {
             if (id1 > id2) {
                 Id[0] = id1;
@@ -468,7 +485,7 @@ public:
             id2 = Id[1];
         }
 
-        bool operator < (const NonAdjacentPairs &other) {
+        bool operator < (const NonAdjacentPair &other) {
             if (Id[0] == other.Id[0])
                 return Id[1] < other.Id[1];
             else
@@ -476,22 +493,52 @@ public:
         }
     };
 
-    struct FeaturePair : public helper::fixed_array<2,index_type>
+    template<typename FeatureType1, typename FeatureType2>
+    struct FeaturePairTemplate : public helper::fixed_array<index_type,2>
     {
-      EdgeFeaturePair(const index_type &i, const index_type &j) : helper::fixed_array<2,index_type>(i,j){}
+      FeatureType1 feature1;
+      FeatureType2 feature2;
+      index_type i;
+      index_type j;
 
-      void GetParameters(index_type &i, index_type &j)
+      FeaturePairTemplate(const FeatureType1 &f1, const FeatureType2 &f2) : helper::fixed_array<index_type,2>(f1.getIndex(),f2.getIndex()){}
+
+      void GetFeatures(FeatureType1 &f1, FeatureType2 &f2) const
+      {
+        f1 = this->feature1;
+        f2 = this->feature2;
+      }
+
+      bool operator == (const FeaturePairTemplate &other) const
+      {
+        return  (this->feature1 == other.feature1 && this->feature2 == other.feature2);
+      }
+
+      bool operator < (const FeaturePairTemplate &other) const
+      {
+        if (this->feature1 == other.feature1)
+          return this->i < other.i;
+        return this->j < other.j;
+      }
+
+    };
+
+    struct FeaturePair : public helper::fixed_array<index_type,2>
+    {
+      FeaturePair(const index_type &i, const index_type &j) : helper::fixed_array<index_type,2>(i,j){}
+
+      void GetParameters(index_type &i, index_type &j) const
       {
         i = this->elems[0];
         j = this->elems[1];
       }
 
-      bool operator == (const EdgeFeaturePair &other) const
+      bool operator == (const FeaturePair &other) const
       {
         return  (this->elems[0] == other.elems[0] && this->elems[1] == other.elems[1]);
       }
 
-      bool operator < (const EdgeFeaturePair &other) const
+      bool operator < (const FeaturePair &other) const
       {
         if (this->elems[0] == other.elems[0])
           return this->elems[1] < other.elems[1];
@@ -504,21 +551,21 @@ public:
 protected:
     VecDeriv normals;
 
-    const sofa::core::topology::BaseMeshTopology::SeqTriangles* triangles;
-    sofa::core::topology::BaseMeshTopology::SeqTriangles mytriangles;
+    const core::topology::BaseMeshTopology::SeqTriangles* triangles;
+    core::topology::BaseMeshTopology::SeqTriangles mytriangles;
     helper::vector<EdgeFeature> edgeFeatures;
     helper::vector<TriangleEdgesFeature> triangleEdgeFeatures;
     helper::vector<VertexTriangleFeatures> vertexTriangleFeatures;
-    helper::vector<DiscreteOrientedPolytope<Real> > edgeBoxes;
-    helper::vector<DiscreteOrientedPolytope<Real> > vertexBoxes;
-    helper::vector<DiscreteOrientedPolytope<Real> > faceBoxes;
+    helper::vector<DiscreteOrientedPolytope<Real>> edgeBoxes;
+    helper::vector<DiscreteOrientedPolytope<Real>> vertexBoxes;
+    helper::vector<DiscreteOrientedPolytope<Real>> faceBoxes;
     helper::vector<AdjacentPair> adjacentPairs[2];
     helper::vector<NonAdjacentPair> nonAdjacentPairs;
     helper::set<FeaturePair> edgeEdgeFeaturePairs;
     helper::set<FeaturePair> vertexFaceFeaturePairs;
 
     bool needsUpdate;
-    virtual void updateFromTopology(double dt);
+    virtual void updateFromTopology(const double &dt);
     virtual void updateFlags(int ntri=-1);
     virtual void updateNormals();
     int getTriangleFlags(int i);
@@ -527,7 +574,7 @@ protected:
     Data<bool> computeNormals;
     int meshRevision;
 
-    sofa::core::topology::BaseMeshTopology* _topology;
+    core::topology::BaseMeshTopology* _topology;
 
     PointModel* mpoints;
 
@@ -543,54 +590,67 @@ public:
 
     virtual void resize(int size);
 
+    helper::vector<EdgeFeature> &getEdges() { return edgeFeatures; }
+    const helper::vector<EdgeFeature> &getEdges() const { return edgeFeatures; }
+    helper::vector<TriangleEdgesFeature> &getTriangleEdges() { return triangleEdgeFeatures; }
+    const helper::vector<TriangleEdgesFeature> &getTriangleEdges() const { return triangleEdgeFeatures; }
+    helper::vector<VertexTriangleFeatures> &getVertexTriangles() { return vertexTriangleFeatures; }
+    const helper::vector<VertexTriangleFeatures> &getVertexTriangles() const { return vertexTriangleFeatures; }
+    const helper::set<FeaturePair> &getEdgeEdgePairs() const { return edgeEdgeFeaturePairs; }
+    const helper::set<FeaturePair> &getVertexFacePairs() const { return vertexFaceFeaturePairs; }
+
+    virtual void computeBoundingTree(size_t maxDepth=0);
     virtual void computeContinuousBoundingTree(double dt, size_t maxDepth=0);
-    void updateFeatureBoxes(double dt);
+    void updateFeatureBoxes(const double &dt);
     void bufferAdjacentLists();
     index_type covertexFace(const index_pair_type &triangleIndices,
                             index_pair_type &vertexPair);
     char getStatus1(const index_pair_type &triangleIndices,
-                    index_pair_type &vertexPair);
+                    const index_pair_type &vertexPair);
     char getStatus2(const index_pair_type &triangleIndices,
-                    index_pair_type &vertexPair);
+                    const index_pair_type &vertexPair);
     void getFeature1(const index_pair_type &triangleIndices,
                       const index_pair_type &vertexPair);
     void getFeature2(const index_pair_type &triangleIndices,
                       const index_pair_type &vertexPair);
 
     void setOrphans();
-    void testOrphans();
+    void testOrphans(const double &dt);
     bool testOrphansEdgeToEdge(const index_type &i1, const index_type &i2);
     bool testOrphansVertexToFace(const index_type &i1, const index_type &i2);
     void insertEdgeToEdgeFeature(const index_type &i1, const index_type &i2);
     void insertVertexToFaceFeature(const index_type &i1, const index_type &i2);
-    float intersectVertexFace(const double &dt, const index_type &v, const index_type &f);
-    float intersectVertexFace(const double &dt, const index_type &v, const index_type &f1, const index_type &f2);
+    float intersectVertexFace(const double &dt, const VertexElement &v, const Element &f);
+    float intersectVertexFace(const double &dt, const VertexElement &v, const Element &f1, const Element &f2);
 
-    float intersectEdgeEdge(const double &dt, const index_type &e1, const index_type &e2);
-    float intersectEdgeEdge(const double &dt, const index_type &e1, const index_type &e2, const index_type &f1, const index_type &f2);
-    bool testVertexFace(const double &dt, const index_type &e, const index_type &e);
-    bool testEdgeEdge(const double &dt, const index_type &e, const index_type &e);
+    float intersectEdgeEdge(const double &dt, const EdgeElement &e1, const EdgeElement &e2);
+    float intersectEdgeEdge(const double &dt, const EdgeElement &e1, const EdgeElement &e2, const Element &f1, const Element &f2);
+    bool testVertexFace(const double &dt, const VertexElement &vertex, const Element &face);
+    bool testEdgeEdge(const double &dt, const EdgeElement &e1, const EdgeElement &e2);
     bool testCoplanarity(const Vector3 &p0, const Vector3 &p1, const Vector3 &p2,
                          const Vector3 &p3, const Vector3 &p4, const Vector3 &p5,
                          const Vector3 &p6, const Vector3 &p7);
-    float vertexFaceIntersection(const double &dt, const index_type &v, const index_type &f);
-    float edgeEdgeIntersection(const double &dt, const index_type &e1, const index_type &e2);
-    void computeCubicCoefficients(const Vector3 &a0, const Vector3 &ad, const Vector3 &b0, const Vector3 &bd,
-                                  const Vector3 &c0, const Vector3 &cd, const Vector3 &p0, const Vector3 &pd,
-                                  Real &a, Real &b, Real &c, Real &d);
+    float vertexFaceIntersection(const double &dt, const VertexElement &vertex, const Element &face);
+    float edgeEdgeIntersection(const double &dt, const EdgeElement &e1, const EdgeElement &e2);
+    void computeCubicCoefficients(const Vector3 &a, const Vector3 &b, const Vector3 &c, const Vector3 &d,
+                                  const Vector3 &e, const Vector3 &f,
+                                  helper::fixed_array<Real,4> &coeff);
     void computeCubicCoefficientsVertexFace(const Vector3 &a0, const Vector3 &ad, const Vector3 &b0, const Vector3 &bd,
                                        const Vector3 &c0, const Vector3 &cd, const Vector3 &p0, const Vector3 &pd,
-                                       Real &a, Real &b, Real &c, Real &d);
+                                       helper::fixed_array<Real,4> &coeff);
     void computeCubicCoefficientsEdgeEdge(const Vector3 &a0, const Vector3 &ad, const Vector3 &b0, const Vector3 &bd,
                                      const Vector3 &c0, const Vector3 &cd, const Vector3 &d0, const Vector3 &dd,
-                                     Real &a, Real &b, Real &c, Real &d);
+                                     helper::fixed_array<Real,4> &coeff);
+    bool solveCubicWithIntervalNewton(Real &l, Real &r, bool bVF, NewtonCheckData &data, helper::fixed_array<Real,4> &coeff);
+    bool insideTriangle(const Vector3 &a, const Vector3 &b, const Vector3 &c, const Vector3 &p);
+    bool insideLineSegment(const Vector3 &a, const Vector3 &b, const Vector3 &c);
+    bool testFeatures(const double &dt, const Element &face1, const Element &face2);
+    bool lineLineIntersect(const Vector3 &p1, const Vector3 &p2, const Vector3 &p3, const Vector3 &p4);
+
     void draw(const core::visual::VisualParams*,int index);
-
     void draw(const core::visual::VisualParams* vparams);
-
-    virtual bool canCollideWithElement(index_type index, CollisionModel* model2, index_type index2);
-
-    virtual void handleTopologyChange();
+    virtual bool canCollideWithElement(size_t index, CollisionModel* model2, size_t index2);
+    virtual void handleTopologyChange(const double &);
 
     core::behavior::MechanicalState<DataTypes>* getMechanicalState() {
         return mstate;
@@ -602,7 +662,7 @@ public:
     const VecCoord& getX() const {
         return *(getMechanicalState()->getX());
     }
-    const sofa::core::topology::BaseMeshTopology::SeqTriangles& getTriangles() const {
+    const core::topology::BaseMeshTopology::SeqTriangles& getTriangles() const {
         return *triangles;
     }
     const VecDeriv& getNormals() const {
@@ -613,7 +673,7 @@ public:
 
     void setFilter(TriangleLocalMinDistanceFilter * /*lmdFilter*/);
 
-    Deriv velocity(int index) const;
+    Deriv velocity(const index_type &index) const;
 
     /// Pre-construction check method called by ObjectFactory.
     /// Check that DataTypes matches the MechanicalState.
@@ -638,19 +698,13 @@ public:
 
 template<class DataTypes>
 inline TRTriangle<DataTypes>::TRTriangle(ParentModel* model,
-                                         typename TRTriangle<DataTypes>::index_type index)
+                                         const index_type &index)
     : core::TCollisionElementIterator<ParentModel>(model, index)
 {}
 
 template<class DataTypes>
 inline TRTriangle<DataTypes>::TRTriangle(const core::CollisionElementIterator& i)
     : core::TCollisionElementIterator<ParentModel>(static_cast<ParentModel*>(i.getCollisionModel()), i.getIndex())
-{}
-
-template<class DataTypes>
-inline TRTriangle<DataTypes>::TRTriangle(ParentModel* model,
-                                         typename TRTriangle<DataTypes>::index_type index)
-    : core::TCollisionElementIterator<ParentModel>(model, index)
 {}
 
 template<class DataTypes>
@@ -666,12 +720,12 @@ inline const typename DataTypes::Coord& TRTriangle<DataTypes>::p3() const {
     return (*this->model->mstate->getX())[(*(this->model->triangles))[this->index][2]];
 }
 template<class DataTypes>
-inline const typename DataTypes::Coord& TRTriangle<DataTypes>::p(size_t i) const {
+inline const typename DataTypes::Coord& TRTriangle<DataTypes>::p(const index_type &i) const {
     return (*this->model->mstate->getX())[(*(this->model->triangles))[this->index][i]];
 }
 
 template<class DataTypes>
-inline const bool TRTriangle<DataTypes>::covertices(const TRTriangle<DataTypes> &other)
+inline bool TRTriangle<DataTypes>::covertices(const TRTriangle<DataTypes> &other) const
 {
     if(p1Index() == other.p1Index())
         return true;
@@ -704,7 +758,7 @@ inline const bool TRTriangle<DataTypes>::covertices(const TRTriangle<DataTypes> 
 }
 
 template<class DataTypes>
-inline const bool TRTriangle<DataTypes>::coedge(const TRTriangle<DataTypes> &other)
+inline bool TRTriangle<DataTypes>::coedge(const TRTriangle &other) const
 {
     int numberOfCommonVertices = 0;
     if(p1Index() == other.p1Index())
@@ -738,8 +792,14 @@ inline const bool TRTriangle<DataTypes>::coedge(const TRTriangle<DataTypes> &oth
 }
 
 template<class DataTypes>
-inline const typename TRTriangle<DataTypes>::index_type TRTriangle<DataTypes>::covertices(const TRTriangle<DataTypes> &other,
-                                                                                          typename TRTriangle<DataTypes>::index_pair_type &vertexPair)
+inline const DiscreteOrientedPolytope<typename DataTypes::Real>& TRTriangle<DataTypes>::getBox() const
+{
+  return Polytope(this->model->getPrevious(),this->index);
+}
+
+template<class DataTypes>
+inline typename TRTriangle<DataTypes>::index_type TRTriangle<DataTypes>::covertices(const TRTriangle<DataTypes> &other,
+                                                                                          index_pair_type &vertexPair)
 {
     helper::vector<index_pair_type> keeps;
     if(p1Index() == other.p1Index())
@@ -796,11 +856,12 @@ inline const typename TRTriangle<DataTypes>::index_type TRTriangle<DataTypes>::c
     }
     else if (numberOfCommonVertices == 3)
         return numberOfCommonVertices-1;
+    return numberOfCommonVertices;
 
 }
 
 template<class DataTypes>
-inline const typename DataTypes::Coord& TRTriangle<DataTypes>::operator[](size_t i) const {
+inline const typename DataTypes::Coord& TRTriangle<DataTypes>::operator[](const index_type &i) const {
     return (*this->model->mstate->getX())[(*(this->model->triangles))[this->index][i]];
 }
 
@@ -818,32 +879,34 @@ inline const typename DataTypes::Coord& TRTriangle<DataTypes>::p3Free() const {
 }
 
 template<class DataTypes>
-inline const size_t &TRTriangle<DataTypes>::p1Index() const {
+inline const typename TRTriangle<DataTypes>::index_type &TRTriangle<DataTypes>::p1Index() const {
     return (*(this->model->triangles))[this->index][0];
 }
 template<class DataTypes>
-inline const size_t &TRTriangle<DataTypes>::p2Index() const {
+inline const typename TRTriangle<DataTypes>::index_type &TRTriangle<DataTypes>::p2Index() const {
     return (*(this->model->triangles))[this->index][1];
 }
 template<class DataTypes>
-inline const size_t &TRTriangle<DataTypes>::p3Index() const {
+inline const typename TRTriangle<DataTypes>::index_type &TRTriangle<DataTypes>::p3Index() const {
     return (*(this->model->triangles))[this->index][2];
 }
 template<class DataTypes>
-inline const size_t &TRTriangle<DataTypes>::Index(int i) const {
+inline const typename TRTriangle<DataTypes>::index_type &TRTriangle<DataTypes>::Index(const index_type &i) const {
   return (*(this->model->triangles))[this->index][i];
 }
 
 template<class DataTypes>
-inline const size_t &TRTriangle<DataTypes>::e1Index() const {
+inline const typename TRTriangle<DataTypes>::index_type &TRTriangle<DataTypes>::e1Index() const {
     return this->model->triangleEdgeFeatures[this->index][0];
 }
+
 template<class DataTypes>
-inline const size_t &TRTriangle<DataTypes>::e2Index() const {
+inline const typename TRTriangle<DataTypes>::index_type &TRTriangle<DataTypes>::e2Index() const {
     return this->model->triangleEdgeFeatures[this->index][1];
 }
+
 template<class DataTypes>
-inline const size_t &TRTriangle<DataTypes>::e3Index() const {
+inline const typename TRTriangle<DataTypes>::index_type &TRTriangle<DataTypes>::e3Index() const {
     return this->model->triangleEdgeFeatures[this->index][2];
 }
 
@@ -860,7 +923,7 @@ inline const typename DataTypes::Deriv& TRTriangle<DataTypes>::v3() const {
     return (*this->model->mstate->getV())[(*(this->model->triangles))[this->index][2]];
 }
 template<class DataTypes>
-inline const typename DataTypes::Deriv& TRTriangle<DataTypes>::v(size_t i) const {
+inline const typename DataTypes::Deriv& TRTriangle<DataTypes>::v(const index_type &i) const {
     return (*this->model->mstate->getV())[(*(this->model->triangles))[this->index][i]];
 }
 
@@ -874,7 +937,7 @@ inline       typename DataTypes::Deriv& TRTriangle<DataTypes>::n()       {
 }
 
 template<class DataTypes>
-inline size_t TRTriangle<DataTypes>::flags() const {
+inline int TRTriangle<DataTypes>::flags() const {
     return this->model->getTriangleFlags(this->index);
 }
 
@@ -884,19 +947,149 @@ inline bool TRTriangle<DataTypes>::hasFreePosition() const {
 }
 
 template<class DataTypes>
-inline typename DataTypes::Deriv TRTriangleModel<DataTypes>::velocity(size_t index) const {
-    return ((*mstate->getV())[(*(triangles))[index][0]] + (*mstate->getV())[(*(triangles))[index][1]] +
-            (*mstate->getV())[(*(triangles))[index][2]])/((Real)(3.0));
+inline typename DataTypes::Deriv TRTriangleModel<DataTypes>::velocity(const index_type &i) const {
+    return ((*mstate->getV())[(*(triangles))[i][0]] + (*mstate->getV())[(*(triangles))[i][1]] +
+            (*mstate->getV())[(*(triangles))[i][2]])/((Real)(3.0));
 }
+
+// ------------------------------------
+// TRVertex implementation
+template<typename DataTypes>
+inline TRVertex<DataTypes>::TRVertex(ParentModel* model,
+                                     const index_type &index)
+: core::TCollisionElementIterator<ParentModel>(model, index)
+{}
+
+template<typename DataTypes>
+inline TRVertex<DataTypes>::TRVertex(const core::CollisionElementIterator& i)
+: core::TCollisionElementIterator<ParentModel>(static_cast<ParentModel*>(i.getCollisionModel()), i.getIndex())
+{}
+
+template<typename DataTypes>
+inline const typename DataTypes::Coord& TRVertex<DataTypes>::p() const {
+  return (*this->model->mstate->getX())[this->index];
+}
+template<typename DataTypes>
+inline const typename DataTypes::Deriv& TRVertex<DataTypes>::v() const
+{
+  return (*this->model->mstate->getV())[this->index];
+}
+
+template<typename DataTypes>
+inline const typename DataTypes::Coord& TRVertex<DataTypes>::pFree() const
+{
+  return (*this->model->mstate->getXfree())[this->index];
+}
+
+template<typename DataTypes>
+inline bool TRVertex<DataTypes>::hasFreePosition() const
+{
+  return this->model->mstate->read(core::ConstVecCoordId::freePosition())->isSet();
+}
+
+template<typename DataTypes>
+inline const helper::vector<typename TRVertex<DataTypes>::index_type> &TRVertex<DataTypes>::getFaces()
+{
+  return this->model->vertexTriangleFeatures[this->index];
+}
+
+template<class DataTypes>
+inline const DiscreteOrientedPolytope<typename DataTypes::Real> &TRVertex<DataTypes>::getBox() const
+{
+  return this->model->vertexBoxes[this->index];
+}
+
+// ----------------
+// TREdge implementations
+template<typename DataTypes>
+inline const typename DataTypes::Coord& TREdge<DataTypes>::p1() const
+{
+  return (*this->model->mstate->getX())[this->model->edgeFeatures[this->index].VertexId(0)];
+}
+
+template<typename DataTypes>
+inline const typename DataTypes::Coord& TREdge<DataTypes>::p2() const
+{
+  return (*this->model->mstate->getX())[this->model->edgeFeatures[this->index].VertexId(1)];
+}
+
+template<typename DataTypes>
+inline const typename DataTypes::Coord& TREdge<DataTypes>::p(const index_type &i) const
+{
+  return (*this->model->mstate->getX())[this->model->edgeFeatures[this->index].VertexId(i)];
+}
+
+template<typename DataTypes>
+inline const typename DataTypes::Deriv& TREdge<DataTypes>::v1() const
+{
+  return (*this->model->mstate->getV())[this->model->edgeFeatures[this->index].VertexId(0)];
+}
+
+template<typename DataTypes>
+inline const typename DataTypes::Deriv& TREdge<DataTypes>::v2() const
+{
+  return (*this->model->mstate->getV())[this->model->edgeFeatures[this->index].VertexId(1)];
+}
+
+template<typename DataTypes>
+inline const typename DataTypes::Deriv& TREdge<DataTypes>::v(const index_type &i) const
+{
+  return (*this->model->mstate->getV())[this->model->edgeFeatures[this->index].VertexId(i)];
+}
+
+template<typename DataTypes>
+inline const typename TREdge<DataTypes>::index_type& TREdge<DataTypes>::p1Index() const
+{
+  return this->model->edgeFeatures[this->index].VertexId(0);
+}
+
+template<typename DataTypes>
+inline const typename TREdge<DataTypes>::index_type& TREdge<DataTypes>::p2Index() const
+{
+  return this->model->edgeFeatures[this->index].VertexId(1);
+}
+
+template<typename DataTypes>
+inline const typename TREdge<DataTypes>::index_type& TREdge<DataTypes>::VertexId(const index_type &i) const
+{
+  return this->model->edgeFeatures[this->index].VertexId(i);
+}
+
+template<typename DataTypes>
+inline const typename TREdge<DataTypes>::index_type& TREdge<DataTypes>::f1Index() const
+{
+  return this->model->edgeFeatures[this->index].FaceId(0);
+}
+
+template<typename DataTypes>
+inline const typename TREdge<DataTypes>::index_type& TREdge<DataTypes>::f2Index() const
+{
+  return this->model->edgeFeatures[this->index].FaceId(1);
+}
+
+template<typename DataTypes>
+inline const typename TREdge<DataTypes>::index_type& TREdge<DataTypes>::FaceId(const index_type &i) const
+{
+  return this->model->edgeFeatures[this->index].FaceId(i);
+}
+
+template<class DataTypes>
+inline const DiscreteOrientedPolytope<typename DataTypes::Real>& TREdge<DataTypes>::getBox() const
+{
+  return this->model->edgeBoxes[this->index];
+}
+
 typedef TRTriangleModel<Vec3Types> RTriangleModel;
 typedef TRTriangle<Vec3Types> RTriangle;
+typedef TRVertex<Vec3Types> RVertex;
+typedef TREdge<Vec3Types> REdge;
 
-#if defined(SOFA_EXTERN_TEMPLATE) && !defined(SOFA_BUILD_MESH_COLLISION)
+#if defined(SOFA_EXTERN_TEMPLATE) && !defined(CCD_PLUGIN_RTRIANGLE_MODEL)
 #ifndef SOFA_FLOAT
-extern template class SOFA_MESH_COLLISION_API TRTriangleModel<defaulttype::Vec3dTypes>;
+extern template class SOFA_CONTINUOUS_COLLISION_API TRTriangleModel<defaulttype::Vec3dTypes>;
 #endif
 #ifndef SOFA_DOUBLE
-extern template class SOFA_MESH_COLLISION_API TRTriangleModel<defaulttype::Vec3fTypes>;
+extern template class SOFA_CONTINUOUS_COLLISION_API TRTriangleModel<defaulttype::Vec3fTypes>;
 #endif
 #endif
 

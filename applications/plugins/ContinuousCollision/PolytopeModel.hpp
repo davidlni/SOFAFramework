@@ -70,21 +70,22 @@ void TPolytopeModel<TDataTypes,K>::resize(size_t s)
 }
 
 template<typename TDataTypes, size_t K>
-inline void TPolytopeModel<TDataTypes,K>::enlarge(size_t childIndex, const Real& p)
+inline void TPolytopeModel<TDataTypes,K>::enlarge(const index_type &childIndex, const Real& p)
 {
-    size_t i = parentOf[childIndex];
+    index_type i = this->parentOf[childIndex];
     this->polytopes[i] += p;
 }
 
 template<typename TDataTypes, size_t K>
-inline void TPolytopeModel<TDataTypes,K>::setParentOf(size_t childIndex, const Vector3& p)
+inline void TPolytopeModel<TDataTypes,K>::setParentOf(const index_type &childIndex, const Vector3& p)
 {
-  size_t i = parentOf[childIndex];
+  index_type i = this->parentOf[childIndex];
   this->polytopes[i] += p;
 }
 
 template<typename TDataTypes, size_t K>
-void TPolytopeModel<TDataTypes,K>::setLeafPolytope(size_t polytopeIndex, size_t childIndex)
+void TPolytopeModel<TDataTypes,K>::setLeafPolytope(const index_type &polytopeIndex,
+                                                   const index_type &childIndex)
 {
     this->parentOf[childIndex] = polytopeIndex;
     this->polytopes[polytopeIndex].children.first=core::CollisionElementIterator(getNext(), childIndex);
@@ -92,14 +93,17 @@ void TPolytopeModel<TDataTypes,K>::setLeafPolytope(size_t polytopeIndex, size_t 
 }
 
 template<typename TDataTypes, size_t K>
-void TPolytopeModel<TDataTypes,K>::setLeafPolytope(size_t polytopeIndex, std::pair<core::CollisionElementIterator,core::CollisionElementIterator> children, const Vector3& p)
+void TPolytopeModel<TDataTypes,K>::setLeafPolytope(const index_type &polytopeIndex,
+                                                   const std::pair<core::CollisionElementIterator,core::CollisionElementIterator> &children,
+                                                   const Vector3& p)
 {
     this->polytopes[polytopeIndex] += p;
     this->polytopes[polytopeIndex].children = children;
 }
 
 template<typename TDataTypes, size_t K>
-size_t TPolytopeModel<TDataTypes,K>::addPolytope(TPolytope<TDataTypes,K> subcellsBegin, TPolytope<TDataTypes,K> subcellsEnd)
+size_t TPolytopeModel<TDataTypes,K>::addPolytope(const TPolytope<TDataTypes,K> &subcellsBegin,
+                                                 const TPolytope<TDataTypes,K> &subcellsEnd)
 {
     size_t i = this->getSize();
     this->polytopes.push_back(PolytopeData());
@@ -129,7 +133,7 @@ void TPolytopeModel<TDataTypes,K>::updatePolytope(PolytopeData &element)
 }
 
 template<typename TDataTypes, size_t K>
-void TPolytopeModel<TDataTypes,K>::updatePolytope(size_t index)
+void TPolytopeModel<TDataTypes,K>::updatePolytope(const index_type &index)
 {
     this->updatePolytope(this->polytopes[index]);
 }
@@ -167,15 +171,17 @@ void TPolytopeModel<TDataTypes,K>::computeBoundingTree(size_t maxDepth)
     if(maxDepth <= 0)
         return;
 
-    std::stack<MyType*> levelStack;
-    levelStack.push(this->createPrevious<MyType>());
-    for (size_t i = 0; i < maxDepth; i++)
-      levelStack.push(levelStack.top()->createPrevious<MyType>());
+    helper::vector<MyType*> levelStack;
+    levelStack.push_back(this->createPrevious<MyType>());
+    for (index_type i = 0; i < maxDepth; i++)
+      levelStack.push_back(levelStack.back()->createPrevious<MyType>());
 
-    MyType* root = levelStack.top();
-    levelStack.pop();
+    MyType* root = levelStack.back();
     if (root->empty() || root->getPrevious())
     {
+        // Remove the root from stack
+        levelStack.pop_back();
+
         // Tree must be reconstructed
         // First remove extra levels
         while(root->getPrevious())
@@ -187,34 +193,29 @@ void TPolytopeModel<TDataTypes,K>::computeBoundingTree(size_t maxDepth)
         }
 
         // Build root cell
-        // Root only contains one polytope at the 0 level with all the elements
+        // Root consist of one polytope at the 0 level with all the elements
         root->resize(0);
         root->addPolytope(Element(this,0),Element(this,this->getSize()));
 
-        // Expand/contract the root polytope to cover the set of elements it contains
-        // Probably unnecesary...
-        PolytopeData &rootPolytope = root->getPolytopeData(0);
-        for(size_t i = 0, i_end = this->getSize(); i < i_end; ++i)
-            rootPolytope += this->polytopes[i];
-
         // Root is at level 0
-        MyType* previousLevel = root;
+        MyType* parentLevel = root;
 
         // Construct tree by splitting cells along their biggest dimension
         while(!levelStack.empty())
         {
-            MyType* currentLevel = levelStack.top();
+            MyType* currentLevel = levelStack.back();
+            levelStack.pop_back();
             currentLevel->resize(0);
-            currentLevel->polytopes.reserve(previousLevel->getSize()*2);
-            for(Element cell = Element(previousLevel->begin()); cell != previousLevel->end() ; ++cell)
+            currentLevel->polytopes.reserve(parentLevel->getSize()*2);
+            for(Element cell = Element(parentLevel->begin()); cell != parentLevel->end() ; ++cell)
             {
                 const std::pair<Element,Element>& subcells = cell.subcells();
-                size_t ncells = subcells.second.getIndex() - subcells.first.getIndex();
+                index_type ncells = subcells.second.getIndex() - subcells.first.getIndex();
                 // Only split cells with more than 4 childs
                 if (ncells > 4)
                 {
                     // Find the biggest dimension
-                    size_t splitAxis = cell.getElement().GetSplitAxis();
+                    index_type splitAxis = cell.getElement().GetSplitAxis();
                     Real center = cell.getElement().GetCenter(splitAxis);
 
                     // Separate cells on each side of the median cell
@@ -223,20 +224,19 @@ void TPolytopeModel<TDataTypes,K>::computeBoundingTree(size_t maxDepth)
                     finish = this->polytopes.begin()+subcells.second.getIndex();
                     mid = std::partition(start,finish,PolytopeSortPredicate(splitAxis,center));
 
-                    size_t middleIndex = std::distance(start,mid);
+                    index_type middleIndex = std::distance(start,mid);
 
                     // Create the two new polytops in current level containing the splited indices
                     Element cmiddle(this, middleIndex);
-                    size_t c1 = currentLevel->addPolytope(subcells.first, cmiddle);
-                    size_t c2 = currentLevel->addPolytope(cmiddle, subcells.second);
+                    index_type c1 = currentLevel->addPolytope(subcells.first, cmiddle);
+                    index_type c2 = currentLevel->addPolytope(cmiddle, subcells.second);
 
                     // Update subcells of the parent level with the two newly created cells
-                    previousLevel->polytopes[cell.getIndex()].subcells.first = Element(currentLevel,c1);
-                    previousLevel->polytopes[cell.getIndex()].subcells.second = Element(currentLevel,c2+1);
+                    parentLevel->polytopes[cell.getIndex()].subcells.first = Element(currentLevel,c1);
+                    parentLevel->polytopes[cell.getIndex()].subcells.second = Element(currentLevel,c2+1);
                 }
             }
-            previousLevel = currentLevel;
-            levelStack.pop();
+            parentLevel = currentLevel;
         }
         if (!parentOf.empty())
         {
@@ -247,18 +247,15 @@ void TPolytopeModel<TDataTypes,K>::computeBoundingTree(size_t maxDepth)
     }
     else
     {
-        // Simply update the existing tree, starting from the bottom
-        size_t lvl = 0;
-        for (typename std::list<MyType*>::reverse_iterator it = levels.rbegin(); it != levels.rend(); it++)
+        // Update the existing tree, starting from the bottom
+        for (size_t i = 0; i < levelStack.size(); ++i)
         {
-            //sout << "PolytopeModel: update level "<<lvl<<sendl;
-            (*it)->updatePolytopes();
-            ++lvl;
+            sout << "PolytopeModel: update level "<<i<<sendl;
+            levelStack[i]->updatePolytopes();
         }
     }
     //sout << "<PolytopeModel::computeBoundingTree("<<maxDepth<<")"<<sendl;
 }
-
 
 template<typename TDataTypes, size_t K>
 void TPolytopeModel<TDataTypes,K>::draw(const core::visual::VisualParams* , size_t /*index*/)
