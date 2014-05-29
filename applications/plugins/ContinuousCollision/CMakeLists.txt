@@ -19,7 +19,7 @@ set(SOURCE_FILES
 	)
 
 AddCompilerDefinitions("SOFA_BUILD_PLUGIN_CONTINUOUS_COLLISION")
-AddLinkerDependencies( SofaComponentMisc SofaHelper SofaSimulationGraph)
+AddLinkerDependencies( SofaComponentMisc SofaHelper SofaSimulationGraph SofaGuiMain)
 
 set_source_files_properties(${SOURCE_FILES} PROPERTIES COMPILE_FLAGS -std=c++11)
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

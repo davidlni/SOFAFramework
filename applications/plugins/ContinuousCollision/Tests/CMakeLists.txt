@@ -4,7 +4,7 @@ set(SOURCE_FILES
 #   PolytopeModel_test.cpp
 #     ContinuousCollision_test.cpp
   test_CollisionPipeline.cpp
-	)
+  )
 
 if(APPLE)
     set(RC_FILES "runSOFA.icns")
@@ -14,7 +14,7 @@ endif()
 # link_directories("${SOFA_EXTLIBS_DIR}/gtest/lib")
 
 if(WIN32)
-	link_directories("${SOFA_EXTLIBS_DIR}/SuiteSparse/cholmod/Lib")
+  link_directories("${SOFA_EXTLIBS_DIR}/SuiteSparse/cholmod/Lib")
 endif()
 
 include_directories(/home/rortiz/projects/Sofa/extlibs/tinyxml)

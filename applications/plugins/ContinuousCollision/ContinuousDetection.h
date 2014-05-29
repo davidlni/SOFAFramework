@@ -22,8 +22,8 @@
  *                                                                             *
  * Contact information: contact@sofa-framework.org                             *
  ******************************************************************************/
-#ifndef SOFA_COMPONENT_COLLISION_BRUTEFORCEDETECTION_H
-#define SOFA_COMPONENT_COLLISION_BRUTEFORCEDETECTION_H
+#ifndef SOFA_COMPONENT_COLLISION_CONTINUOUSDETECTION_H
+#define SOFA_COMPONENT_COLLISION_CONTINUOUSDETECTION_H
 
 
 #include <sofa/core/collision/BroadPhaseDetection.h>
@@ -42,8 +42,6 @@ namespace component
 
 namespace collision
 {
-
-using namespace sofa::defaulttype;
 
 class SOFA_CONTINUOUS_COLLISION_API ContinuousDetection :
     public core::collision::BroadPhaseDetection,

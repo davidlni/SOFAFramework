@@ -56,7 +56,7 @@ using namespace collision;
 
 SOFA_DECL_CLASS(ContinuousDetection)
 
-int ContinuousDetectionClass = core::RegisterObject("Collision detection using extensive pair-wise tests")
+int ContinuousDetectionClass = core::RegisterObject("Continuous Collision Detection")
                                .add< ContinuousDetection >()
                                ;
 

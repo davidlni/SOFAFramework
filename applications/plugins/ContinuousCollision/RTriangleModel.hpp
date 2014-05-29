@@ -63,6 +63,8 @@ TRTriangleModel<DataTypes>::TRTriangleModel()
 {
     triangles = &mytriangles;
     enum_type = TRIANGLE_TYPE;
+    this->adjacentPairs[0] = helper::vector<AdjacentPair>();
+    this->adjacentPairs[1] = helper::vector<AdjacentPair>();
 }
 
 template<class DataTypes>
@@ -106,7 +108,6 @@ void TRTriangleModel<DataTypes>::init()
     resize(_topology->getNbTriangles());
 
     updateFromTopology(this->getContext()->getDt());
-    updateNormals();
 }
 
 template<class DataTypes>
@@ -239,8 +240,64 @@ void TRTriangleModel<DataTypes>::updateFromTopology(const double &dt)
         this->edgeBoxes.resize(this->edgeFeatures.size());
 //         this->faceBoxes.resize(newsize);
         this->updateFeatureBoxes(dt);
+    }
+
+    helper::vector<EdgeFeature> edges;
+    for (unsigned i=0; i<ntris; i++)
+    {
+      topology::BaseMeshTopology::Triangle idx = _topology->getTriangle(i);
+      if (idx[0] >= npoints || idx[1] >= npoints || idx[2] >= npoints)
+      {
+        serr << "ERROR: Out of range index in triangle "<<i<<": "<<idx[0]<<" "<<idx[1]<<" "<<idx[2]<<" ( total points="<<npoints<<")"<<sendl;
+        if (idx[0] >= npoints) idx[0] = npoints-1;
+        if (idx[1] >= npoints) idx[1] = npoints-1;
+        if (idx[2] >= npoints) idx[2] = npoints-1;
+      }
+
+      edges.push_back(EdgeFeature(idx[0],idx[1],i));
+      edges.push_back(EdgeFeature(idx[1],idx[2],i));
+      edges.push_back(EdgeFeature(idx[2],idx[0],i));
 
     }
+    std::sort(edges.begin(),edges.end());
+    // Eliminate duplicated edges
+    for(typename helper::vector<EdgeFeature>::iterator i = edges.begin(), end = edges.end(); i != end; ++i)
+    {
+      if(!this->edgeFeatures.empty() && *i == edgeFeatures.back())
+        this->edgeFeatures.back().SetFaceId(i->FaceId(0));
+      else
+        this->edgeFeatures.push_back(*i);
+    }
+
+    typename helper::vector<EdgeFeature>::iterator begin = this->edgeFeatures.begin();
+    typename helper::vector<EdgeFeature>::iterator end = this->edgeFeatures.end();
+
+    this->vertexTriangleFeatures.resize(npoints);
+    for (size_t i = 0; i < newsize; ++i)
+    {
+      Element t(this,i);
+      size_t idx0 = t.p1Index();
+      size_t idx1 = t.p2Index();
+      size_t idx2 = t.p3Index();
+      typename helper::vector<EdgeFeature>::iterator mid0 = std::lower_bound(begin,end,EdgeFeature(idx0,idx1));
+      typename helper::vector<EdgeFeature>::iterator mid1 = std::lower_bound(begin,end,EdgeFeature(idx1,idx2));
+      typename helper::vector<EdgeFeature>::iterator mid2 = std::lower_bound(begin,end,EdgeFeature(idx2,idx0));
+
+      this->triangleEdgeFeatures.push_back(TriangleEdgesFeature());
+      this->triangleEdgeFeatures.back().set(std::distance(begin,mid0),
+                                            std::distance(begin,mid1),
+                                            std::distance(begin,mid2));
+      // populate vertex-face map
+      this->vertexTriangleFeatures[idx0].push_back(i);
+      this->vertexTriangleFeatures[idx1].push_back(i);
+      this->vertexTriangleFeatures[idx2].push_back(i);
+    }
+
+    this->vertexBoxes.resize(npoints);
+    this->edgeBoxes.resize(this->edgeFeatures.size());
+    //         this->faceBoxes.resize(newsize);
+    this->updateFeatureBoxes(dt);
+
     updateFlags();
     updateNormals();
 }
@@ -461,6 +518,7 @@ void TRTriangleModel<DataTypes>::bufferAdjacentLists()
     adjacentPairs[1].clear();
     for(size_t i = 0, end = this->edgeFeatures.size(); i < end; ++i)
     {
+//       std::cout << i << std::endl;
         index_pair_type trianglePair(this->edgeFeatures[i].FaceId(0),this->edgeFeatures[i].FaceId(1));
         if (trianglePair.first == -1 || trianglePair.second == -1) continue;
         if (trianglePair.first < trianglePair.second)
@@ -601,23 +659,6 @@ void TRTriangleModel<DataTypes>::setOrphans()
 
 }
 
-// template<class DataTypes>
-// void TRTriangleModel<DataTypes>::testOrphans(const double &dt)
-// {
-//     for (typename helper::set<FeaturePair>::iterator i=this->edgeEdgeFeaturePairs.begin(), end=this->edgeEdgeFeaturePairs.end(); i!=end; ++i)
-//     {
-//         index_type e1, e2;
-//         i->GetParameters(e1,e2);
-//         this->intersectEdgeEdge(dt,EdgeElement(this,e1),EdgeElement(this,e2));
-//     }
-//     for (typename helper::set<FeaturePair>::iterator i=this->vertexFaceFeaturePairs.begin(), end=this->vertexFaceFeaturePairs.end(); i!=end; ++i)
-//     {
-//         index_type v, f;
-//         i->GetParameters(f, v);
-//         this->intersectVertexFace(dt,VertexElement(this,v), Element(this,f));
-//     }
-// }
-
 template<class DataTypes>
 bool TRTriangleModel<DataTypes>::testOrphansEdgeToEdge(const index_type &i1, const index_type &i2)
 {
@@ -734,473 +775,6 @@ void TRTriangleModel<DataTypes>::insertVertexToFaceFeature(const index_type &f, 
         this->vertexFaceFeaturePairs.insert(FeaturePair(f, v));
     }
 }
-// 
-// template<class DataTypes>
-// float TRTriangleModel<DataTypes>::intersectVertexFace(const double &dt, const VertexElement &vertex, const Element &f1, const Element &f2)
-// {
-//   if (!Polytope(static_cast<PolytopeModel*>(this->getPrevious()),f1.getIndex()).getElement().Overlaps(this->vertexBoxes[vertex.getIndex()]))
-//         return -1.f;
-//     typename VertexTriangleFeatures::const_iterator i, end = this->vertexTriangleFeatures[vertex.getIndex()].end();
-//     for (i = this->vertexTriangleFeatures[vertex.getIndex()].begin(); i != end; ++i)
-//     {
-//         index_type fid = *i;
-//         if (!f1.covertices(Element(this,fid)))
-//         {
-//             if (fid == f2.getIndex())
-//             {
-//                 if (this->testVertexFace(dt,vertex,f1))
-//                     return this->vertexFaceIntersection(dt,vertex,f1);
-//                 return -1.f;
-//             }
-//             return -1.f;
-//         }
-//     }
-//     return -1.f;
-// }
-
-// template<class DataTypes>
-// float TRTriangleModel<DataTypes>::intersectVertexFace(const double &dt, const VertexElement &vertex, const Element &face)
-// {
-//     if (!Polytope(static_cast<PolytopeModel*>(this->getPrevious()),face.getIndex()).getElement().Overlaps(this->vertexBoxes[vertex.getIndex()]))
-//         return false;
-// 
-//     if (this->testVertexFace(dt,vertex,face))
-//         return this->vertexFaceIntersection(dt,vertex,face);
-// 
-//     return -1.f;
-// }
-
-// template<class DataTypes>
-// float TRTriangleModel<DataTypes>::intersectEdgeEdge(const double &dt, const EdgeElement &e1, const EdgeElement &e2)
-// {
-//     if (!e1.getBox().Overlaps(e2.getBox()))
-//         return -1.f;
-// 
-//     if (this->testEdgeEdge(dt, e1, e2))
-//         return this->edgeEdgeIntersection(dt,e1,e2);
-// 
-//     return -1.f;
-// }
-
-// template<class DataTypes>
-// float TRTriangleModel<DataTypes>::intersectEdgeEdge(const double &dt, const EdgeElement &e1, const EdgeElement &e2, const Element &f1, const Element &f2)
-// {
-//   if (!this->edgeBoxes[e1.getIndex()].Overlaps(this->edgeBoxes[e2.getIndex()]))
-//         return -1.f;
-// 
-//     EdgeElement e[2] = {e1,e2};
-//     Element f[2] = {f1,f2};
-// 
-//     if (e1.getIndex() > e2.getIndex())
-//     {
-//         e[0] = e2, e[1] = e1;
-//         f[0] = f2, f[1] = f1;
-//     }
-// 
-//     for (int i=0; i<2; i++)
-//         for (int j=0; j<2; j++)
-//         {
-//             index_type ff1 = e[0].FaceId(i);
-//             index_type ff2 = e[1].FaceId(j);
-// 
-//             if (ff1 == -1 || ff2 == -1)
-//                 continue;
-// 
-//             Element adjacentFace1(this,ff1);
-//             Element adjacentFace2(this,ff2);
-//             if (!adjacentFace1.covertices(adjacentFace2))
-//             {
-//               if (adjacentFace1 == f[0] && adjacentFace2 == f[1])
-//                 {
-//                     if (this->testEdgeEdge(dt, e1, e2))
-//                         return this->edgeEdgeIntersection(dt,e1,e2);
-//                     return -1.f;
-//                 }
-//                 return -1.f;
-//             }
-//         }
-// 
-//     return -1.f;
-// }
-// 
-// template<class DataTypes>
-// float TRTriangleModel<DataTypes>::vertexFaceIntersection(const double &dt, const VertexElement &vertex, const Element &face)
-// {
-//     /* Default value returned if no collision occurs */
-//     float collisionTime = -1.0f;
-// 
-//     /* diff. vectors for linear interpolation: x1-x0 == dt*v0 */
-//     Vector3 qd = vertex.v()*dt;
-//     Vector3 ad = face.v1()*dt;
-//     Vector3 bd = face.v2()*dt;
-//     Vector3 cd = face.v3()*dt;
-// 
-//     /*
-//      * Compute scalar coefficients by evaluating dot and cross-products.
-//      */
-//     helper::fixed_array<Real,4> coeffs; /* cubic polynomial coefficients */
-//     this->computeCubicCoefficientsVertexFace(face.p1(), ad, face.p2(), bd, face.p3(), cd, vertex.p(), qd, coeffs);
-// 
-//     if (std::fabs(coeffs[0]) <= std::numeric_limits<Real>::epsilon() &&
-//       std::fabs(coeffs[1]) <= std::numeric_limits<Real>::epsilon() &&
-//       std::fabs(coeffs[2]) <= std::numeric_limits<Real>::epsilon() &&
-//       std::fabs(coeffs[3]) <= std::numeric_limits<Real>::epsilon())
-//         return collisionTime;
-// 
-//     NewtonCheckData data;
-//     data.a0 = face.p1(), data.b0 = face.p2();
-//     data.c0 = face.p3(), data.p0 = vertex.p();
-//     data.ad = ad, data.bd = bd;
-//     data.cd = cd, data.pd = qd;
-// 
-//     /*
-//      * iteratively solve the cubic (scalar) equation and test for validity of the solution.
-//      */
-//     Real l = 0;
-//     Real r = 1;
-// 
-//     if (this->solveCubicWithIntervalNewton(l, r, true, data, coeffs))
-//     {
-//         collisionTime = (l+r)*0.5f;
-//     }
-// 
-//     return collisionTime;
-// }
-// 
-// template<class DataTypes>
-// float TRTriangleModel<DataTypes>::edgeEdgeIntersection(const double &dt, const EdgeElement &edge1, const EdgeElement &edge2)
-// {
-//     /* Default value returned if no collision occurs */
-//     float collisionTime = -1.0f;
-// 
-//     /* diff. vectors for linear interpolation: x1-x0 == dt*v0 */
-//     Vector3 dd = edge2.v2()*dt;
-//     Vector3 ad = edge1.v1()*dt;
-//     Vector3 bd = edge1.v2()*dt;
-//     Vector3 cd = edge2.v1()*dt;
-// 
-//     /*
-//     * Compute scalar coefficients by evaluating dot and cross-products.
-//     */
-//     helper::fixed_array<Real,4> coeffs; /* cubic polynomial coefficients */
-//     this->computeCubicCoefficientsEdgeEdge(edge1.p1(), ad, edge1.p2(), bd, edge2.p1(), cd, edge2.p2(), dd, coeffs);
-// 
-//     if (std::fabs(coeffs[0]) <= std::numeric_limits<Real>::epsilon() &&
-//       std::fabs(coeffs[1]) <= std::numeric_limits<Real>::epsilon() &&
-//       std::fabs(coeffs[2]) <= std::numeric_limits<Real>::epsilon() &&
-//       std::fabs(coeffs[3]) <= std::numeric_limits<Real>::epsilon())
-//         return collisionTime;
-// 
-//     NewtonCheckData data;
-//     data.a0 = edge1.p1(), data.b0 = edge1.p2();
-//     data.c0 = edge2.p1(), data.p0 = edge2.p2();
-//     data.ad = ad, data.bd = bd;
-//     data.cd = cd, data.pd = dd;
-// 
-//     /*
-//     * iteratively solve the cubic (scalar) equation and test for validity of the solution.
-//     */
-//     Real l = 0;
-//     Real r = 1;
-// 
-//     if (solveCubicWithIntervalNewton(l, r, false, data, coeffs))
-//     {
-//         collisionTime = (l+r)*0.5f;
-//     }
-// 
-//     return collisionTime;
-// }
-// 
-// template<class DataTypes>
-// void TRTriangleModel<DataTypes>::computeCubicCoefficientsVertexFace(
-//     const Vector3 &a0, const Vector3 &ad, const Vector3 &b0, const Vector3 &bd,
-//     const Vector3 &c0, const Vector3 &cd, const Vector3 &p0, const Vector3 &pd,
-//     helper::fixed_array<Real,4> &coeff)
-// {
-//     this->computeCubicCoefficients(bd-ad,cd-ad,pd-ad,c0-a0,b0-a0,p0-a0,coeff);
-// }
-// 
-// template<class DataTypes>
-// void TRTriangleModel<DataTypes>::computeCubicCoefficientsEdgeEdge(
-//     const Vector3 &a0, const Vector3 &ad, const Vector3 &b0, const Vector3 &bd,
-//     const Vector3 &c0, const Vector3 &cd, const Vector3 &d0, const Vector3 &dd,
-//     helper::fixed_array<Real,4> &coeff)
-// {
-//     this->computeCubicCoefficients(bd-ad,dd-cd,cd-ad,d0-c0,b0-a0,c0-a0,coeff);
-// }
-// 
-// template<class DataTypes>
-// void TRTriangleModel<DataTypes>::computeCubicCoefficients(
-//     const Vector3 &a, const Vector3 &b, const Vector3 &c, const Vector3 &d,
-//     const Vector3 &e, const Vector3 &f, helper::fixed_array<Real,4> &coeff)
-// {
-//     Vector3 v1 = a.cross(b);
-//     Vector3 v2 = a.cross(d);
-//     Vector3 v3 = e.cross(b);
-//     Vector3 v4 = e.cross(d);
-// 
-//     coeff[0] = f*v4;
-//     coeff[1] = c*v4 + f*(v2 + v3);
-//     coeff[2] = f*v1 + c*(v2 + v3);
-//     coeff[3] = c*v1;
-// }
-// 
-// template<class DataTypes>
-// bool TRTriangleModel<DataTypes>::solveCubicWithIntervalNewton(Real &l, Real &r, bool bVF, NewtonCheckData &data, helper::fixed_array<Real,4> &coeff)
-// {
-//     Real v2[2] = {l*l,r*r};
-//     Real v[2] = {l,r};
-//     Real rBkUp;
-// 
-//     unsigned char min3, min2, min1, max3, max2, max1;
-// 
-//     min3=*((unsigned char*)&coeff[3]+7) >> 7;
-//     max3=min3^1;
-//     min2=*((unsigned char*)&coeff[2]+7) >> 7;
-//     max2=min2^1;
-//     min1=*((unsigned char*)&coeff[1]+7) >> 7;
-//     max1=min1^1;
-// 
-//     // Compute bounds for the cubic
-//     Real bounds[2] = { coeff[3]*v2[min3]*v[min3]+coeff[2]*v2[min2]+coeff[1]*v[min1]+coeff[0],
-//                        coeff[3]*v2[max3]*v[max3]+coeff[2]*v2[max2]+coeff[1]*v[max1]+coeff[0]
-//                      };
-// 
-//     if (bounds[0]<0) return false;
-//     if (bounds[1]>0) return false;
-// 
-//     // Starting starts at the middle of the interval
-//     Real m = 0.5*(r+l);
-// 
-//     // Compute bounds for the derivative
-//     Real dbounds[2] = { 3.0*coeff[3]*v2[min3]+2.0*coeff[2]*v[min2]+coeff[1],
-//                         3.0*coeff[3]*v2[max3]+2.0*coeff[2]*v[max2]+coeff[1]
-//                       };
-// 
-//     if ((dbounds[0] > 0) || (dbounds[1] < 0)) // we can use Newton
-//     {
-//         Real m2 = m*m;
-//         Real fm = coeff[3]*m2*m+coeff[2]*m2+coeff[1]*m+coeff[0];
-//         Real nl = m;
-//         Real nu = m;
-//         if (fm > 0)
-//         {
-//             nl -= fm*(1.0/dbounds[0]);
-//             nu -= fm*(1.0/dbounds[1]);
-//         }
-//         else
-//         {
-//             nu -= fm*(1.0/dbounds[0]);
-//             nl -= fm*(1.0/dbounds[1]);
-//         }
-// 
-//         // Intersect with [l,r]
-//         if (nu<l || nl>r)
-//           return false; // outside the interval
-// 
-//         if (nl>l)
-//         {
-//             if (nu<r)
-//             {
-//                 l = nl;
-//                 r = nu;
-//                 m = 0.5*(l+r);
-//             }
-//             else
-//             {
-//                 l = nl;
-//                 m = 0.5*(l+r);
-//             }
-//         }
-//         else
-//         {
-//             if (nu<r)
-//             {
-//                 r = nu;
-//                 m = 0.5*(l+r);
-//             }
-//         }
-//     }
-// 
-//     // Check root validity
-//     if ((r-l)< Real(1e-10))
-//     {
-//         if (bVF)
-//             return this->insideTriangle(data.ad*r + data.a0, data.bd*r + data.b0, data.cd*r + data.c0, data.pd*r + data.p0);
-//         else
-//             return this->lineLineIntersect(data.ad*r + data.a0, data.bd*r + data.b0, data.cd*r + data.c0, data.pd*r + data.p0);
-//     }
-//     rBkUp = r, r = m;
-//     if (this->solveCubicWithIntervalNewton(l,r, bVF, data, coeff)) return true;
-//     l = m, r = rBkUp;
-//     return (this->solveCubicWithIntervalNewton(l,r, bVF, data, coeff));
-// }
-// 
-// /*
-//  * Ordinary inside-triangle test for p. The triangle normal is computed from the vertices.
-//  */
-// template<class DataTypes>
-// bool TRTriangleModel<DataTypes>::insideTriangle(const Vector3 &a, const Vector3 &b, const Vector3 &c, const Vector3 &p)
-// {
-//     Vector3 n, da, db, dc;
-//     Real wa, wb, wc;
-// 
-//     Vector3 ba = b-a;
-//     Vector3 ca = c-a;
-//     n = ba.cross(ca);
-// 
-//     da = a - p, db = b - p, dc = c - p;
-//     if ((wa = db.cross(dc)*n) < 0.0f) return false;
-//     if ((wb = dc.cross(da)*n) < 0.0f) return false;
-//     if ((wc = da.cross(db)*n) < 0.0f) return false;
-// 
-//     //Compute barycentric coordinates
-//     Real area2 = n.norm2();
-//     wa /= area2, wb /= area2, wc /= area2;
-// 
-//     // Does not returns it
-//     Vector3 baryc = Vector3(wa, wb, wc);
-// 
-//     return true;
-// }
-// 
-// template<class DataTypes>
-// bool TRTriangleModel<DataTypes>::insideLineSegment(const Vector3 &a, const Vector3 &b, const Vector3 &c)
-// {
-//     return (a-b)*(a-c)<=0;
-// }
-// 
-// template<class DataTypes>
-// bool TRTriangleModel<DataTypes>::testFeatures(const double &dt, const Element &face1, const Element &face2)
-// {
-//     // 6 VF test
-//     this->intersectVertexFace(dt,VertexElement(this,face1.p1Index()), face2, face1);
-//     this->intersectVertexFace(dt,VertexElement(this,face1.p2Index()), face2, face1);
-//     this->intersectVertexFace(dt,VertexElement(this,face1.p3Index()), face2, face1);
-// 
-//     this->intersectVertexFace(dt,VertexElement(this,face2.p1Index()), face1, face2);
-//     this->intersectVertexFace(dt,VertexElement(this,face2.p2Index()), face1, face2);
-//     this->intersectVertexFace(dt,VertexElement(this,face2.p3Index()), face1, face2);
-// 
-//     // 9 EE test
-//     EdgeElement e(this,face1.e1Index()), e1(this,face2.e1Index()), e2(this,face2.e2Index()), e3(this,face2.e3Index());
-//     this->intersectEdgeEdge(dt,e, e1, face1, face2);
-//     this->intersectEdgeEdge(dt,e, e2, face1, face2);
-//     this->intersectEdgeEdge(dt,e, e3, face1, face2);
-// 
-//     e = EdgeElement(this,face1.e2Index());
-//     this->intersectEdgeEdge(dt,e, e1, face1, face2);
-//     this->intersectEdgeEdge(dt,e, e2, face1, face2);
-//     this->intersectEdgeEdge(dt,e, e3, face1, face2);
-// 
-//     e = EdgeElement(this,face1.e3Index());
-//     this->intersectEdgeEdge(dt,e, e1, face1, face2);
-//     this->intersectEdgeEdge(dt,e, e2, face1, face2);
-//     this->intersectEdgeEdge(dt,e, e3, face1, face2);
-//     return true;
-// }
-// 
-// /*
-//  Calculate the line segment PaPb that is the shortest route between
-//  two lines P1P2 and P3P4. Calculate also the values of mua and mub where
-//  Pa = P1 + mua (P2 - P1)
-//  Pb = P3 + mub (P4 - P3)
-//  Return FALSE if no solution exists.
-//  */
-// template<class DataTypes>
-// bool TRTriangleModel<DataTypes>::lineLineIntersect(
-//     const Vector3 &p1, const Vector3 &p2, const Vector3 &p3, const Vector3 &p4)
-// {
-//     Vector3 p13,p43,p21;
-//     Real d1343,d4321,d1321,d4343,d2121;
-//     Real numer,denom;
-// 
-//     p13 = p1 - p3;
-//     p43 = p4 - p3;
-//     if (fabs(p43[0])  < std::numeric_limits<Real>::epsilon() &&
-//             fabs(p43[1])  < std::numeric_limits<Real>::epsilon() &&
-//             fabs(p43[2])  < std::numeric_limits<Real>::epsilon())
-//         return false;
-// 
-//     p21 = p2 - p1;
-//     if (fabs(p21[0])  < std::numeric_limits<Real>::epsilon() &&
-//             fabs(p21[1])  < std::numeric_limits<Real>::epsilon() &&
-//             fabs(p21[2])  < std::numeric_limits<Real>::epsilon())
-//         return false;
-// 
-//     d1343 = p13*p43;
-//     d4321 = p43*p21;
-//     d1321 = p13*p21;
-//     d4343 = p43*p43;
-//     d2121 = p21*p21;
-// 
-//     denom = d2121 * d4343 - d4321 * d4321;
-//     if (fabs(denom) < std::numeric_limits<Real>::epsilon())
-//         return false;
-//     numer = d1343 * d4321 - d1321 * d4343;
-// 
-//     Real mua = numer / denom;
-//     if (mua < 0 || mua > 1)
-//         return false;
-// 
-//     Real mub = (d1343 + d4321 * mua) / d4343;
-//     if (mub < 0 || mub > 1)
-//         return false;
-// 
-//     // Do not return these
-//     Vector3 pa, pb;
-//     pa = p1 + p21*mua;
-//     pb = p3 + p43*mub;
-//     return true;
-// }
-// 
-// template<class DataTypes>
-// bool TRTriangleModel<DataTypes>::testEdgeEdge(const double &dt, const EdgeElement &e1, const EdgeElement &e2)
-// {
-//     VertexElement pe1(this,e1.p1Index());
-//     VertexElement pe2(this,e1.p2Index());
-//     VertexElement pe3(this,e2.p1Index());
-//     VertexElement pe4(this,e2.p2Index());
-// 
-//     return this->testCoplanarity(pe1.p(), pe2.p(), pe3.p(), pe4.p(),
-//                                  pe1.p()+pe1.v()*dt, pe2.p()+pe2.v()*dt, pe3.p()+pe3.v()*dt, pe4.p()+pe4.v()*dt);
-// }
-// 
-// template<class DataTypes>
-// bool TRTriangleModel<DataTypes>::testVertexFace(const double &dt, const VertexElement &vertex, const Element &face)
-// {
-//     return this->testCoplanarity(face.p1(), face.p2(), face.p3(), vertex.p(),face.p1()+face.v1()*dt,
-//                                  face.p2()+face.v2()*dt, face.p3()+face.v3()*dt,vertex.p()+vertex.v()*dt);
-// }
-// 
-// template<class DataTypes>
-// bool TRTriangleModel<DataTypes>::testCoplanarity(const Vector3 &p0, const Vector3 &p1, const Vector3 &p2, const Vector3 &p3,
-//         const Vector3 &p4, const Vector3 &p5, const Vector3 &p6, const Vector3 &p7
-//                                                 )
-// {
-//     Vector3 n0 = (p1-p0).cross(p2-p1);
-//     Vector3 n1 = (p5-p4).cross(p6-p5);
-//     Vector3 delta = ((p5-p1)-(p4-p0)).cross((p6-p2)-(p5-p1));
-//     Vector3 nX = (n0+n1-delta)*0.5;
-// 
-//     Vector3 pa0 = p3-p0;
-//     Vector3 pa1 = p7-p4;
-// 
-//     Real A = n0*pa0;
-//     Real B = n1*pa1;
-//     Real C = nX*pa0;
-//     Real D = nX*pa1;
-//     Real E = n1*pa0;
-//     Real F = n0*pa1;
-// 
-//     if (A > 0 && B > 0 && (2*C+F) > 0 && (2*D+E) > 0)
-//         return false;
-// 
-//     if (A < 0 && B < 0 && (2*C+F) < 0 && (2*D+E) < 0)
-//         return false;
-// 
-//     return true;
-// }
 
 template<class DataTypes>
 void TRTriangleModel<DataTypes>::computeContinuousBoundingTree(double dt, size_t maxDepth)
