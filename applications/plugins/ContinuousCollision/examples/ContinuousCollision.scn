@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <Node 	name="Root" gravity="0 0 0" time="0" animate="0"   >
   <RequiredPlugin pluginName="ContinuousCollision"/>
-
-
-<VisualStyle displayFlags="hideVisualModels showBehaviorModels showMappings showForceFields" />
-<Node 	name="Create here an example of the plugin" >
+  <CollisionPipeline depth="6" verbose="0" draw="0" />
+  <ContinuousDetection name="CCD" />
+  <ContinuousIntersection name="CCI"/>
+  <CollisionResponse name="Response" response="default" />
+  <VisualStyle displayFlags="hideVisualModels showBehaviorModels showMappings showForceFields" />
 </Node>

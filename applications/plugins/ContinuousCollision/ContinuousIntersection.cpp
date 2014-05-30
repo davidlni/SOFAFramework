@@ -572,8 +572,8 @@ float ContinuousIntersection::Impl::intersectVertexFace(const double &dt, const 
     if (!vertex.getBox().Overlaps(face1.getBox()))
         return -1.f;
 
-    typename helper::vector<RVertex::index_type>::const_iterator i, end = vertex.getFaces().end();
-    for (i = vertex.getFaces().begin(); i != end; ++i)
+    typename helper::vector<RVertex::index_type>::const_iterator i, end = vertex.getTriangles().end();
+    for (i = vertex.getTriangles().begin(); i != end; ++i)
     {
         RTriangle t(vertex.model,*i);
         if (!face1.covertices(t))
@@ -670,7 +670,7 @@ int ContinuousIntersection::endIntersection(sofa::core::CollisionModel* model1, 
   this->pimpl->processNonAdjacentList(dt,contacts);
   if(model1->getLast() == model2->getLast())
   {
-    this->pimpl->testOrphans(dt,static_cast<RTriangleModel*>(model1),contacts);
+    this->pimpl->testOrphans(dt,static_cast<RTriangleModel*>(model1->getLast()),contacts);
   }
 }
 

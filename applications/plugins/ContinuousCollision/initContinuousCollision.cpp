@@ -73,7 +73,7 @@ namespace component
 	const char* getModuleComponentList()
 	{
 	  /// string containing the names of the classes provided by the plugin
-	  return "PolytopeModel";
+	  return "PolytopeModel,ContinuousDetection,ContinuousIntersection";
 	}
 
 
@@ -86,4 +86,5 @@ namespace component
 SOFA_LINK_CLASS(PolytopeModel)
 SOFA_LINK_CLASS(RTriangleModel)
 SOFA_LINK_CLASS(ContinuousDetection)
+SOFA_LINK_CLASS(ContinuousIntersection)
 

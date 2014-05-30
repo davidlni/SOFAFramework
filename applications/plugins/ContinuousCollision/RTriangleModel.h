@@ -70,7 +70,7 @@ public:
   typedef TRTriangleModel<DataTypes> ParentModel;
   typedef typename DataTypes::Real Real;
 
-  TREdge(ParentModel* model, index_type index);
+  TREdge(ParentModel* model, const index_type &index);
   TREdge() {}
   explicit TREdge(const core::CollisionElementIterator& i);
 
@@ -78,8 +78,8 @@ public:
   const Coord& p2() const;
   const Coord& p(const index_type &i) const;
 
-  const Coord& p1Free() const;
-  const Coord& p2Free() const;
+//   const Coord& p1Free() const;
+//   const Coord& p2Free() const;
 
   const index_type &p1Index() const;
   const index_type &p2Index() const;
@@ -90,24 +90,24 @@ public:
   const index_type &FaceId(const index_type &i) const;
   TRTriangle<DataTypes> getTriangle(const index_type &i) const;
 
-  const Coord& operator[](int i) const;
+//   const Coord& operator[](int i) const;
 
-  index_type covertices(const TREdge &other, helper::vector<index_pair_type> &vertexPair);
-  bool covertices(const TREdge &other);
-  bool coedge(const TREdge &other);
+//   index_type covertices(const TREdge &other, helper::vector<index_pair_type> &vertexPair);
+//   bool covertices(const TREdge &other);
+//   bool coedge(const TREdge &other);
   PolytopeModel::DOPType getBox() const;
 
   const Deriv& v1() const;
   const Deriv& v2() const;
   const Deriv& v(const index_type &i) const;
 
-  const Deriv& n() const;
-  Deriv& n();
+//   const Deriv& n() const;
+//   Deriv& n();
 
   /// Return true if the element stores a free position vector
-  bool hasFreePosition() const;
+//   bool hasFreePosition() const;
 
-  int flags() const;
+//   int flags() const;
 
   TREdge& shape() {
     return *this;
@@ -144,7 +144,7 @@ public:
   bool coedge(const TRVertex &other);
   PolytopeModel::DOPType getBox() const;
 
-  const helper::vector<index_type> &getFaces() const;
+  const helper::vector<index_type> &getTriangles() const;
 
   const Deriv& v() const;
 
@@ -464,38 +464,38 @@ public:
         }
     };
 
-    struct NonAdjacentPair
-    {
-        typedef core::topology::BaseMeshTopology::index_type index_type;
-    private:
-        index_type Id[2];
-
-    public:
-        NonAdjacentPair(const index_type &id1, const index_type &id2)
-        {
-            if (id1 > id2) {
-                Id[0] = id1;
-                Id[1] = id2;
-            } else {
-                Id[0] = id2;
-                Id[1] = id1;
-            }
-        }
-
-        void
-        GetParameters(index_type &id1, index_type &id2)
-        {
-            id1 = Id[0];
-            id2 = Id[1];
-        }
-
-        bool operator < (const NonAdjacentPair &other) {
-            if (Id[0] == other.Id[0])
-                return Id[1] < other.Id[1];
-            else
-                return Id[0] < other.Id[0];
-        }
-    };
+//     struct NonAdjacentPair
+//     {
+//         typedef core::topology::BaseMeshTopology::index_type index_type;
+//     private:
+//         index_type Id[2];
+// 
+//     public:
+//         NonAdjacentPair(const index_type &id1, const index_type &id2)
+//         {
+//             if (id1 > id2) {
+//                 Id[0] = id1;
+//                 Id[1] = id2;
+//             } else {
+//                 Id[0] = id2;
+//                 Id[1] = id1;
+//             }
+//         }
+// 
+//         void
+//         GetParameters(index_type &id1, index_type &id2)
+//         {
+//             id1 = Id[0];
+//             id2 = Id[1];
+//         }
+// 
+//         bool operator < (const NonAdjacentPair &other) {
+//             if (Id[0] == other.Id[0])
+//                 return Id[1] < other.Id[1];
+//             else
+//                 return Id[0] < other.Id[0];
+//         }
+//     };
 
     template<typename FeatureType1, typename FeatureType2>
     struct FeaturePairTemplate : public helper::fixed_array<index_type,2>
@@ -564,7 +564,7 @@ protected:
     helper::vector<PolytopeModel::DOPType> vertexBoxes;
     helper::vector<PolytopeModel::DOPType> faceBoxes;
     helper::vector<AdjacentPair> adjacentPairs[2];
-    helper::vector<NonAdjacentPair> nonAdjacentPairs;
+//     helper::vector<NonAdjacentPair> nonAdjacentPairs;
     helper::set<FeaturePair> edgeEdgeFeaturePairs;
     helper::set<FeaturePair> vertexFaceFeaturePairs;
 
@@ -605,8 +605,10 @@ public:
 
     virtual void computeBoundingTree(size_t maxDepth=0);
     virtual void computeContinuousBoundingTree(double dt, size_t maxDepth=0);
+    
     void updateFeatureBoxes(const double &dt);
     void bufferAdjacentLists();
+    void setOrphans();
     index_type covertexFace(const index_pair_type &triangleIndices,
                             index_pair_type &vertexPair);
     char getStatus1(const index_pair_type &triangleIndices,
@@ -618,38 +620,37 @@ public:
     void getFeature2(const index_pair_type &triangleIndices,
                       const index_pair_type &vertexPair);
 
-    void setOrphans();
-    void testOrphans(const double &dt);
+//     void testOrphans(const double &dt);
     bool testOrphansEdgeToEdge(const index_type &i1, const index_type &i2);
     bool testOrphansVertexToFace(const index_type &i1, const index_type &i2);
     void insertEdgeToEdgeFeature(const index_type &i1, const index_type &i2);
     void insertVertexToFaceFeature(const index_type &i1, const index_type &i2);
-    float intersectVertexFace(const double &dt, const VertexElement &v, const Element &f);
-    float intersectVertexFace(const double &dt, const VertexElement &v, const Element &f1, const Element &f2);
+//     float intersectVertexFace(const double &dt, const VertexElement &v, const Element &f);
+//     float intersectVertexFace(const double &dt, const VertexElement &v, const Element &f1, const Element &f2);
 
-    float intersectEdgeEdge(const double &dt, const EdgeElement &e1, const EdgeElement &e2);
-    float intersectEdgeEdge(const double &dt, const EdgeElement &e1, const EdgeElement &e2, const Element &f1, const Element &f2);
-    bool testVertexFace(const double &dt, const VertexElement &vertex, const Element &face);
-    bool testEdgeEdge(const double &dt, const EdgeElement &e1, const EdgeElement &e2);
-    bool testCoplanarity(const Vector3 &p0, const Vector3 &p1, const Vector3 &p2,
-                         const Vector3 &p3, const Vector3 &p4, const Vector3 &p5,
-                         const Vector3 &p6, const Vector3 &p7);
-    float vertexFaceIntersection(const double &dt, const VertexElement &vertex, const Element &face);
-    float edgeEdgeIntersection(const double &dt, const EdgeElement &e1, const EdgeElement &e2);
-    void computeCubicCoefficients(const Vector3 &a, const Vector3 &b, const Vector3 &c, const Vector3 &d,
-                                  const Vector3 &e, const Vector3 &f,
-                                  helper::fixed_array<Real,4> &coeff);
-    void computeCubicCoefficientsVertexFace(const Vector3 &a0, const Vector3 &ad, const Vector3 &b0, const Vector3 &bd,
-                                       const Vector3 &c0, const Vector3 &cd, const Vector3 &p0, const Vector3 &pd,
-                                       helper::fixed_array<Real,4> &coeff);
-    void computeCubicCoefficientsEdgeEdge(const Vector3 &a0, const Vector3 &ad, const Vector3 &b0, const Vector3 &bd,
-                                     const Vector3 &c0, const Vector3 &cd, const Vector3 &d0, const Vector3 &dd,
-                                     helper::fixed_array<Real,4> &coeff);
-    bool solveCubicWithIntervalNewton(Real &l, Real &r, bool bVF, NewtonCheckData &data, helper::fixed_array<Real,4> &coeff);
-    bool insideTriangle(const Vector3 &a, const Vector3 &b, const Vector3 &c, const Vector3 &p);
-    bool insideLineSegment(const Vector3 &a, const Vector3 &b, const Vector3 &c);
-    bool testFeatures(const double &dt, const Element &face1, const Element &face2);
-    bool lineLineIntersect(const Vector3 &p1, const Vector3 &p2, const Vector3 &p3, const Vector3 &p4);
+//     float intersectEdgeEdge(const double &dt, const EdgeElement &e1, const EdgeElement &e2);
+//     float intersectEdgeEdge(const double &dt, const EdgeElement &e1, const EdgeElement &e2, const Element &f1, const Element &f2);
+//     bool testVertexFace(const double &dt, const VertexElement &vertex, const Element &face);
+//     bool testEdgeEdge(const double &dt, const EdgeElement &e1, const EdgeElement &e2);
+//     bool testCoplanarity(const Vector3 &p0, const Vector3 &p1, const Vector3 &p2,
+//                          const Vector3 &p3, const Vector3 &p4, const Vector3 &p5,
+//                          const Vector3 &p6, const Vector3 &p7);
+//     float vertexFaceIntersection(const double &dt, const VertexElement &vertex, const Element &face);
+//     float edgeEdgeIntersection(const double &dt, const EdgeElement &e1, const EdgeElement &e2);
+//     void computeCubicCoefficients(const Vector3 &a, const Vector3 &b, const Vector3 &c, const Vector3 &d,
+//                                   const Vector3 &e, const Vector3 &f,
+//                                   helper::fixed_array<Real,4> &coeff);
+//     void computeCubicCoefficientsVertexFace(const Vector3 &a0, const Vector3 &ad, const Vector3 &b0, const Vector3 &bd,
+//                                        const Vector3 &c0, const Vector3 &cd, const Vector3 &p0, const Vector3 &pd,
+//                                        helper::fixed_array<Real,4> &coeff);
+//     void computeCubicCoefficientsEdgeEdge(const Vector3 &a0, const Vector3 &ad, const Vector3 &b0, const Vector3 &bd,
+//                                      const Vector3 &c0, const Vector3 &cd, const Vector3 &d0, const Vector3 &dd,
+//                                      helper::fixed_array<Real,4> &coeff);
+//     bool solveCubicWithIntervalNewton(Real &l, Real &r, bool bVF, NewtonCheckData &data, helper::fixed_array<Real,4> &coeff);
+//     bool insideTriangle(const Vector3 &a, const Vector3 &b, const Vector3 &c, const Vector3 &p);
+//     bool insideLineSegment(const Vector3 &a, const Vector3 &b, const Vector3 &c);
+//     bool testFeatures(const double &dt, const Element &face1, const Element &face2);
+//     bool lineLineIntersect(const Vector3 &p1, const Vector3 &p2, const Vector3 &p3, const Vector3 &p4);
 
     void draw(const core::visual::VisualParams*,int index);
     void draw(const core::visual::VisualParams* vparams);
@@ -992,7 +993,7 @@ inline bool TRVertex<DataTypes>::hasFreePosition() const
 }
 
 template<typename DataTypes>
-inline const helper::vector<typename TRVertex<DataTypes>::index_type> &TRVertex<DataTypes>::getFaces() const
+inline const helper::vector<typename TRVertex<DataTypes>::index_type> &TRVertex<DataTypes>::getTriangles() const
 {
   return this->model->vertexTriangleFeatures[this->index];
 }
@@ -1005,6 +1006,18 @@ inline PolytopeModel::DOPType TRVertex<DataTypes>::getBox() const
 
 // ----------------
 // TREdge implementations
+template<typename DataTypes>
+inline TREdge<DataTypes>::TREdge(ParentModel* model,
+                                     const index_type &index)
+: core::TCollisionElementIterator<ParentModel>(model, index)
+{}
+
+template<typename DataTypes>
+inline TREdge<DataTypes>::TREdge(const core::CollisionElementIterator& i)
+: core::TCollisionElementIterator<ParentModel>(static_cast<ParentModel*>(i.getCollisionModel()), i.getIndex())
+{}
+
+
 template<typename DataTypes>
 inline const typename DataTypes::Coord& TREdge<DataTypes>::p1() const
 {
@@ -1080,7 +1093,7 @@ inline const typename TREdge<DataTypes>::index_type& TREdge<DataTypes>::FaceId(c
 template<typename DataTypes>
 inline TRTriangle<DataTypes> TREdge<DataTypes>::getTriangle(const index_type &i) const
 {
-  // TODO: comparing unsigned integer with -1 is bad practize, find a beter way...
+  // TODO: comparing unsigned integer with -1 is bad practise, find a better way...
   if(this->model->edgeFeatures[this->index].FaceId(i) == -1)
     return TRTriangle<DataTypes>();
   return TRTriangle<DataTypes>(this->model,this->model->edgeFeatures[this->index].FaceId(i));
