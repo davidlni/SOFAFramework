@@ -299,15 +299,15 @@ public:
         }
 
         EdgeFeature(const index_type &id0, const index_type &id1, const index_type &fid)
-            : core::topology::BaseMeshTopology::Edge(id0,id1)
         {
-            this->FacesIds[0] = fid;
-            this->FacesIds[1] = std::numeric_limits<index_type>::max();
+	  set(id0,id1);
+          this->FacesIds[0] = fid;
+          this->FacesIds[1] = std::numeric_limits<index_type>::max();
         }
 
         EdgeFeature(const index_type &id0, const index_type &id1)
-            : core::topology::BaseMeshTopology::Edge(id0,id1)
         {
+	  set(id0,id1);
             this->FacesIds[0] = 0;
             this->FacesIds[1] = std::numeric_limits<index_type>::max();
         }

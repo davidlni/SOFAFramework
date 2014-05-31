@@ -330,7 +330,7 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
                 {
                     for (core::CollisionElementIterator it2 = begin2; it2 != end2; ++it2)
                     {
-                        if (!self || it1.canCollideWith(it2))
+                        if (it1.canCollideWith(it2))
                         {
                             intersector->intersect(it1,it2,outputs);
                         }
@@ -391,7 +391,7 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
                                                     for (core::CollisionElementIterator it2 = begin2; it2 != end2; ++it2)
                                                     {
                                                         // Final collision pair
-                                                        if (!self || it1.canCollideWith(it2))
+                                                        if (it1.canCollideWith(it2))
                                                             finalintersector->intersect(it1,it2,outputs);
                                                     }
                                                 }
@@ -421,7 +421,7 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
                                     else
                                     {
                                         // No child -> final collision pair
-                                        if (!self || it1.canCollideWith(it2))
+                                        if (it1.canCollideWith(it2))
                                           finalintersector->intersect(it1,it2, outputs);
                                     }
                                 }

@@ -151,7 +151,6 @@ void TRTriangleModel<DataTypes>::updateFromTopology(const double &dt)
     }
     else
     {
-        helper::vector<EdgeFeature> edges;
         triangles = &mytriangles;
         mytriangles.resize(newsize);
         int index = 0;
@@ -166,11 +165,6 @@ void TRTriangleModel<DataTypes>::updateFromTopology(const double &dt)
                 if (idx[2] >= npoints) idx[2] = npoints-1;
             }
             mytriangles[index] = idx;
-
-            edges.push_back(EdgeFeature(idx[0],idx[1],i));
-            edges.push_back(EdgeFeature(idx[1],idx[2],i));
-            edges.push_back(EdgeFeature(idx[2],idx[0],i));
-
             ++index;
         }
         for (unsigned i=0; i<nquads; i++)
@@ -192,54 +186,10 @@ void TRTriangleModel<DataTypes>::updateFromTopology(const double &dt)
             mytriangles[index][1] = idx[0];
             mytriangles[index][2] = idx[2];
             ++index;
-
-            edges.push_back(EdgeFeature(idx[1],idx[2],i));
-            edges.push_back(EdgeFeature(idx[2],idx[0],i));
-            edges.push_back(EdgeFeature(idx[0],idx[1],i));
-
-            edges.push_back(EdgeFeature(idx[3],idx[0],i));
-            edges.push_back(EdgeFeature(idx[0],idx[2],i));
-            edges.push_back(EdgeFeature(idx[2],idx[3],i));
         }
 
-        std::sort(edges.begin(),edges.end());
-        // Eliminate duplicated edges
-        for(typename helper::vector<EdgeFeature>::iterator i = edges.begin(), end = edges.end(); i != end; ++i)
-        {
-            if(!this->edgeFeatures.empty() && *i == edgeFeatures.back())
-                this->edgeFeatures.back().SetFaceId(i->FaceId(0));
-            else
-                this->edgeFeatures.push_back(*i);
-        }
 
-        typename helper::vector<EdgeFeature>::iterator begin = this->edgeFeatures.begin();
-        typename helper::vector<EdgeFeature>::iterator end = this->edgeFeatures.end();
 
-        this->vertexTriangleFeatures.resize(npoints);
-        for (size_t i = 0; i < newsize; ++i)
-        {
-            Element t(this,i);
-            size_t idx0 = t.p1Index();
-            size_t idx1 = t.p2Index();
-            size_t idx2 = t.p3Index();
-            typename helper::vector<EdgeFeature>::iterator mid0 = std::lower_bound(begin,end,EdgeFeature(idx0,idx1));
-            typename helper::vector<EdgeFeature>::iterator mid1 = std::lower_bound(begin,end,EdgeFeature(idx1,idx2));
-            typename helper::vector<EdgeFeature>::iterator mid2 = std::lower_bound(begin,end,EdgeFeature(idx2,idx0));
-
-            this->triangleEdgeFeatures.push_back(TriangleEdgesFeature());
-            this->triangleEdgeFeatures.back().set(std::distance(begin,mid0),
-                                                  std::distance(begin,mid1),
-                                                  std::distance(begin,mid2));
-            // populate vertex-face map
-            this->vertexTriangleFeatures[idx0].push_back(i);
-            this->vertexTriangleFeatures[idx1].push_back(i);
-            this->vertexTriangleFeatures[idx2].push_back(i);
-        }
-
-        this->vertexBoxes.resize(npoints);
-        this->edgeBoxes.resize(this->edgeFeatures.size());
-//         this->faceBoxes.resize(newsize);
-        this->updateFeatureBoxes(dt);
     }
 
     helper::vector<EdgeFeature> edges;
@@ -518,7 +468,6 @@ void TRTriangleModel<DataTypes>::bufferAdjacentLists()
     adjacentPairs[1].clear();
     for(size_t i = 0, end = this->edgeFeatures.size(); i < end; ++i)
     {
-//       std::cout << i << std::endl;
         index_pair_type trianglePair(this->edgeFeatures[i].FaceId(0),this->edgeFeatures[i].FaceId(1));
         if (trianglePair.first == -1 || trianglePair.second == -1) continue;
         if (trianglePair.first < trianglePair.second)
@@ -566,7 +515,7 @@ void TRTriangleModel<DataTypes>::bufferAdjacentLists()
     }
 
     adjacentPairs[0].clear();
-//     adjacentPairs[0].resize(adjacentPairSet.size());
+    adjacentPairs[0].resize(adjacentPairSet.size());
     std::copy(adjacentPairSet.begin(),adjacentPairSet.end(),adjacentPairs[0].begin());
 }
 
@@ -681,7 +630,7 @@ bool TRTriangleModel<DataTypes>::testOrphansEdgeToEdge(const index_type &i1, con
 }
 
 template<class DataTypes>
-bool TRTriangleModel<DataTypes>::testOrphansVertexToFace(const index_type &v, const index_type &f)
+bool TRTriangleModel<DataTypes>::testOrphansVertexToFace(const index_type &f, const index_type &v)
 {
     for (typename VertexTriangleFeatures::iterator i=vertexTriangleFeatures[v].begin(),
       end = vertexTriangleFeatures[v].end(); i != end; i++)

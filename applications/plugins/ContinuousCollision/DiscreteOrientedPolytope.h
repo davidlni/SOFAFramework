@@ -117,7 +117,7 @@ public:
         for(size_t i = 0; i < KHalf; ++i)
         {
             this->Distance[i] = std::min(d[i],this->Distance[i]);
-            this->Distance[i+KHalf] = std::min(d[i],this->Distance[i+KHalf]);
+            this->Distance[i+KHalf] = std::max(d[i],this->Distance[i+KHalf]);
         }
         return *this;
     }

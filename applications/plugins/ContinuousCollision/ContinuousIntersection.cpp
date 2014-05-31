@@ -629,6 +629,7 @@ bool ContinuousIntersection::Impl::testFeatures(const double &dt, const RTriangl
     this->intersectEdgeEdge(dt,e,e1,face1,face2,output);
     this->intersectEdgeEdge(dt,e,e2,face1,face2,output);
     this->intersectEdgeEdge(dt,e,e3,face1,face2,output);
+    return true;
 }
 
 ContinuousIntersection::ContinuousIntersection()
@@ -668,10 +669,12 @@ int ContinuousIntersection::endIntersection(sofa::core::CollisionModel* model1, 
 {
   double dt = this->getContext()->getDt();
   this->pimpl->processNonAdjacentList(dt,contacts);
+  std::cout << "contacts.size()" << contacts->size() << std::endl;
   if(model1->getLast() == model2->getLast())
   {
     this->pimpl->testOrphans(dt,static_cast<RTriangleModel*>(model1->getLast()),contacts);
   }
+  return 0;
 }
 
 /// Return the intersector class handling the given pair of collision models, or NULL if not supported.
