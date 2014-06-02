@@ -145,7 +145,7 @@ void ContinuousDetection::addCollisionModel(core::CollisionModel *cm)
         // Here we assume a single root element is present in both models
         if (intersector->canIntersect(cm1->begin(), cm2->begin()))
         {
-            //sout << "Broad phase "<<cm1->getLast()->getName()<<" - "<<cm2->getLast()->getName()<<sendl;
+            sout << "Broad phase "<<cm1->getLast()->getName()<<" - "<<cm2->getLast()->getName()<<sendl;
             cmPairs.push_back(std::make_pair(cm1, cm2));
         }
     }
@@ -330,7 +330,7 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
                 {
                     for (core::CollisionElementIterator it2 = begin2; it2 != end2; ++it2)
                     {
-                        if (it1.canCollideWith(it2))
+                        if (!self && it1.canCollideWith(it2))
                         {
                             intersector->intersect(it1,it2,outputs);
                         }
@@ -391,7 +391,7 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
                                                     for (core::CollisionElementIterator it2 = begin2; it2 != end2; ++it2)
                                                     {
                                                         // Final collision pair
-                                                        if (it1.canCollideWith(it2))
+                                                        if (!self && it1.canCollideWith(it2))
                                                             finalintersector->intersect(it1,it2,outputs);
                                                     }
                                                 }
@@ -421,7 +421,7 @@ void ContinuousDetection::addCollisionPair(const std::pair<core::CollisionModel*
                                     else
                                     {
                                         // No child -> final collision pair
-                                        if (it1.canCollideWith(it2))
+                                        if (!self && it1.canCollideWith(it2))
                                           finalintersector->intersect(it1,it2, outputs);
                                     }
                                 }

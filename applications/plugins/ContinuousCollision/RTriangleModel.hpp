@@ -188,14 +188,12 @@ void TRTriangleModel<DataTypes>::updateFromTopology(const double &dt)
             ++index;
         }
 
-
-
     }
 
     helper::vector<EdgeFeature> edges;
-    for (unsigned i=0; i<ntris; i++)
+    for (unsigned i=0; i<newsize; i++)
     {
-      topology::BaseMeshTopology::Triangle idx = _topology->getTriangle(i);
+      topology::BaseMeshTopology::Triangle idx = (*this->triangles)[i];
       if (idx[0] >= npoints || idx[1] >= npoints || idx[2] >= npoints)
       {
         serr << "ERROR: Out of range index in triangle "<<i<<": "<<idx[0]<<" "<<idx[1]<<" "<<idx[2]<<" ( total points="<<npoints<<")"<<sendl;
@@ -209,19 +207,19 @@ void TRTriangleModel<DataTypes>::updateFromTopology(const double &dt)
       edges.push_back(EdgeFeature(idx[2],idx[0],i));
 
     }
-    std::sort(edges.begin(),edges.end());
     // Eliminate duplicated edges
+    std::sort(edges.begin(),edges.end());
     for(typename helper::vector<EdgeFeature>::iterator i = edges.begin(), end = edges.end(); i != end; ++i)
     {
-      if(!this->edgeFeatures.empty() && *i == edgeFeatures.back())
+      if(!this->edgeFeatures.empty() && *i == this->edgeFeatures.back())
         this->edgeFeatures.back().SetFaceId(i->FaceId(0));
       else
         this->edgeFeatures.push_back(*i);
-    }
-
+    }    
+    
     typename helper::vector<EdgeFeature>::iterator begin = this->edgeFeatures.begin();
     typename helper::vector<EdgeFeature>::iterator end = this->edgeFeatures.end();
-
+    
     this->vertexTriangleFeatures.resize(npoints);
     for (size_t i = 0; i < newsize; ++i)
     {
@@ -245,7 +243,6 @@ void TRTriangleModel<DataTypes>::updateFromTopology(const double &dt)
 
     this->vertexBoxes.resize(npoints);
     this->edgeBoxes.resize(this->edgeFeatures.size());
-    //         this->faceBoxes.resize(newsize);
     this->updateFeatureBoxes(dt);
 
     updateFlags();
@@ -447,7 +444,7 @@ void TRTriangleModel<DataTypes>::updateFeatureBoxes(const double &dt)
         this->edgeBoxes[i] = this->vertexBoxes[id0] + this->vertexBoxes[id1];
     }
 
-    // Get boxes from BVH hierarchy
+    // Get and update boxes from BVH hierarchy
     core::CollisionModel *boxes = this->getPrevious();
     if(boxes)
       static_cast<PolytopeModel*>(boxes)->updatePolytopes();
@@ -603,7 +600,7 @@ void TRTriangleModel<DataTypes>::setOrphans()
     for (typename helper::vector<AdjacentPair>::iterator i=adjacentPairs[1].begin(); i!=adjacentPairs[1].end(); ++i)
     {
         i->GetParameters(trianglePair,vertexPair);
-        this->getFeature1(trianglePair,vertexPair);
+        this->getFeature2(trianglePair,vertexPair);
     }
 
 }

@@ -262,103 +262,103 @@ void TPolytopeModel<TDataTypes,K>::computeBoundingTree(size_t maxDepth)
 }
 
 template<typename TDataTypes, size_t K>
-void TPolytopeModel<TDataTypes,K>::draw(const core::visual::VisualParams* , size_t /*index*/)
+void TPolytopeModel<TDataTypes,K>::draw(const core::visual::VisualParams* , size_t index)
 {
-// #ifndef SOFA_NO_OPENGL
-//     const Vector3& vmin = polytopes[index].minBBox;
-//     const Vector3& vmax = polytopes[index].maxBBox;
-//
-//     glBegin(GL_LINES);
-//     {
-//         glVertex3d(vmin[0], vmin[1], vmin[2]);
-//         glVertex3d(vmin[0], vmin[1], vmax[2]);
-//         glVertex3d(vmin[0], vmax[1], vmin[2]);
-//         glVertex3d(vmin[0], vmax[1], vmax[2]);
-//         glVertex3d(vmax[0], vmin[1], vmin[2]);
-//         glVertex3d(vmax[0], vmin[1], vmax[2]);
-//         glVertex3d(vmax[0], vmax[1], vmin[2]);
-//         glVertex3d(vmax[0], vmax[1], vmax[2]);
-//
-//         glVertex3d(vmin[0], vmin[1], vmin[2]);
-//         glVertex3d(vmin[0], vmax[1], vmin[2]);
-//         glVertex3d(vmin[0], vmin[1], vmax[2]);
-//         glVertex3d(vmin[0], vmax[1], vmax[2]);
-//         glVertex3d(vmax[0], vmin[1], vmin[2]);
-//         glVertex3d(vmax[0], vmax[1], vmin[2]);
-//         glVertex3d(vmax[0], vmin[1], vmax[2]);
-//         glVertex3d(vmax[0], vmax[1], vmax[2]);
-//
-//         glVertex3d(vmin[0], vmin[1], vmin[2]);
-//         glVertex3d(vmax[0], vmin[1], vmin[2]);
-//         glVertex3d(vmin[0], vmax[1], vmin[2]);
-//         glVertex3d(vmax[0], vmax[1], vmin[2]);
-//         glVertex3d(vmin[0], vmin[1], vmax[2]);
-//         glVertex3d(vmax[0], vmin[1], vmax[2]);
-//         glVertex3d(vmin[0], vmax[1], vmax[2]);
-//         glVertex3d(vmax[0], vmax[1], vmax[2]);
-//     }
-//     glEnd();
-// #endif /* SOFA_NO_OPENGL */
+#ifndef SOFA_NO_OPENGL
+    const Vector3 vmin = polytopes[index].GetBoundingBoxMin();
+    const Vector3 vmax = polytopes[index].GetBoundingBoxMax();
+
+    glBegin(GL_LINES);
+    {
+        glVertex3d(vmin[0], vmin[1], vmin[2]);
+        glVertex3d(vmin[0], vmin[1], vmax[2]);
+        glVertex3d(vmin[0], vmax[1], vmin[2]);
+        glVertex3d(vmin[0], vmax[1], vmax[2]);
+        glVertex3d(vmax[0], vmin[1], vmin[2]);
+        glVertex3d(vmax[0], vmin[1], vmax[2]);
+        glVertex3d(vmax[0], vmax[1], vmin[2]);
+        glVertex3d(vmax[0], vmax[1], vmax[2]);
+
+        glVertex3d(vmin[0], vmin[1], vmin[2]);
+        glVertex3d(vmin[0], vmax[1], vmin[2]);
+        glVertex3d(vmin[0], vmin[1], vmax[2]);
+        glVertex3d(vmin[0], vmax[1], vmax[2]);
+        glVertex3d(vmax[0], vmin[1], vmin[2]);
+        glVertex3d(vmax[0], vmax[1], vmin[2]);
+        glVertex3d(vmax[0], vmin[1], vmax[2]);
+        glVertex3d(vmax[0], vmax[1], vmax[2]);
+
+        glVertex3d(vmin[0], vmin[1], vmin[2]);
+        glVertex3d(vmax[0], vmin[1], vmin[2]);
+        glVertex3d(vmin[0], vmax[1], vmin[2]);
+        glVertex3d(vmax[0], vmax[1], vmin[2]);
+        glVertex3d(vmin[0], vmin[1], vmax[2]);
+        glVertex3d(vmax[0], vmin[1], vmax[2]);
+        glVertex3d(vmin[0], vmax[1], vmax[2]);
+        glVertex3d(vmax[0], vmax[1], vmax[2]);
+    }
+    glEnd();
+#endif /* SOFA_NO_OPENGL */
 }
 
 template<typename TDataTypes, size_t K>
-void TPolytopeModel<TDataTypes,K>::draw(const core::visual::VisualParams* /*vparams*/)
+void TPolytopeModel<TDataTypes,K>::draw(const core::visual::VisualParams* vparams)
 {
-//     if (!isActive() || !((getNext()==NULL)?vparams->displayFlags().getShowCollisionModels():vparams->displayFlags().getShowBoundingCollisionModels())) return;
-//
-//     size_t level=0;
-//     CollisionModel* m = getPrevious();
-//     float color = 1.0f;
-//     while (m!=NULL)
-//     {
-//         m = m->getPrevious();
-//         ++level;
-//         color *= 0.5f;
-//     }
-//     Vec<4,float> c;
-//     if (isSimulated())
-//         c=Vec<4,float>(1.0f, 1.0f, 1.0f, color);
-//     else
-//         c=Vec<4,float>(1.0f, 1.0f, 1.0f, color);
-//
-//     std::vector< Vector3 > points;
-//     for (size_t i=0; i<size; i++)
-//     {
-//         const Vector3& vmin = polytopes[i].minBBox;
-//         const Vector3& vmax = polytopes[i].maxBBox;
-//
-//         points.push_back(Vector3(vmin[0], vmin[1], vmin[2]));
-//         points.push_back(Vector3(vmin[0], vmin[1], vmax[2]));
-//         points.push_back(Vector3(vmin[0], vmax[1], vmin[2]));
-//         points.push_back(Vector3(vmin[0], vmax[1], vmax[2]));
-//         points.push_back(Vector3(vmax[0], vmin[1], vmin[2]));
-//         points.push_back(Vector3(vmax[0], vmin[1], vmax[2]));
-//         points.push_back(Vector3(vmax[0], vmax[1], vmin[2]));
-//         points.push_back(Vector3(vmax[0], vmax[1], vmax[2]));
-//
-//         points.push_back(Vector3(vmin[0], vmin[1], vmin[2]));
-//         points.push_back(Vector3(vmin[0], vmax[1], vmin[2]));
-//         points.push_back(Vector3(vmin[0], vmin[1], vmax[2]));
-//         points.push_back(Vector3(vmin[0], vmax[1], vmax[2]));
-//         points.push_back(Vector3(vmax[0], vmin[1], vmin[2]));
-//         points.push_back(Vector3(vmax[0], vmax[1], vmin[2]));
-//         points.push_back(Vector3(vmax[0], vmin[1], vmax[2]));
-//         points.push_back(Vector3(vmax[0], vmax[1], vmax[2]));
-//
-//         points.push_back(Vector3(vmin[0], vmin[1], vmin[2]));
-//         points.push_back(Vector3(vmax[0], vmin[1], vmin[2]));
-//         points.push_back(Vector3(vmin[0], vmax[1], vmin[2]));
-//         points.push_back(Vector3(vmax[0], vmax[1], vmin[2]));
-//         points.push_back(Vector3(vmin[0], vmin[1], vmax[2]));
-//         points.push_back(Vector3(vmax[0], vmin[1], vmax[2]));
-//         points.push_back(Vector3(vmin[0], vmax[1], vmax[2]));
-//         points.push_back(Vector3(vmax[0], vmax[1], vmax[2]));
-//     }
-//
-//     vparams->drawTool()->drawLines(points, 1, c);
-//
-//     if (getPrevious()!=NULL)
-//         getPrevious()->draw(vparams);
+    if (!isActive() || !((getNext()==NULL)?vparams->displayFlags().getShowCollisionModels():vparams->displayFlags().getShowBoundingCollisionModels())) return;
+
+    size_t level=0;
+    CollisionModel* m = getPrevious();
+    float color = 1.0f;
+    while (m!=NULL)
+    {
+        m = m->getPrevious();
+        ++level;
+        color *= 0.5f;
+    }
+    Vec<4,float> c;
+    if (isSimulated())
+        c=Vec<4,float>(1.0f, 1.0f, 1.0f, color);
+    else
+        c=Vec<4,float>(1.0f, 1.0f, 1.0f, color);
+
+    std::vector< Vector3 > points;
+    for (size_t i=0; i<size; i++)
+    {
+	const Vector3 vmin = polytopes[i].GetBoundingBoxMin();
+	const Vector3 vmax = polytopes[i].GetBoundingBoxMax();
+
+        points.push_back(Vector3(vmin[0], vmin[1], vmin[2]));
+        points.push_back(Vector3(vmin[0], vmin[1], vmax[2]));
+        points.push_back(Vector3(vmin[0], vmax[1], vmin[2]));
+        points.push_back(Vector3(vmin[0], vmax[1], vmax[2]));
+        points.push_back(Vector3(vmax[0], vmin[1], vmin[2]));
+        points.push_back(Vector3(vmax[0], vmin[1], vmax[2]));
+        points.push_back(Vector3(vmax[0], vmax[1], vmin[2]));
+        points.push_back(Vector3(vmax[0], vmax[1], vmax[2]));
+
+        points.push_back(Vector3(vmin[0], vmin[1], vmin[2]));
+        points.push_back(Vector3(vmin[0], vmax[1], vmin[2]));
+        points.push_back(Vector3(vmin[0], vmin[1], vmax[2]));
+        points.push_back(Vector3(vmin[0], vmax[1], vmax[2]));
+        points.push_back(Vector3(vmax[0], vmin[1], vmin[2]));
+        points.push_back(Vector3(vmax[0], vmax[1], vmin[2]));
+        points.push_back(Vector3(vmax[0], vmin[1], vmax[2]));
+        points.push_back(Vector3(vmax[0], vmax[1], vmax[2]));
+
+        points.push_back(Vector3(vmin[0], vmin[1], vmin[2]));
+        points.push_back(Vector3(vmax[0], vmin[1], vmin[2]));
+        points.push_back(Vector3(vmin[0], vmax[1], vmin[2]));
+        points.push_back(Vector3(vmax[0], vmax[1], vmin[2]));
+        points.push_back(Vector3(vmin[0], vmin[1], vmax[2]));
+        points.push_back(Vector3(vmax[0], vmin[1], vmax[2]));
+        points.push_back(Vector3(vmin[0], vmax[1], vmax[2]));
+        points.push_back(Vector3(vmax[0], vmax[1], vmax[2]));
+    }
+
+    vparams->drawTool()->drawLines(points, 1, c);
+
+    if (getPrevious()!=NULL)
+        getPrevious()->draw(vparams);
 }
 
 } // namespace collision

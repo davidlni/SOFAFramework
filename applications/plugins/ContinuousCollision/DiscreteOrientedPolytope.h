@@ -270,6 +270,16 @@ public:
     {
       return this->Distance;
     }
+    
+    inline defaulttype::Vector3 GetBoundingBoxMin()
+    {
+      return defaulttype::Vector3(this->Distance[0],this->Distance[1],this->Distance[2]);
+    }
+    
+    inline defaulttype::Vector3 GetBoundingBoxMax()
+    {
+      return defaulttype::Vector3(this->Distance[KHalf],this->Distance[KHalf+1],this->Distance[KHalf+2]);
+    }
 
 protected:
     DistanceArrayType Distance;

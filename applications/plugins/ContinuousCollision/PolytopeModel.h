@@ -208,14 +208,14 @@ inline bool TPolytope<TDataTypes,K>::overlaps(const TPolytope<TDataTypes,K> &oth
 typedef TPolytopeModel<Vec3Types> PolytopeModel;
 typedef TPolytope<Vec3Types> Polytope;
 
-// #if defined(SOFA_EXTERN_TEMPLATE) && !defined(CCD_PLUGIN_POLYTOPE_MODEL)
-// #ifndef SOFA_FLOAT
-// extern template class SOFA_CONTINUOUS_COLLISION_API TPolytopeModel<defaulttype::Vec3dTypes>;
-// #endif
-// #ifndef SOFA_DOUBLE
-// extern template class SOFA_CONTINUOUS_COLLISION_API TPolytopeModel<defaulttype::Vec3fTypes>;
-// #endif
-// #endif
+#if defined(SOFA_EXTERN_TEMPLATE) && !defined(CCD_PLUGIN_POLYTOPE_MODEL)
+#ifndef SOFA_FLOAT
+extern template class SOFA_CONTINUOUS_COLLISION_API TPolytopeModel<defaulttype::Vec3dTypes>;
+#endif
+#ifndef SOFA_DOUBLE
+extern template class SOFA_CONTINUOUS_COLLISION_API TPolytopeModel<defaulttype::Vec3fTypes>;
+#endif
+#endif
 
 } // namespace collision
 

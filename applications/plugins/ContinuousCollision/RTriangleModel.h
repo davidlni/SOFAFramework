@@ -350,6 +350,13 @@ public:
                 return this->elems[0] < other.elems[0];
         }
 
+        friend std::ostream &operator << (std::ostream &os, EdgeFeature &e)
+        {
+	  os << "Vertices: [" << e[0] << "," << e[1] << "]" << std::endl; 
+	  os << "Faces: [" << e.FacesIds[0] << "," << e.FacesIds[1] << "]" << std::endl; 
+	  return os;
+        }
+
         bool Covertex(const EdgeFeature &other)
         {
             for(size_t i = 0; i < 2; ++i)
@@ -786,17 +793,17 @@ inline typename TRTriangle<DataTypes>::index_type TRTriangle<DataTypes>::coverti
     }
     else if(numberOfCommonVertices == 2)
     {
-        if(keeps[0].first == 0 && keeps[1].first == 0)
+        if(keeps[0].first != 0 && keeps[1].first != 0)
             vertexPair.first = 0;
-        if(keeps[0].first == 1 && keeps[1].first == 1)
+        if(keeps[0].first != 1 && keeps[1].first != 1)
             vertexPair.first = 1;
-        if(keeps[0].first == 2 && keeps[1].first == 2)
+        if(keeps[0].first != 2 && keeps[1].first != 2)
             vertexPair.first = 2;
-        if(keeps[0].second == 0 && keeps[1].second == 0)
+        if(keeps[0].second != 0 && keeps[1].second != 0)
             vertexPair.second = 0;
-        if(keeps[0].second == 1 && keeps[1].second == 1)
+        if(keeps[0].second != 1 && keeps[1].second != 1)
             vertexPair.second = 1;
-        if(keeps[0].second == 2 && keeps[1].second == 2)
+        if(keeps[0].second != 2 && keeps[1].second != 2)
             vertexPair.second = 2;
     }
     else if (numberOfCommonVertices == 3)
