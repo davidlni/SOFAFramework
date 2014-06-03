@@ -59,6 +59,7 @@ public:
     int computeIntersection(const RTriangle & e1,const RTriangle & e2,OutputVector* contacts);
 
     int computeIntersection(const Polytope & ,const Polytope & ,OutputVector*){return 0;}
+//     int computeIntersection(const Polytope & ,const RTriangle & ,OutputVector*);
 
     template<typename elem1, typename elem2>
     bool testIntersection(elem1& p1,elem2& p2)

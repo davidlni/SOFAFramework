@@ -15,6 +15,7 @@
 #include <sofa/component/collision/DefaultContactManager.h>
 #include <sofa/component/collision/DefaultCollisionGroupManager.h>
 #include <sofa/component/loader/MeshObjLoader.h>
+#include <sofa/component/loader/MeshSTLLoader.h>
 #include <sofa/helper/ArgumentParser.h>
 #include <sofa/component/typedef/Sofa_typedef.h>
 #include <sofa/helper/system/FileRepository.h>
@@ -23,6 +24,7 @@
 #include <sofa/component/topology/RegularGridTopology.h>
 #include <sofa/component/topology/MeshTopology.h>
 #include <sofa/component/mapping/SubsetMapping.h>
+#include <sofa/component/misc/STLExporter.h>
 
 #include <sofa/simulation/tree/GNode.h>
 #include <sofa/simulation/tree/TreeSimulation.h>
@@ -110,15 +112,17 @@ MechanicalObject3::SPtr createOneTetraFEM(sofa::simulation::Node::SPtr node)
 
   // Tetrahedron degrees of freedom
   MechanicalObject3::SPtr DOF = sofa::core::objectmodel::New<MechanicalObject3>();
+  const Deriv3 rotation(30,0,24);
   FEMNode->addObject(DOF);
   DOF->resize(4);
   DOF->setName("VolumeDOF");
+  DOF->setRotation(rotation[0],rotation[1],rotation[2]);
   //get write access to the position vector of mechanical object DOF
   sofa::helper::WriteAccessor<Data<VecCoord3> > x = *DOF->write(sofa::core::VecId::position());
-  x[0] = Coord3(0,10,0);
-  x[1] = Coord3(10,0,0);
-  x[2] = Coord3(-10*0.5,0,10*0.866);
-  x[3] = Coord3(-10*0.5,0,-10*0.866);
+  x[0] = Coord3(0,20,0);
+  x[1] = Coord3(10,10,0);
+  x[2] = Coord3(-5,10,10);
+  x[3] = Coord3(-5,10,-10);
 //   DOF->showObject.setValue(true);
 //   DOF->showObjectScale.setValue(10.);
 
@@ -147,9 +151,11 @@ MechanicalObject3::SPtr createFloor(sofa::simulation::Node::SPtr node)
 {
   sofa::simulation::Node::SPtr FloorNode = node->createChild("FloorNode");
 
-  sofa::component::loader::MeshObjLoader::SPtr loader_surf = sofa::core::objectmodel::New<sofa::component::loader::MeshObjLoader>();
+  const Deriv3 translation(0,-28,0);
+  const Deriv3 rotation(0,0,24);
+  sofa::component::loader::MeshSTLLoader::SPtr loader_surf = sofa::core::objectmodel::New<sofa::component::loader::MeshSTLLoader>();
   loader_surf->setName("loader");
-  loader_surf->setFilename(sofa::helper::system::DataRepository.getFile("mesh/floor3.obj"));
+  loader_surf->setFilename(sofa::helper::system::DataRepository.getFile("mesh/floor_tri.stl"));
   loader_surf->load();
   FloorNode->addObject(loader_surf);
 
@@ -159,6 +165,8 @@ MechanicalObject3::SPtr createFloor(sofa::simulation::Node::SPtr node)
 
   MechanicalObject3::SPtr DOF = sofa::core::objectmodel::New<MechanicalObject3>();
   DOF->setName("Floor Object");
+//   DOF->setTranslation(translation[0],translation[1],translation[2]);
+//   DOF->setRotation(rotation[0],rotation[1],rotation[2]);
   FloorNode->addObject(DOF);
   //
   sofa::component::collision::RTriangleModel::SPtr triangle = sofa::core::objectmodel::New<sofa::component::collision::RTriangleModel>();
@@ -166,6 +174,12 @@ MechanicalObject3::SPtr createFloor(sofa::simulation::Node::SPtr node)
   triangle->setSelfCollision(true);
   triangle->setSimulated(false);
   FloorNode->addObject(triangle);
+
+  sofa::component::misc::STLExporter::SPtr exporter = sofa::core::objectmodel::New<sofa::component::misc::STLExporter>();
+  exporter->stlFilename.setValue("floor");
+  exporter->exportEveryNbSteps.setValue(1);
+  exporter->m_fileFormat.setValue(0);
+  FloorNode->addObject(exporter);
 
   return DOF;
 }
@@ -175,25 +189,26 @@ MechanicalObject3::SPtr createOneTetCollision(sofa::simulation::Node::SPtr node)
   sofa::simulation::Node::SPtr collisionNode = node->createChild("collisionNode");
   // Tetrahedron degrees of freedom
 
-  const Deriv3 translation(0,5,0);
+  const Deriv3 rotation(30,0,24);
   MechanicalObject3::SPtr DOF = sofa::core::objectmodel::New<MechanicalObject3>();
   collisionNode->addObject(DOF);
   DOF->resize(4);
   DOF->setName("SurfaceDOF");
+  DOF->setRotation(rotation[0],rotation[1],rotation[2]);
 
   //get write access to the position vector of mechanical object DOF
   sofa::helper::WriteAccessor<Data<VecCoord3> > x = *DOF->write(sofa::core::VecId::position());
-  x[0] = Coord3(0,10,0);
-  x[1] = Coord3(10,0,0);
-  x[2] = Coord3(-10*0.5,0,10*0.866);
-  x[3] = Coord3(-10*0.5,0,-10*0.866);
-  DOF->setTranslation(translation[0],translation[1],translation[2]);
+  x[0] = Coord3(0,20,0);
+  x[1] = Coord3(10,10,0);
+  x[2] = Coord3(-5,10,10);
+  x[3] = Coord3(-5,10,-10);
 //   DOF->showObject.setValue(true);
 //   DOF->showObjectScale.setValue(10.);
 
   // Tetrahedron topology
   sofa::component::topology::MeshTopology::SPtr topology = sofa::core::objectmodel::New<sofa::component::topology::MeshTopology>();
   topology->setName("SurfaceTopology");
+  topology->seqPoints.setParent(&DOF->x);
   topology->addTriangle(0,1,2);
   topology->addTriangle(1,2,3);
   topology->addTriangle(2,3,0);
@@ -206,6 +221,11 @@ MechanicalObject3::SPtr createOneTetCollision(sofa::simulation::Node::SPtr node)
   triangle->setSelfCollision(true);
   collisionNode->addObject(triangle);
 
+  sofa::component::misc::STLExporter::SPtr exporter = sofa::core::objectmodel::New<sofa::component::misc::STLExporter>();
+  collisionNode->addObject(exporter);
+  exporter->stlFilename.setValue("tet");
+  exporter->exportEveryNbSteps.setValue(1);
+  exporter->m_fileFormat.setValue(0);
   return DOF;
 }
 

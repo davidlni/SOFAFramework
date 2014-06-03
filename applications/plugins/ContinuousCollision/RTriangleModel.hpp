@@ -188,6 +188,10 @@ void TRTriangleModel<DataTypes>::updateFromTopology(const double &dt)
             ++index;
         }
 
+        for(size_t i = 0; i < mytriangles.size(); ++i)
+          std::cout << mytriangles[i] << std::endl;
+
+
     }
 
     helper::vector<EdgeFeature> edges;
@@ -215,11 +219,11 @@ void TRTriangleModel<DataTypes>::updateFromTopology(const double &dt)
         this->edgeFeatures.back().SetFaceId(i->FaceId(0));
       else
         this->edgeFeatures.push_back(*i);
-    }    
-    
+    }
+
     typename helper::vector<EdgeFeature>::iterator begin = this->edgeFeatures.begin();
     typename helper::vector<EdgeFeature>::iterator end = this->edgeFeatures.end();
-    
+
     this->vertexTriangleFeatures.resize(npoints);
     for (size_t i = 0; i < newsize; ++i)
     {
@@ -727,8 +731,11 @@ void TRTriangleModel<DataTypes>::computeContinuousBoundingTree(double dt, size_t
 {
     PolytopeModel* cubeModel = this->createPrevious<PolytopeModel>();
 
-    if (this->needsUpdate) cubeModel->resize(0);
-    if (!this->isMoving() && !cubeModel->empty() && !this->needsUpdate) return; // No need to recompute BBox if immobile
+    if (this->needsUpdate)
+      cubeModel->resize(0);
+
+    if (!this->isMoving() && !cubeModel->empty() && !this->needsUpdate)
+      return; // No need to recompute BBox if immobile
 
     this->needsUpdate = false;
     const VecCoord& x = *this->mstate->getX();

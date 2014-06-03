@@ -86,13 +86,12 @@ public:
 
     struct PolytopeSortPredicate
     {
-      PolytopeSortPredicate(const index_type &_axis, const Real &_center) : axis(_axis), center(_center) {}
-        bool operator()(const PolytopeData& c1) const
+      PolytopeSortPredicate(const index_type &_axis) : axis(_axis) {}
+        bool operator()(const PolytopeData& c1, const PolytopeData& c2) const
         {
-            return c1.GetCenter(axis) < center;
+            return c1.GetCenter(axis) < c2.GetCenter(axis);
         }
         const index_type &axis;
-        const Real &center;
     };
 
     typedef typename sofa::helper::vector<PolytopeData> ElementListType;
@@ -102,6 +101,8 @@ protected:
 
 public:
     virtual void resize(size_t size);
+
+    void cleanPolytopes();
 
     void setParentOf(const index_type &childIndex, const Vector3& p);
 

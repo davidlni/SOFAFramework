@@ -198,7 +198,7 @@ public:
 
     const Coord& operator[](const index_type &i) const;
 
-    index_type covertices(const TRTriangle &other, index_pair_type &vertexPair);
+    index_type covertices(const TRTriangle &other, index_pair_type &indexPair);
     bool covertices(const TRTriangle &other) const;
     bool coedge(const TRTriangle &other) const;
     PolytopeModel::DOPType getBox() const;
@@ -352,8 +352,8 @@ public:
 
         friend std::ostream &operator << (std::ostream &os, EdgeFeature &e)
         {
-	  os << "Vertices: [" << e[0] << "," << e[1] << "]" << std::endl; 
-	  os << "Faces: [" << e.FacesIds[0] << "," << e.FacesIds[1] << "]" << std::endl; 
+	  os << "Vertices: [" << e[0] << "," << e[1] << "]" << std::endl;
+	  os << "Faces: [" << e.FacesIds[0] << "," << e.FacesIds[1] << "]" << std::endl;
 	  return os;
         }
 
@@ -679,6 +679,8 @@ inline const typename DataTypes::Coord& TRTriangle<DataTypes>::p(const index_typ
 template<class DataTypes>
 inline bool TRTriangle<DataTypes>::covertices(const TRTriangle<DataTypes> &other) const
 {
+    if(this->model != other.model)
+      return false;
     if(p1Index() == other.p1Index())
         return true;
 
@@ -713,6 +715,10 @@ template<class DataTypes>
 inline bool TRTriangle<DataTypes>::coedge(const TRTriangle &other) const
 {
     int numberOfCommonVertices = 0;
+
+    if(this->model != other.model)
+      return false;
+
     if(p1Index() == other.p1Index())
         numberOfCommonVertices++;
 
@@ -751,8 +757,11 @@ inline PolytopeModel::DOPType TRTriangle<DataTypes>::getBox() const
 
 template<class DataTypes>
 inline typename TRTriangle<DataTypes>::index_type TRTriangle<DataTypes>::covertices(const TRTriangle<DataTypes> &other,
-        index_pair_type &vertexPair)
+        index_pair_type &indexPair)
 {
+    indexPair.first = indexPair.second = 0;
+    if(this->model != other.model)
+      return 0;
     helper::vector<index_pair_type> keeps;
     if(p1Index() == other.p1Index())
         keeps.push_back(std::make_pair(0,0));
@@ -784,27 +793,25 @@ inline typename TRTriangle<DataTypes>::index_type TRTriangle<DataTypes>::coverti
     size_t numberOfCommonVertices = keeps.size();
     assert(numberOfCommonVertices <= 3);
 
-    vertexPair.first = vertexPair.second = 0;
-
     if(numberOfCommonVertices == 1)
     {
-        vertexPair.first = keeps[0].first;
-        vertexPair.second = keeps[0].second;
+        indexPair.first = keeps[0].first;
+        indexPair.second = keeps[0].second;
     }
     else if(numberOfCommonVertices == 2)
     {
         if(keeps[0].first != 0 && keeps[1].first != 0)
-            vertexPair.first = 0;
+            indexPair.first = 0;
         if(keeps[0].first != 1 && keeps[1].first != 1)
-            vertexPair.first = 1;
+            indexPair.first = 1;
         if(keeps[0].first != 2 && keeps[1].first != 2)
-            vertexPair.first = 2;
+            indexPair.first = 2;
         if(keeps[0].second != 0 && keeps[1].second != 0)
-            vertexPair.second = 0;
+            indexPair.second = 0;
         if(keeps[0].second != 1 && keeps[1].second != 1)
-            vertexPair.second = 1;
+            indexPair.second = 1;
         if(keeps[0].second != 2 && keeps[1].second != 2)
-            vertexPair.second = 2;
+            indexPair.second = 2;
     }
     else if (numberOfCommonVertices == 3)
         return numberOfCommonVertices-1;

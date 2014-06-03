@@ -636,6 +636,7 @@ ContinuousIntersection::ContinuousIntersection()
 {
     this->intersectors.add<PolytopeModel,PolytopeModel,ContinuousIntersection> (this);
     this->intersectors.add<RTriangleModel,RTriangleModel,ContinuousIntersection> (this);
+//     this->intersectors.add<PolytopeModel,RTriangleModel,ContinuousIntersection> (this);
     this->pimpl = new Impl;
 }
 
@@ -654,6 +655,12 @@ int ContinuousIntersection::computeIntersection(const RTriangle& t1, const RTria
     return 0;
 }
 
+// int ContinuousIntersection::computeIntersection(const Polytope& t1, const RTriangle& t2, OutputVector*)
+// {
+//     if(this->testIntersection(t1,t2))
+// //       this->pimpl->nonAdjacentPairs.push_back(NonAdjacentPair(t1,t2));
+//     return 0;
+// }
 
 int ContinuousIntersection::beginIntersection(sofa::core::CollisionModel* model1, sofa::core::CollisionModel* model2, OutputVector* )
 {
@@ -669,7 +676,7 @@ int ContinuousIntersection::endIntersection(sofa::core::CollisionModel* model1, 
 {
   double dt = this->getContext()->getDt();
   this->pimpl->processNonAdjacentList(dt,contacts);
-  std::cout << "contacts.size()" << contacts->size() << std::endl;
+//   sout << "contacts.size()" << contacts->size() << std::endl;
   if(model1->getLast() == model2->getLast())
   {
     this->pimpl->testOrphans(dt,static_cast<RTriangleModel*>(model1->getLast()),contacts);

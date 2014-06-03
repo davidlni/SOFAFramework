@@ -49,7 +49,9 @@ TPolytopeModel<TDataTypes,K>::TPolytopeModel()
 template<typename TDataTypes, size_t K>
 void TPolytopeModel<TDataTypes,K>::resize(size_t s)
 {
-    if (s == this->getSize()) return;
+    this->cleanPolytopes();
+    if (s == this->getSize())
+      return;
     // reset parent
     CollisionModel* parent = getPrevious();
     while(parent != NULL)
@@ -67,6 +69,13 @@ void TPolytopeModel<TDataTypes,K>::resize(size_t s)
         this->parentOf[i] = i;
     }
     this->getSize() = s;
+}
+
+template<typename TDataTypes, size_t K>
+void TPolytopeModel<TDataTypes,K>::cleanPolytopes()
+{
+  for(size_t i = 0, end = this->polytopes.size(); i < end; ++i)
+    this->polytopes[i].Clean();
 }
 
 template<typename TDataTypes, size_t K>
@@ -124,6 +133,7 @@ void TPolytopeModel<TDataTypes,K>::updatePolytope(PolytopeData &element)
     if (subcells.first != subcells.second)
     {
         Element c = subcells.first;
+//         ++c;
         while(c != subcells.second)
         {
             element += c.getElement();
@@ -219,15 +229,14 @@ void TPolytopeModel<TDataTypes,K>::computeBoundingTree(size_t maxDepth)
                 {
                     // Find the biggest dimension
                     index_type splitAxis = cell.getElement().GetSplitAxis();
-                    Real center = cell.getElement().GetCenter(splitAxis);
 
                     // Separate cells on each side of the median cell
                     typename ElementListType::iterator start, mid, finish;
                     start = this->polytopes.begin()+subcells.first.getIndex();
                     finish = this->polytopes.begin()+subcells.second.getIndex();
-                    mid = std::partition(start,finish,PolytopeSortPredicate(splitAxis,center));
+                    std::sort(start,finish,PolytopeSortPredicate(splitAxis));
 
-                    index_type middleIndex = subcells.first.getIndex()+std::distance(start,mid);
+                    index_type middleIndex = subcells.first.getIndex()+(ncells+1)/2;
 		    std::cout << "middleIndex = " << middleIndex << std::endl;
 
                     // Create the two new polytops in current level containing the splited indices
@@ -255,6 +264,7 @@ void TPolytopeModel<TDataTypes,K>::computeBoundingTree(size_t maxDepth)
         for (size_t i = 0; i < levelStack.size(); ++i)
         {
             sout << "PolytopeModel: update level "<<i<<sendl;
+            levelStack[i]->cleanPolytopes();
             levelStack[i]->updatePolytopes();
         }
     }
@@ -265,8 +275,8 @@ template<typename TDataTypes, size_t K>
 void TPolytopeModel<TDataTypes,K>::draw(const core::visual::VisualParams* , size_t index)
 {
 #ifndef SOFA_NO_OPENGL
-    const Vector3 vmin = polytopes[index].GetBoundingBoxMin();
-    const Vector3 vmax = polytopes[index].GetBoundingBoxMax();
+    const Vector3 vmin = this->polytopes[index].GetBoundingBoxMin();
+    const Vector3 vmax = this->polytopes[index].GetBoundingBoxMax();
 
     glBegin(GL_LINES);
     {
@@ -307,14 +317,14 @@ void TPolytopeModel<TDataTypes,K>::draw(const core::visual::VisualParams* vparam
     if (!isActive() || !((getNext()==NULL)?vparams->displayFlags().getShowCollisionModels():vparams->displayFlags().getShowBoundingCollisionModels())) return;
 
     size_t level=0;
-    CollisionModel* m = getPrevious();
+    CollisionModel* m = this->getPrevious();
     float color = 1.0f;
-    while (m!=NULL)
-    {
-        m = m->getPrevious();
-        ++level;
-        color *= 0.5f;
-    }
+//     while (m!=NULL)
+//     {
+//         m = m->getPrevious();
+//         ++level;
+//         color *= 0.5f;
+//     }
     Vec<4,float> c;
     if (isSimulated())
         c=Vec<4,float>(1.0f, 1.0f, 1.0f, color);
@@ -324,8 +334,8 @@ void TPolytopeModel<TDataTypes,K>::draw(const core::visual::VisualParams* vparam
     std::vector< Vector3 > points;
     for (size_t i=0; i<size; i++)
     {
-	const Vector3 vmin = polytopes[i].GetBoundingBoxMin();
-	const Vector3 vmax = polytopes[i].GetBoundingBoxMax();
+      const Vector3 vmin = this->polytopes[i].GetBoundingBoxMin();
+      const Vector3 vmax = this->polytopes[i].GetBoundingBoxMax();
 
         points.push_back(Vector3(vmin[0], vmin[1], vmin[2]));
         points.push_back(Vector3(vmin[0], vmin[1], vmax[2]));
