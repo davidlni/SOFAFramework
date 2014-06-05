@@ -141,7 +141,7 @@ MechanicalObject3::SPtr createOneTetraFEM(sofa::simulation::Node::SPtr node)
   tetraFEMFF->setComputeGlobalMatrix(false);
   tetraFEMFF->setMethod("large");
   tetraFEMFF->setPoissonRatio(0.45);
-  tetraFEMFF->setYoungModulus(1);
+  tetraFEMFF->setYoungModulus(10000);
   FEMNode->addObject(tetraFEMFF);
 
   return DOF;
@@ -171,15 +171,15 @@ MechanicalObject3::SPtr createFloor(sofa::simulation::Node::SPtr node)
   //
   sofa::component::collision::RTriangleModel::SPtr triangle = sofa::core::objectmodel::New<sofa::component::collision::RTriangleModel>();
   triangle->setName("FloorTriangleCollision");
-  triangle->setSelfCollision(true);
+  triangle->setSelfCollision(false);
   triangle->setSimulated(false);
   triangle->setMoving(false);
   FloorNode->addObject(triangle);
 
-  sofa::component::misc::STLExporter::SPtr exporter = sofa::core::objectmodel::New<sofa::component::misc::STLExporter>();
-  exporter->stlFilename.setValue("floor");
-  exporter->exportEveryNbSteps.setValue(1);
-  exporter->m_fileFormat.setValue(0);
+//   sofa::component::misc::STLExporter::SPtr exporter = sofa::core::objectmodel::New<sofa::component::misc::STLExporter>();
+//   exporter->stlFilename.setValue("floor");
+//   exporter->exportEveryNbSteps.setValue(1);
+//   exporter->m_fileFormat.setValue(0);
 //   FloorNode->addObject(exporter);
 
   return DOF;
@@ -222,11 +222,11 @@ MechanicalObject3::SPtr createOneTetCollision(sofa::simulation::Node::SPtr node)
   triangle->setSelfCollision(true);
   collisionNode->addObject(triangle);
 
-  sofa::component::misc::STLExporter::SPtr exporter = sofa::core::objectmodel::New<sofa::component::misc::STLExporter>();
+//   sofa::component::misc::STLExporter::SPtr exporter = sofa::core::objectmodel::New<sofa::component::misc::STLExporter>();
 //   collisionNode->addObject(exporter);
-  exporter->stlFilename.setValue("tet");
-  exporter->exportEveryNbSteps.setValue(1);
-  exporter->m_fileFormat.setValue(0);
+//   exporter->stlFilename.setValue("tet");
+//   exporter->exportEveryNbSteps.setValue(1);
+//   exporter->m_fileFormat.setValue(0);
   return DOF;
 }
 
@@ -267,7 +267,7 @@ int main(int ac, char **av)
 
   // The graph root node
   sofa::simulation::Node::SPtr root = CreateRootWithCollisionPipeline();
-  root->setGravity(sofa::defaulttype::Vector3(0,-10,0) );
+  root->setGravity(sofa::defaulttype::Vector3(0,-.1,0) );
   // One solver for all the graph
 
   EulerImplicitSolver::SPtr solver = sofa::core::objectmodel::New<EulerImplicitSolver>();

@@ -43,8 +43,6 @@ namespace component
 namespace collision
 {
 
-using namespace sofa::defaulttype;
-
 /// Base class for all mappers using ContinuousMapping
 template < class TCollisionModel, class DataTypes >
 class ContinuousContactMapper : public BaseContactMapper<DataTypes>
@@ -57,9 +55,11 @@ public:
     typedef typename MCollisionModel::Topology InTopology;
     typedef core::behavior::MechanicalState< InDataTypes> InMechanicalState;
     typedef core::behavior::MechanicalState<  DataTypes> MMechanicalState;
-    typedef component::container::MechanicalObject<DataTypes> MMechanicalObject;
+    typedef container::MechanicalObject<DataTypes> MMechanicalObject;
     typedef mapping::BarycentricMapping< InDataTypes, DataTypes > MMapping;
     typedef mapping::TopologyBarycentricMapper<InDataTypes, DataTypes> MMapper;
+    typedef mapping::BarycentricMapperMeshTopology<InDataTypes,DataTypes> BarycentricMapperMeshTopology;
+
     MCollisionModel* model;
     typename MMapping::SPtr mapping;
     typename MMapper::SPtr mapper;
@@ -143,30 +143,6 @@ public:
             }
         }
     }
-    int addPointB(const Coord& P, int index, Real& /*r*/, const Vector3& baryP)
-    {
-
-        int nbt = this->model->getMeshTopology()->getNbTriangles();
-        if (index < nbt)
-            return this->mapper->addPointInTriangle(index, baryP.ptr());
-        else
-        {
-            // TODO: barycentric coordinates usage for quads
-            int qindex = (index - nbt)/2;
-            int nbq = this->model->getMeshTopology()->getNbQuads();
-            if (qindex < nbq)
-                return this->mapper->createPointInQuad(P, qindex, this->model->getMechanicalState()->getX());
-            else
-            {
-                std::cerr << "ContactMapper<TriangleMeshModel>: ERROR invalid contact element index "<<index<<" on a topology with "<<nbt<<" triangles and "<<nbq<<" quads."<<std::endl;
-                std::cerr << "model="<<this->model->getName()<<" size="<<this->model->getSize()<<std::endl;
-                return -1;
-            }
-        }
-    }
-
-    inline int addPointB(const Coord& P, int index, Real& r ){return addPoint(P,index,r);}
-
 };
 
 #if defined(SOFA_EXTERN_TEMPLATE) && !defined(CCD_PLUGIN_CONTINUOUS_CONTACT_MAPPER)

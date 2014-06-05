@@ -166,9 +166,7 @@ void ContinuousPenalityContact<TCollisionModel1,TCollisionModel2,ResponseDataTyp
     mapper2.resize(size);
     //int i = 0;
     const double d0 = intersectionMethod->getContactDistance() + model1->getProximity() + model2->getProximity(); // - 0.001;
-    //for (std::vector<DetectionOutput>::iterator it = outputs.begin(); it!=outputs.end(); it++)
-    //{
-    //    DetectionOutput* o = &*it;
+
     for (int i=0; i<insize; i++)
     {
         int index = oldIndex[i];
@@ -181,27 +179,8 @@ void ContinuousPenalityContact<TCollisionModel1,TCollisionModel2,ResponseDataTyp
         typename DataTypes1::Real r1 = 0.0;
         typename DataTypes2::Real r2 = 0.0;
 
-        // Just make it work, some changes have been done in rev 10382 so that ContinuousPenaltyContact doesn't
-        // map well the contact points because o->baryCoords is used ant not initialized. It means that
-        // the mapped contact point is random ! So I replaced addPointB by addPoint to make it work.
-        // Create mapping for first point
-//        index1 = mapper1.addPointB(o->point[0], index1, r1
-//#ifdef DETECTIONOUTPUT_CONTINUOUSINFO
-//                , o->baryCoords[0]
-//#endif
-//                                  );
-
         index1 = mapper1.addPoint(o->point[0], index1, r1);
-
-        // Create mapping for second point
-//        index2 = mapper2.addPointB(o->point[1], index2, r2
-//#ifdef DETECTIONOUTPUT_CONTINUOUSINFO
-//                , o->baryCoords[1]
-//#endif
-//                                  );
-
         index2 = mapper2.addPoint(o->point[1], index2, r2);
-
 
         double distance = d0 + r1 + r2;
         double stiffness = (elem1.getContactStiffness() * elem2.getContactStiffness());
@@ -210,6 +189,7 @@ void ContinuousPenalityContact<TCollisionModel1,TCollisionModel2,ResponseDataTyp
         double mu_v = (elem1.getContactFriction() + elem2.getContactFriction());
         ff->addContact(index1, index2, elem1.getIndex(), elem2.getIndex(), o->normal, distance, stiffness, mu_v/* *distance */, mu_v, index);
     }
+
     // Update mappings
     mapper1.update();
     mapper2.update();

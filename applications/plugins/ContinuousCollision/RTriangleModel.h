@@ -78,9 +78,6 @@ public:
     const Coord& p2() const;
     const Coord& p(const index_type &i) const;
 
-//   const Coord& p1Free() const;
-//   const Coord& p2Free() const;
-
     const index_type &p1Index() const;
     const index_type &p2Index() const;
     const index_type &VertexId(const index_type &i) const;
@@ -90,24 +87,11 @@ public:
     const index_type &FaceId(const index_type &i) const;
     TRTriangle<DataTypes> getTriangle(const index_type &i) const;
 
-//   const Coord& operator[](int i) const;
-
-//   index_type covertices(const TREdge &other, helper::vector<index_pair_type> &vertexPair);
-//   bool covertices(const TREdge &other);
-//   bool coedge(const TREdge &other);
     PolytopeModel::DOPType getBox() const;
 
     const Deriv& v1() const;
     const Deriv& v2() const;
     const Deriv& v(const index_type &i) const;
-
-//   const Deriv& n() const;
-//   Deriv& n();
-
-    /// Return true if the element stores a free position vector
-//   bool hasFreePosition() const;
-
-//   int flags() const;
 
     TREdge& shape() {
         return *this;

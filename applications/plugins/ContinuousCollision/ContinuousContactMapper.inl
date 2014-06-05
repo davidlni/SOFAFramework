@@ -48,7 +48,7 @@ void ContinuousContactMapper<TCollisionModel,DataTypes>::cleanup()
         {
             simulation::Node::SPtr child = dynamic_cast<simulation::Node*>(mapping->getContext());
             child->detachFromGraph();
-            child->execute<simulation::DeleteVisitor>(sofa::core::ExecParams::defaultInstance());
+            child->execute<simulation::DeleteVisitor>(core::ExecParams::defaultInstance());
             child.reset();
             mapping.reset();
         }
@@ -66,11 +66,11 @@ typename ContinuousContactMapper<TCollisionModel,DataTypes>::MMechanicalState* C
         return NULL;
     }
     simulation::Node::SPtr child = parent->createChild(name);
-    typename MMechanicalObject::SPtr mstate = sofa::core::objectmodel::New<MMechanicalObject>();
+    typename MMechanicalObject::SPtr mstate = core::objectmodel::New<MMechanicalObject>();
     child->addObject(mstate);
     mstate->useMask.setValue(true);
-    mapper = sofa::core::objectmodel::New<mapping::BarycentricMapperMeshTopology<InDataTypes,DataTypes> >(model->getMeshTopology(), (topology::PointSetTopologyContainer*)NULL, &model->getMechanicalState()->forceMask, &mstate->forceMask);
-    mapping =  sofa::core::objectmodel::New<MMapping>(model->getMechanicalState(), mstate.get(), mapper);
+    mapper = core::objectmodel::New<BarycentricMapperMeshTopology>(model->getMeshTopology(), (topology::PointSetTopologyContainer*)NULL, &model->getMechanicalState()->forceMask, &mstate->forceMask);
+    mapping =  core::objectmodel::New<MMapping>(model->getMechanicalState(), mstate.get(), mapper);
     child->addObject(mapping);
     return mstate.get();
 }

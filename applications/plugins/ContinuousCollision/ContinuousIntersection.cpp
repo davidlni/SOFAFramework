@@ -210,8 +210,8 @@ float ContinuousIntersection::Impl::edgeEdgeIntersection(const double &dt, const
         detection.point[1] = point;
         detection.normal = -n;
         detection.value = 0;
-        detection.elem.first = edge1;
-        detection.elem.second = edge2;
+        detection.elem.first = edge1.getTriangle(0);
+        detection.elem.second = edge2.getTriangle(0);
         // WARNING: Does this index need to be unique?
         detection.id = edge1.getIndex();
 	detection.deltaT = collisionTime;
@@ -524,7 +524,7 @@ float ContinuousIntersection::Impl::vertexFaceIntersection(const double &dt, con
         detection.normal = -n;
         detection.value = 0;
         detection.elem.first = face;
-        detection.elem.second = vertex;
+        detection.elem.second = RTriangle(vertex.model, vertex.getTriangles()[0]);
         detection.id = face.getIndex();
 	detection.deltaT = collisionTime;
     }
@@ -595,7 +595,7 @@ float ContinuousIntersection::Impl::intersectVertexFace(const double &dt, const 
 //     std::cout << face1.p1() << std::endl;
 //     std::cout << face1.p2() << std::endl;
 //     std::cout << face1.p3() << std::endl;
-    
+
     if (!box.Overlaps(box2))
         return -1.f;
 
@@ -633,59 +633,64 @@ bool ContinuousIntersection::Impl::testFeatures(const double &dt, const RTriangl
     RVertex v4(face2.model,face2.p1Index());
     RVertex v5(face2.model,face2.p2Index());
     RVertex v6(face2.model,face2.p3Index());
-    std::cout << "Testing vertex " << v1.getIndex() << " against face " << face2.model->getTriangles()[face2.getIndex()] << std::endl; 
-    std::cout << "output.size() = " << output->size() << std::endl;
-    std::cout << "Testing vertex " << v2.getIndex() << " against face " << face2.model->getTriangles()[face2.getIndex()] << std::endl; 
-    std::cout << "output.size() = " << output->size() << std::endl;
-    std::cout << "Testing vertex " << v3.getIndex() << " against face " << face2.model->getTriangles()[face2.getIndex()] << std::endl; 
-    std::cout << "output.size() = " << output->size() << std::endl;
+//     std::cout << "Testing vertex " << v1.getIndex() << " against face " << face2.model->getTriangles()[face2.getIndex()] << std::endl;
+//     std::cout << "output.size() = " << output->size() << std::endl;
+//     std::cout << "Testing vertex " << v2.getIndex() << " against face " << face2.model->getTriangles()[face2.getIndex()] << std::endl;
+//     std::cout << "output.size() = " << output->size() << std::endl;
+//     std::cout << "Testing vertex " << v3.getIndex() << " against face " << face2.model->getTriangles()[face2.getIndex()] << std::endl;
+//     std::cout << "output.size() = " << output->size() << std::endl;
     this->intersectVertexFace(dt,v1,face2,face1,output);
     this->intersectVertexFace(dt,v2,face2,face1,output);
     this->intersectVertexFace(dt,v3,face2,face1,output);
+        std::cout << "output.size() = " << output->size() << std::endl;
 
-    std::cout << "Testing vertex " << v4.getIndex() << " against face " << face1.model->getTriangles()[face1.getIndex()] << std::endl; 
-    std::cout << "output.size() = " << output->size() << std::endl;
-    std::cout << "Testing vertex " << v5.getIndex() << " against face " << face1.model->getTriangles()[face1.getIndex()] << std::endl; 
-    std::cout << "output.size() = " << output->size() << std::endl;
-    std::cout << "Testing vertex " << v6.getIndex() << " against face " << face1.model->getTriangles()[face1.getIndex()] << std::endl; 
-    std::cout << "output.size() = " << output->size() << std::endl;
+//     std::cout << "Testing vertex " << v4.getIndex() << " against face " << face1.model->getTriangles()[face1.getIndex()] << std::endl;
+//     std::cout << "output.size() = " << output->size() << std::endl;
+//     std::cout << "Testing vertex " << v5.getIndex() << " against face " << face1.model->getTriangles()[face1.getIndex()] << std::endl;
+//     std::cout << "output.size() = " << output->size() << std::endl;
+//     std::cout << "Testing vertex " << v6.getIndex() << " against face " << face1.model->getTriangles()[face1.getIndex()] << std::endl;
+//     std::cout << "output.size() = " << output->size() << std::endl;
     this->intersectVertexFace(dt,v4,face1,face2,output);
     this->intersectVertexFace(dt,v5,face1,face2,output);
     this->intersectVertexFace(dt,v6,face1,face2,output);
+        std::cout << "output.size() = " << output->size() << std::endl;
 
     // 9 EE test
     REdge e(face1.model,face1.e1Index()), e1(face2.model,face2.e1Index()), e2(face2.model,face2.e2Index()), e3(face2.model,face2.e3Index());
-    std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e1.getIndex()] << "]"<< std::endl; 
-    std::cout << "output.size() = " << output->size() << std::endl;
-    std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e2.getIndex()] << "]"<< std::endl; 
-    std::cout << "output.size() = " << output->size() << std::endl;
-    std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e3.getIndex()] << "]"<< std::endl; 
-    std::cout << "output.size() = " << output->size() << std::endl;
+//     std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e1.getIndex()] << "]"<< std::endl;
+//     std::cout << "output.size() = " << output->size() << std::endl;
+//     std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e2.getIndex()] << "]"<< std::endl;
+//     std::cout << "output.size() = " << output->size() << std::endl;
+//     std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e3.getIndex()] << "]"<< std::endl;
+//     std::cout << "output.size() = " << output->size() << std::endl;
     this->intersectEdgeEdge(dt,e,e1,face1,face2,output);
     this->intersectEdgeEdge(dt,e,e2,face1,face2,output);
     this->intersectEdgeEdge(dt,e,e3,face1,face2,output);
+        std::cout << "output.size() = " << output->size() << std::endl;
 
     e = REdge(face1.model,face1.e2Index());
-    std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e1.getIndex()] << "]"<< std::endl; 
-    std::cout << "output.size() = " << output->size() << std::endl;
-    std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e2.getIndex()] << "]"<< std::endl; 
-    std::cout << "output.size() = " << output->size() << std::endl;
-    std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e3.getIndex()] << "]"<< std::endl; 
-    std::cout << "output.size() = " << output->size() << std::endl;
+//     std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e1.getIndex()] << "]"<< std::endl;
+//     std::cout << "output.size() = " << output->size() << std::endl;
+//     std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e2.getIndex()] << "]"<< std::endl;
+//     std::cout << "output.size() = " << output->size() << std::endl;
+//     std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e3.getIndex()] << "]"<< std::endl;
+//     std::cout << "output.size() = " << output->size() << std::endl;
     this->intersectEdgeEdge(dt,e,e1,face1,face2,output);
     this->intersectEdgeEdge(dt,e,e2,face1,face2,output);
     this->intersectEdgeEdge(dt,e,e3,face1,face2,output);
+        std::cout << "output.size() = " << output->size() << std::endl;
 
     e = REdge(face1.model,face1.e3Index());
-    std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e1.getIndex()] << "]"<< std::endl; 
-    std::cout << "output.size() = " << output->size() << std::endl;
-    std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e2.getIndex()] << "]"<< std::endl; 
-    std::cout << "output.size() = " << output->size() << std::endl;
-    std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e3.getIndex()] << "]"<< std::endl; 
-    std::cout << "output.size() = " << output->size() << std::endl;
+//     std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e1.getIndex()] << "]"<< std::endl;
+//     std::cout << "output.size() = " << output->size() << std::endl;
+//     std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e2.getIndex()] << "]"<< std::endl;
+//     std::cout << "output.size() = " << output->size() << std::endl;
+//     std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e3.getIndex()] << "]"<< std::endl;
+//     std::cout << "output.size() = " << output->size() << std::endl;
     this->intersectEdgeEdge(dt,e,e1,face1,face2,output);
     this->intersectEdgeEdge(dt,e,e2,face1,face2,output);
     this->intersectEdgeEdge(dt,e,e3,face1,face2,output);
+        std::cout << "output.size() = " << output->size() << std::endl;
     return true;
 }
 
@@ -705,7 +710,12 @@ int ContinuousIntersection::computeIntersection(const RTriangle& t1, const RTria
 {
     if(!t1.covertices(t2))
     {
-        if(t1.getBox().Overlaps(t2.getBox()))
+      PolytopeModel::DOPType box1(t1.p1(),t1.p2(),t1.p3());
+      box1+=PolytopeModel::DOPType(t1.p1()+t1.v1(),t1.p2()+t1.v2(),t1.p3()+t1.v3());
+      PolytopeModel::DOPType box2(t2.p1(),t2.p2(),t2.p3());
+      box2+=PolytopeModel::DOPType(t2.p1()+t2.v1(),t2.p2()+t2.v2(),t2.p3()+t2.v3());
+//       if(t1.getBox().Overlaps(t2.getBox()))
+      if(box1.Overlaps(box2))
             this->pimpl->nonAdjacentPairs.push_back(NonAdjacentPair(t1,t2));
     }
     return 0;
