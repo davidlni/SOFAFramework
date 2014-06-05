@@ -319,7 +319,7 @@ void TRTriangleModel<DataTypes>::draw(const core::visual::VisualParams* vparams)
             vparams->drawTool()->setPolygonMode(1,false);
         }
 
-        std::vector< Vector3 > points;
+        std::vector< Vector3 > points, vertexBoxPoints, edgeBoxPoints;
         std::vector< Vec<3,int> > indices;
         std::vector< Vector3 > normals;
         int index=0;
@@ -353,6 +353,74 @@ void TRTriangleModel<DataTypes>::draw(const core::visual::VisualParams* vparams)
             vparams->drawTool()->drawLines(points, 1, Vec<4,float>(1,1,1,1));
 
         }
+        double e = .001;
+        Vector3 eps(e,e,e);
+        for(size_t i = 0; i < this->vertexBoxes.size(); ++i)
+	{
+	  const Vector3 vmin = this->vertexBoxes[i].GetBoundingBoxMin()+eps;
+	  const Vector3 vmax = this->vertexBoxes[i].GetBoundingBoxMax()-eps;
+
+	  vertexBoxPoints.push_back(Vector3(vmin[0], vmin[1], vmin[2]));
+	  vertexBoxPoints.push_back(Vector3(vmin[0], vmin[1], vmax[2]));
+	  vertexBoxPoints.push_back(Vector3(vmin[0], vmax[1], vmin[2]));
+	  vertexBoxPoints.push_back(Vector3(vmin[0], vmax[1], vmax[2]));
+	  vertexBoxPoints.push_back(Vector3(vmax[0], vmin[1], vmin[2]));
+	  vertexBoxPoints.push_back(Vector3(vmax[0], vmin[1], vmax[2]));
+	  vertexBoxPoints.push_back(Vector3(vmax[0], vmax[1], vmin[2]));
+	  vertexBoxPoints.push_back(Vector3(vmax[0], vmax[1], vmax[2]));
+
+	  vertexBoxPoints.push_back(Vector3(vmin[0], vmin[1], vmin[2]));
+	  vertexBoxPoints.push_back(Vector3(vmin[0], vmax[1], vmin[2]));
+	  vertexBoxPoints.push_back(Vector3(vmin[0], vmin[1], vmax[2]));
+	  vertexBoxPoints.push_back(Vector3(vmin[0], vmax[1], vmax[2]));
+	  vertexBoxPoints.push_back(Vector3(vmax[0], vmin[1], vmin[2]));
+	  vertexBoxPoints.push_back(Vector3(vmax[0], vmax[1], vmin[2]));
+	  vertexBoxPoints.push_back(Vector3(vmax[0], vmin[1], vmax[2]));
+	  vertexBoxPoints.push_back(Vector3(vmax[0], vmax[1], vmax[2]));
+
+	  vertexBoxPoints.push_back(Vector3(vmin[0], vmin[1], vmin[2]));
+	  vertexBoxPoints.push_back(Vector3(vmax[0], vmin[1], vmin[2]));
+	  vertexBoxPoints.push_back(Vector3(vmin[0], vmax[1], vmin[2]));
+	  vertexBoxPoints.push_back(Vector3(vmax[0], vmax[1], vmin[2]));
+	  vertexBoxPoints.push_back(Vector3(vmin[0], vmin[1], vmax[2]));
+	  vertexBoxPoints.push_back(Vector3(vmax[0], vmin[1], vmax[2]));
+	  vertexBoxPoints.push_back(Vector3(vmin[0], vmax[1], vmax[2]));
+	  vertexBoxPoints.push_back(Vector3(vmax[0], vmax[1], vmax[2]));
+	}
+//         vparams->drawTool()->drawLines(vertexBoxPoints, 1, Vec<4,float>(0,0,1,1));
+        for(size_t i = 0; i < this->edgeBoxes.size(); ++i)
+	{
+	  const Vector3 vmin = this->edgeBoxes[i].GetBoundingBoxMin();
+	  const Vector3 vmax = this->edgeBoxes[i].GetBoundingBoxMax();
+
+	  edgeBoxPoints.push_back(Vector3(vmin[0], vmin[1], vmin[2]));
+	  edgeBoxPoints.push_back(Vector3(vmin[0], vmin[1], vmax[2]));
+	  edgeBoxPoints.push_back(Vector3(vmin[0], vmax[1], vmin[2]));
+	  edgeBoxPoints.push_back(Vector3(vmin[0], vmax[1], vmax[2]));
+	  edgeBoxPoints.push_back(Vector3(vmax[0], vmin[1], vmin[2]));
+	  edgeBoxPoints.push_back(Vector3(vmax[0], vmin[1], vmax[2]));
+	  edgeBoxPoints.push_back(Vector3(vmax[0], vmax[1], vmin[2]));
+	  edgeBoxPoints.push_back(Vector3(vmax[0], vmax[1], vmax[2]));
+
+	  edgeBoxPoints.push_back(Vector3(vmin[0], vmin[1], vmin[2]));
+	  edgeBoxPoints.push_back(Vector3(vmin[0], vmax[1], vmin[2]));
+	  edgeBoxPoints.push_back(Vector3(vmin[0], vmin[1], vmax[2]));
+	  edgeBoxPoints.push_back(Vector3(vmin[0], vmax[1], vmax[2]));
+	  edgeBoxPoints.push_back(Vector3(vmax[0], vmin[1], vmin[2]));
+	  edgeBoxPoints.push_back(Vector3(vmax[0], vmax[1], vmin[2]));
+	  edgeBoxPoints.push_back(Vector3(vmax[0], vmin[1], vmax[2]));
+	  edgeBoxPoints.push_back(Vector3(vmax[0], vmax[1], vmax[2]));
+
+	  edgeBoxPoints.push_back(Vector3(vmin[0], vmin[1], vmin[2]));
+	  edgeBoxPoints.push_back(Vector3(vmax[0], vmin[1], vmin[2]));
+	  edgeBoxPoints.push_back(Vector3(vmin[0], vmax[1], vmin[2]));
+	  edgeBoxPoints.push_back(Vector3(vmax[0], vmax[1], vmin[2]));
+	  edgeBoxPoints.push_back(Vector3(vmin[0], vmin[1], vmax[2]));
+	  edgeBoxPoints.push_back(Vector3(vmax[0], vmin[1], vmax[2]));
+	  edgeBoxPoints.push_back(Vector3(vmin[0], vmax[1], vmax[2]));
+	  edgeBoxPoints.push_back(Vector3(vmax[0], vmax[1], vmax[2]));
+	}
+        vparams->drawTool()->drawLines(edgeBoxPoints, 1, Vec<4,float>(1,0,0,1));
     }
     if (getPrevious()!=NULL && vparams->displayFlags().getShowBoundingCollisionModels())
         getPrevious()->draw(vparams);
@@ -430,8 +498,20 @@ void TRTriangleModel<DataTypes>::computeBoundingTree(size_t maxDepth)
 }
 
 template<class DataTypes>
+void TRTriangleModel<DataTypes>::cleanFeatureBoxes()
+{
+
+  for(size_t i = 0, end = this->vertexBoxes.size(); i < end; ++i)
+        this->vertexBoxes[i].Clean();
+  for(size_t i = 0, end = this->edgeFeatures.size(); i < end; ++i)
+     this->edgeBoxes[i].Clean();
+
+}
+
+template<class DataTypes>
 void TRTriangleModel<DataTypes>::updateFeatureBoxes(const double &dt)
 {
+    this->cleanFeatureBoxes();
     const VecCoord& x = *this->mstate->getX();
     const VecDeriv& v = *this->mstate->getV();
     for(size_t i = 0, end = this->vertexBoxes.size(); i < end; ++i)
@@ -742,6 +822,7 @@ void TRTriangleModel<DataTypes>::computeContinuousBoundingTree(double dt, size_t
     const VecDeriv& v = *this->mstate->getV();
 
     const bool calcNormals = this->computeNormals.getValue();
+    this->updateFeatureBoxes(dt);
     cubeModel->resize(this->size);
     if (!this->empty())
     {

@@ -75,6 +75,7 @@ public:
         return true;
     }
 
+    virtual void beginBroadPhase();
     class Impl; // Implementation forward decraration
     Impl* pimpl;
 

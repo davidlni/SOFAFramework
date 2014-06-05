@@ -586,6 +586,7 @@ public:
     virtual void computeContinuousBoundingTree(double dt, size_t maxDepth=0);
 
     void updateFeatureBoxes(const double &dt);
+    void cleanFeatureBoxes();
     void bufferAdjacentLists();
     void setOrphans();
     index_type covertexFace(const index_pair_type &triangleIndices, index_pair_type &vertexPair);

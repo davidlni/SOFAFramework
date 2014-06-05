@@ -173,13 +173,14 @@ MechanicalObject3::SPtr createFloor(sofa::simulation::Node::SPtr node)
   triangle->setName("FloorTriangleCollision");
   triangle->setSelfCollision(true);
   triangle->setSimulated(false);
+  triangle->setMoving(false);
   FloorNode->addObject(triangle);
 
   sofa::component::misc::STLExporter::SPtr exporter = sofa::core::objectmodel::New<sofa::component::misc::STLExporter>();
   exporter->stlFilename.setValue("floor");
   exporter->exportEveryNbSteps.setValue(1);
   exporter->m_fileFormat.setValue(0);
-  FloorNode->addObject(exporter);
+//   FloorNode->addObject(exporter);
 
   return DOF;
 }
@@ -222,7 +223,7 @@ MechanicalObject3::SPtr createOneTetCollision(sofa::simulation::Node::SPtr node)
   collisionNode->addObject(triangle);
 
   sofa::component::misc::STLExporter::SPtr exporter = sofa::core::objectmodel::New<sofa::component::misc::STLExporter>();
-  collisionNode->addObject(exporter);
+//   collisionNode->addObject(exporter);
   exporter->stlFilename.setValue("tet");
   exporter->exportEveryNbSteps.setValue(1);
   exporter->m_fileFormat.setValue(0);

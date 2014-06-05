@@ -77,6 +77,12 @@ public:
         NormalProjections<K>::ComputeAll(p,q,this->Distance);
     }
 
+    DiscreteOrientedPolytope(const defaulttype::Vector3 &p, const defaulttype::Vector3 &q, const defaulttype::Vector3 &r)
+    {
+        NormalProjections<K>::ComputeAll(p,q,this->Distance);
+        this += r;
+    }
+
     bool Overlaps(const DiscreteOrientedPolytope<T,K> &other) const
     {
         for(size_t i = 0; i < KHalf; ++i)

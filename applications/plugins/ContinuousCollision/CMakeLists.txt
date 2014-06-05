@@ -8,6 +8,8 @@ set(HEADER_FILES
     initContinuousCollision.h
     ContinuousDetection.h
     ContinuousIntersection.h
+    ContinuousContactMapper.h
+    ContinuousPenalityContact.h
 	)
 
 set(SOURCE_FILES
@@ -16,6 +18,8 @@ set(SOURCE_FILES
     initContinuousCollision.cpp
     ContinuousDetection.cpp
     ContinuousIntersection.cpp
+    ContinuousContactMapper.cpp
+    ContinuousPenalityContact.cpp
 	)
 
 AddCompilerDefinitions("SOFA_BUILD_PLUGIN_CONTINUOUS_COLLISION")
