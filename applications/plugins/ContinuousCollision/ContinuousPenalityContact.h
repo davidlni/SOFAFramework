@@ -26,7 +26,7 @@
 #define SOFA_COMPONENT_COLLISION_CONTINUOUSPENALITYCONTACT_H
 
 #include <sofa/component/collision/BaseContactMapper.h>
-#include <sofa/component/interactionforcefield/PenalityContactForceField.h>
+#include "ContinuousPenalityContactForceField.h"
 #include <sofa/core/collision/Contact.h>
 #include <sofa/core/collision/Intersection.h>
 #include <sofa/helper/Factory.h>
@@ -61,9 +61,9 @@ public:
     typedef core::behavior::MechanicalState<DataTypes2> MechanicalState2;
     typedef typename CollisionModel1::Element CollisionElement1;
     typedef typename CollisionModel2::Element CollisionElement2;
-    
-    typedef interactionforcefield::PenalityContactForceField<ResponseDataTypes> ResponseForceField;
-    
+
+    typedef interactionforcefield::ContinuousPenalityContactForceField<ResponseDataTypes> ResponseForceField;
+
 protected:
     CollisionModel1* model1;
     CollisionModel2* model2;

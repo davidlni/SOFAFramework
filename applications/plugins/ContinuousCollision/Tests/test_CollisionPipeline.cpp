@@ -171,7 +171,6 @@ MechanicalObject3::SPtr createFloor(sofa::simulation::Node::SPtr node)
   //
   sofa::component::collision::RTriangleModel::SPtr triangle = sofa::core::objectmodel::New<sofa::component::collision::RTriangleModel>();
   triangle->setName("FloorTriangleCollision");
-  triangle->setSelfCollision(false);
   triangle->setSimulated(false);
   triangle->setMoving(false);
   FloorNode->addObject(triangle);

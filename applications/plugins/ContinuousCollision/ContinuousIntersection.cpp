@@ -143,7 +143,7 @@ float ContinuousIntersection::Impl::intersectEdgeEdge(const double &dt, const RE
     box1+=PolytopeModel::DOPType(e1.p1()+e1.v1()*dt,e1.p2()+e1.v2()*dt);
     PolytopeModel::DOPType box2(e2.p1(),e2.p2());
     box1+=PolytopeModel::DOPType(e2.p1()+e2.v1()*dt,e2.p2()+e2.v2()*dt);
-    
+
 //     if(e1.getBox() != box1)
 //     {
 //         std::cout << "Edge-Edge" << std::endl;
@@ -158,7 +158,7 @@ float ContinuousIntersection::Impl::intersectEdgeEdge(const double &dt, const RE
 //         std::cout << box2;
 //         std::cout << std::endl;
 //     }
-    
+
     if (!box1.Overlaps(box2))
 //     if (!e1.getBox().Overlaps(e2.getBox()))
         return -1.f;
@@ -221,7 +221,7 @@ float ContinuousIntersection::Impl::edgeEdgeIntersection(const double &dt, const
     Real l = 0;
     Real r = 1;
     Vector3 point,n;
-    if (solveCubicWithIntervalNewton(l, r, false, data, coeffs, point,n))
+    if (this->solveCubicWithIntervalNewton(l, r, false, data, coeffs, point,n))
     {
         collisionTime = (l+r)*0.5f;
         output->push_back(DetectionOutput());
@@ -233,9 +233,11 @@ float ContinuousIntersection::Impl::edgeEdgeIntersection(const double &dt, const
         detection.value = 0;
         detection.elem.first = edge1.getTriangle(0);
         detection.elem.second = edge2.getTriangle(0);
-        // WARNING: Does this index need to be unique?
         detection.id = edge1.getIndex();
-	detection.deltaT = collisionTime;
+        detection.deltaT = collisionTime;
+
+        std::cout << "EdgeEdge - Normal = " << -n << std::endl;
+
     }
 
     return collisionTime;
@@ -254,6 +256,13 @@ bool ContinuousIntersection::Impl::testEdgeEdge(const double &dt, const REdge &e
 
 float ContinuousIntersection::Impl::intersectEdgeEdge(const double &dt, const REdge &e1, const REdge &e2, const RTriangle &f1, const RTriangle &f2, OutputVector *output)
 {
+  PolytopeModel::DOPType box1(e1.p1(),e1.p2());
+  box1+=PolytopeModel::DOPType(e1.p1()+e1.v1()*dt,e1.p2()+e1.v2()*dt);
+  PolytopeModel::DOPType box2(e2.p1(),e2.p2());
+  box1+=PolytopeModel::DOPType(e2.p1()+e2.v1()*dt,e2.p2()+e2.v2()*dt);
+
+  if (!box1.Overlaps(box2))
+    return -1.f;
 
     REdge e[2] = {e1,e2};
     RTriangle f[2] = {f1,f2};
@@ -266,11 +275,11 @@ float ContinuousIntersection::Impl::intersectEdgeEdge(const double &dt, const RE
         f[1] = f1;
     }
 
-    for (int i=0; i<2; i++)
+    for (int i=0; i<2; ++i)
     {
         RTriangle adjacentTriangle1 = e[0].getTriangle(i);
         if(adjacentTriangle1.valid())
-        for (int j=0; j<2; j++)
+        for (int j=0; j<2; ++j)
         {
             RTriangle adjacentTriangle2 = e[1].getTriangle(j);
             if (!adjacentTriangle2.valid())
@@ -311,7 +320,7 @@ bool ContinuousIntersection::Impl::edgeEdgeIntersect(const Vector3 &p1, const Ve
 //         return false;
 
     Vector3 p13 = p1 - p3;
-    
+
     Real d4321 = p43*p21;
     Real d4343 = p43.norm2();
     Real d2121 = p21.norm2();
@@ -319,7 +328,7 @@ bool ContinuousIntersection::Impl::edgeEdgeIntersect(const Vector3 &p1, const Ve
 
     if (fabs(denom) < epsilon)
         return false;
-    
+
     Real d1321 = p13*p21;
     Real d1343 = p13*p43;
     Real numer = d1343 * d4321 - d1321 * d4343;
@@ -335,7 +344,8 @@ bool ContinuousIntersection::Impl::edgeEdgeIntersect(const Vector3 &p1, const Ve
     // Compute intersection points and normal
     point = p1 + p21*mua;
     Vector3 pb = p3 + p43*mub;
-    n = point-pb;
+    n = p21.cross(p43);
+    n.normalize();
     return true;
 }
 
@@ -362,6 +372,7 @@ bool ContinuousIntersection::Impl::insideTriangle(const Vector3 &a, const Vector
 
     point = Vector3(wa, wb, wc);
 
+    n.normalize();
     return true;
 }
 
@@ -537,7 +548,7 @@ float ContinuousIntersection::Impl::vertexFaceIntersection(const double &dt, con
         detection.elem.first = face;
         detection.elem.second = RTriangle(vertex.model, vertex.getTriangles()[0]);
         detection.id = face.getIndex();
-	detection.deltaT = collisionTime;
+        detection.deltaT = collisionTime;
     }
 
     return collisionTime;
@@ -604,7 +615,7 @@ float ContinuousIntersection::Impl::intersectVertexFace(const double &dt, const 
     PolytopeModel::DOPType box1(vertex.p(),vertex.p()+vertex.v()*dt);
     PolytopeModel::DOPType box2(face1.p1(),face1.p2(),face1.p3());
     box2 += PolytopeModel::DOPType(face1.p1()+face1.v1()*dt,face1.p2()+face1.v1()*dt,face1.p3()+face1.v1()*dt);
-        
+
 //     if(vertex.getBox() != box1)
 //     {
 //         std::cout << "Vertex-Face" << std::endl;

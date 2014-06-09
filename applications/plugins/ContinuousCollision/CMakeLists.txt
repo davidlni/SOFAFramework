@@ -10,6 +10,7 @@ set(HEADER_FILES
     ContinuousIntersection.h
     ContinuousContactMapper.h
     ContinuousPenalityContact.h
+    ContinuousPenalityContactForceField.h
 	)
 
 set(SOURCE_FILES
@@ -20,6 +21,7 @@ set(SOURCE_FILES
     ContinuousIntersection.cpp
     ContinuousContactMapper.cpp
     ContinuousPenalityContact.cpp
+    ContinuousPenalityContactForceField.cpp
 	)
 
 AddCompilerDefinitions("SOFA_BUILD_PLUGIN_CONTINUOUS_COLLISION")

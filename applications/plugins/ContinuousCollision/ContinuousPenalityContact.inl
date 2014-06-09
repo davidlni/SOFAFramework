@@ -187,7 +187,7 @@ void ContinuousPenalityContact<TCollisionModel1,TCollisionModel2,ResponseDataTyp
         if (distance != 0.0) stiffness /= distance;
 
         double mu_v = (elem1.getContactFriction() + elem2.getContactFriction());
-        ff->addContact(index1, index2, elem1.getIndex(), elem2.getIndex(), o->normal, distance, stiffness, mu_v/* *distance */, mu_v, index);
+        ff->addContact(index1, index2, elem1.getIndex(), elem2.getIndex(), o->normal, distance, stiffness, mu_v, mu_v, index);
     }
 
     // Update mappings
