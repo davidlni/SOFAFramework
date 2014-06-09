@@ -27,8 +27,6 @@
 #include<limits>
 
 // SOFA includes
-#include <sofa/core/CollisionModel.h>
-#include <sofa/component/container/MechanicalObject.h>
 #include <sofa/defaulttype/Vec3Types.h>
 
 // Local includes
@@ -60,11 +58,7 @@ public:
      */
     DiscreteOrientedPolytope()
     {
-      for(size_t i = 0; i < KHalf; ++i )
-      {
-        this->Distance[i] = std::numeric_limits<T>::max();
-        this->Distance[i+KHalf] = -this->Distance[i];
-      }
+        this->Clean();
     }
 
     DiscreteOrientedPolytope(const defaulttype::Vector3 &p)
@@ -130,12 +124,12 @@ public:
 
     DiscreteOrientedPolytope<T,K> &operator+=(const T &distance)
     {
-      for(size_t i = 0; i < KHalf; ++i)
-      {
-        this->Distance[i] -= distance;
-        this->Distance[i+KHalf] += distance;
-      }
-      return *this;
+        for(size_t i = 0; i < KHalf; ++i)
+        {
+            this->Distance[i] -= distance;
+            this->Distance[i+KHalf] += distance;
+        }
+        return *this;
     }
 
     DiscreteOrientedPolytope<T,K> &operator+=(const DiscreteOrientedPolytope<T,K> &other)
@@ -156,14 +150,14 @@ public:
 
     inline DiscreteOrientedPolytope<T,K> operator+(const T &other) const
     {
-      DiscreteOrientedPolytope<T,K> result(*this);
-      return (result += other);
+        DiscreteOrientedPolytope<T,K> result(*this);
+        return (result += other);
     }
 
     inline DiscreteOrientedPolytope<T,K> operator+(const defaulttype::Vector3 &p) const
     {
-      DiscreteOrientedPolytope<T,K> result(*this);
-      return (result += p);
+        DiscreteOrientedPolytope<T,K> result(*this);
+        return (result += p);
     }
 
     inline DiscreteOrientedPolytope<T,K> &operator*=(const defaulttype::Vector3 &p)
@@ -180,7 +174,7 @@ public:
         return dop*=(*this);
     }
 
-    inline bool operator%(const DiscreteOrientedPolytope<T,K> &other)
+    inline bool operator/(const DiscreteOrientedPolytope<T,K> &other) const
     {
         return this->Overlaps(other);
     }
@@ -188,6 +182,16 @@ public:
     inline void operator=(const DiscreteOrientedPolytope<T,K> &other)
     {
         this->Distance = other.Distance;
+    }
+    
+    inline bool operator==(const DiscreteOrientedPolytope<T,K> &other)
+    {
+	return this->Distance == other.Distance;
+    }
+    
+    inline bool operator!=(const DiscreteOrientedPolytope<T,K> &other)
+    {
+	return !(*this == other);
     }
 
     inline T GetLength(size_t i) const
@@ -253,7 +257,7 @@ public:
         for(size_t i = 0; i < KHalf; ++i )
         {
             this->Distance[i] = std::numeric_limits<T>::max();
-            this->Distance[i+KHalf] = -this->Distance[i];
+            this->Distance[i+KHalf] = std::numeric_limits<T>::min();
         }
     }
 
@@ -274,19 +278,41 @@ public:
 
     inline DistanceArrayType& Enlarge(const T &distance)
     {
-      return this->Distance;
+        return this->Distance;
     }
 
-    inline defaulttype::Vector3 GetBoundingBoxMin()
+    inline defaulttype::Vector3 GetBoundingBoxMin() const
     {
-      return defaulttype::Vector3(this->Distance[0],this->Distance[1],this->Distance[2]);
+        return defaulttype::Vector3(this->Distance[0],this->Distance[1],this->Distance[2]);
     }
 
-    inline defaulttype::Vector3 GetBoundingBoxMax()
+    inline defaulttype::Vector3 GetBoundingBoxMax() const
     {
-      return defaulttype::Vector3(this->Distance[KHalf],this->Distance[KHalf+1],this->Distance[KHalf+2]);
+        return defaulttype::Vector3(this->Distance[KHalf],this->Distance[KHalf+1],this->Distance[KHalf+2]);
     }
 
+    inline void GetBoundingBoxMin(const defaulttype::Vector3 &v) const
+    {
+        v[this->Distance[0]];
+        v[this->Distance[1]];
+        v[this->Distance[2]];
+    }
+
+    inline defaulttype::Vector3 GetBoundingBoxMax(const defaulttype::Vector3 &v) const
+    {
+        v[this->Distance[KHalf]];
+        v[this->Distance[KHalf+1]];
+        v[this->Distance[KHalf+2]];
+    }
+
+    friend std::ostream &operator<<(std::ostream &cout, const DiscreteOrientedPolytope<T,K> &obj)
+    {
+	cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" <<  std::endl;
+	for(size_t i = 0; i < K; ++i)
+	    cout << obj.Distance[i] << " ";
+	cout <<  std::endl << "-------------------------------------------------------------" <<  std::endl;
+	return cout;
+    }
 protected:
     DistanceArrayType Distance;
 };

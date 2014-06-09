@@ -129,7 +129,7 @@ public:
         const Vector3 &e, const Vector3 &f, helper::fixed_array<Real,4> &coeff);
     bool solveCubicWithIntervalNewton(Real &l, Real &r, bool bVF, NewtonCheckData &data, helper::fixed_array<Real,4> &coeff, Vector3 &point, Vector3 &normal);
     bool insideTriangle(const Vector3 &a, const Vector3 &b, const Vector3 &c, const Vector3 &p, Vector3 &point, Vector3 &n);
-    bool lineLineIntersect(const Vector3 &p1, const Vector3 &p2, const Vector3 &p3, const Vector3 &p4, Vector3 &point, Vector3 &n);
+    bool edgeEdgeIntersect(const Vector3 &p1, const Vector3 &p2, const Vector3 &p3, const Vector3 &p4, Vector3 &point, Vector3 &n);
     bool testEdgeEdge(const double &dt, const REdge &e1, const REdge &e2);
     float edgeEdgeIntersection(const double &dt, const REdge &edge1, const REdge &edge2, OutputVector *output);
     void testOrphans(const double &dt, RTriangleModel* model, OutputVector *output);
@@ -139,7 +139,28 @@ public:
 
 float ContinuousIntersection::Impl::intersectEdgeEdge(const double &dt, const REdge &e1, const REdge &e2, OutputVector *output)
 {
-    if (!e1.getBox().Overlaps(e2.getBox()))
+    PolytopeModel::DOPType box1(e1.p1(),e1.p2());
+    box1+=PolytopeModel::DOPType(e1.p1()+e1.v1()*dt,e1.p2()+e1.v2()*dt);
+    PolytopeModel::DOPType box2(e2.p1(),e2.p2());
+    box1+=PolytopeModel::DOPType(e2.p1()+e2.v1()*dt,e2.p2()+e2.v2()*dt);
+    
+//     if(e1.getBox() != box1)
+//     {
+//         std::cout << "Edge-Edge" << std::endl;
+//         std::cout << e1.getBox();
+//         std::cout << box1;
+//         std::cout << std::endl;
+//     }
+//     if(e2.getBox() != box2)
+//     {
+//         std::cout << "Edge-Edge" << std::endl;
+//         std::cout << e2.getBox();
+//         std::cout << box2;
+//         std::cout << std::endl;
+//     }
+    
+    if (!box1.Overlaps(box2))
+//     if (!e1.getBox().Overlaps(e2.getBox()))
         return -1.f;
 
     if (this->testEdgeEdge(dt, e1, e2))
@@ -233,8 +254,6 @@ bool ContinuousIntersection::Impl::testEdgeEdge(const double &dt, const REdge &e
 
 float ContinuousIntersection::Impl::intersectEdgeEdge(const double &dt, const REdge &e1, const REdge &e2, const RTriangle &f1, const RTriangle &f2, OutputVector *output)
 {
-    if (!e1.getBox().Overlaps(e2.getBox()))
-        return -1.f;
 
     REdge e[2] = {e1,e2};
     RTriangle f[2] = {f1,f2};
@@ -273,36 +292,37 @@ float ContinuousIntersection::Impl::intersectEdgeEdge(const double &dt, const RE
     return -1.f;
 }
 
-bool ContinuousIntersection::Impl::lineLineIntersect(const Vector3 &p1, const Vector3 &p2, const Vector3 &p3, const Vector3 &p4, Vector3 &point, Vector3 &n)
+bool ContinuousIntersection::Impl::edgeEdgeIntersect(const Vector3 &p1, const Vector3 &p2, const Vector3 &p3, const Vector3 &p4, Vector3 &point, Vector3 &n)
 {
-    Vector3 p13,p43,p21;
-    Real d1343,d4321,d1321,d4343,d2121;
-    Real numer,denom;
     Real epsilon = std::numeric_limits<Real>::epsilon();
 
-    p13 = p1 - p3;
-    p43 = p4 - p3;
-    if (fabs(p43[0])  < epsilon &&
-            fabs(p43[1])  < epsilon &&
-            fabs(p43[2])  < epsilon)
+    Vector3 p21 = p2 - p1;
+    Vector3 p43 = p4 - p3;
+    if(p21.norm2() < epsilon || p43.norm2() < epsilon)
+//     if (fabs(p43[0])  < epsilon &&
+//             fabs(p43[1])  < epsilon &&
+//             fabs(p43[2])  < epsilon)
         return false;
 
-    p21 = p2 - p1;
-    if (fabs(p21[0])  < epsilon &&
-            fabs(p21[1])  < epsilon &&
-            fabs(p21[2])  < epsilon)
-        return false;
+//     if(p21.norm2() < epsilon)
+//     if (fabs(p21[0])  < epsilon &&
+//             fabs(p21[1])  < epsilon &&
+//             fabs(p21[2])  < epsilon)
+//         return false;
 
-    d1343 = p13*p43;
-    d4321 = p43*p21;
-    d1321 = p13*p21;
-    d4343 = p43*p43;
-    d2121 = p21*p21;
+    Vector3 p13 = p1 - p3;
+    
+    Real d4321 = p43*p21;
+    Real d4343 = p43.norm2();
+    Real d2121 = p21.norm2();
+    Real denom = d2121 * d4343 - d4321 * d4321;
 
-    denom = d2121 * d4343 - d4321 * d4321;
     if (fabs(denom) < epsilon)
         return false;
-    numer = d1343 * d4321 - d1321 * d4343;
+    
+    Real d1321 = p13*p21;
+    Real d1343 = p13*p43;
+    Real numer = d1343 * d4321 - d1321 * d4343;
 
     Real mua = numer / denom;
     if (mua < 0 || mua > 1)
@@ -395,8 +415,7 @@ bool ContinuousIntersection::Impl::solveCubicWithIntervalNewton(Real &l, Real &r
                        coeff[3]*v2[max3]*v[max3]+coeff[2]*v2[max2]+coeff[1]*v[max1]+coeff[0]
                      };
 
-    if (bounds[0]>0) return false;
-    if (bounds[1]<0) return false;
+    if (bounds[0]>0 || bounds[1]<0) return false;
 
     // Starting at the middle of the interval
     Real m = 0.5*(r+l);
@@ -406,7 +425,7 @@ bool ContinuousIntersection::Impl::solveCubicWithIntervalNewton(Real &l, Real &r
                         3.0*coeff[3]*v2[max3]+2.0*coeff[2]*v[max2]+coeff[1]
                       };
 
-    if ((dbounds[0] > 0) || (dbounds[1] < 0)) // we can use Newton
+    if (dbounds[0] > 0 || dbounds[1] < 0) // we can use Newton
     {
         Real m2 = m*m;
         Real fm = coeff[3]*m2*m+coeff[2]*m2+coeff[1]*m+coeff[0];
@@ -457,7 +476,7 @@ bool ContinuousIntersection::Impl::solveCubicWithIntervalNewton(Real &l, Real &r
         if (bVF)
             return this->insideTriangle(data.ad*r + data.a0, data.bd*r + data.b0, data.cd*r + data.c0, data.pd*r + data.p0,point,n);
         else
-            return this->lineLineIntersect(data.ad*r + data.a0, data.bd*r + data.b0, data.cd*r + data.c0, data.pd*r + data.p0,point,n);
+            return this->edgeEdgeIntersect(data.ad*r + data.a0, data.bd*r + data.b0, data.cd*r + data.c0, data.pd*r + data.p0,point,n);
     }
 
     Real rBkUp = r;
@@ -484,14 +503,6 @@ float ContinuousIntersection::Impl::vertexFaceIntersection(const double &dt, con
      * Compute scalar coefficients by evaluating dot and cross-products.
      */
     helper::fixed_array<Real,4> coeffs; /* cubic polynomial coefficients */
-//       std::cout << face.p1() << std::endl;
-//   std::cout << ad << std::endl;
-//   std::cout << face.p2() << std::endl;
-//   std::cout << bd << std::endl;
-//   std::cout << face.p3() << std::endl;
-//   std::cout << cd << std::endl;
-//   std::cout << vertex.p() << std::endl;
-//   std::cout << qd << std::endl;
     this->computeCubicCoefficientsVertexFace(face.p1(), ad, face.p2(), bd, face.p3(), cd, vertex.p(), qd, coeffs);
 
     if (std::fabs(coeffs[0]) <= epsilon &&
@@ -575,7 +586,11 @@ bool ContinuousIntersection::Impl::testCoplanarity(const Vector3 &p0, const Vect
 
 float ContinuousIntersection::Impl::intersectVertexFace(const double &dt, const RVertex &vertex, const RTriangle &face, OutputVector *output)
 {
-  if (!vertex.getBox().Overlaps(face.getBox()))
+    PolytopeModel::DOPType box1(vertex.p(),vertex.p()+vertex.v()*dt);
+    PolytopeModel::DOPType box2(face.p1(),face.p2(),face.p3());
+    box2 += PolytopeModel::DOPType(face.p1()+face.v1()*dt,face.p2()+face.v1()*dt,face.p3()+face.v1()*dt);
+    if (!box1.Overlaps(box2))
+//   if (!vertex.getBox().Overlaps(face.getBox()))
     return -1.f;
 
   if (this->testVertexFace(dt,vertex,face))
@@ -586,9 +601,24 @@ float ContinuousIntersection::Impl::intersectVertexFace(const double &dt, const 
 
 float ContinuousIntersection::Impl::intersectVertexFace(const double &dt, const RVertex &vertex, const RTriangle &face1, const RTriangle &face2, OutputVector *output)
 {
-    PolytopeModel::DOPType box(vertex.p(),vertex.p()+vertex.v()*dt);std::cout.precision(16);
-    PolytopeModel::DOPType box2(face1.p1(),face1.p2());
-    box2+=face1.p3();
+    PolytopeModel::DOPType box1(vertex.p(),vertex.p()+vertex.v()*dt);
+    PolytopeModel::DOPType box2(face1.p1(),face1.p2(),face1.p3());
+    box2 += PolytopeModel::DOPType(face1.p1()+face1.v1()*dt,face1.p2()+face1.v1()*dt,face1.p3()+face1.v1()*dt);
+        
+//     if(vertex.getBox() != box1)
+//     {
+//         std::cout << "Vertex-Face" << std::endl;
+//         std::cout << vertex.getBox();
+//         std::cout << box1;
+//         std::cout << std::endl;
+//     }
+//     if(face1.getBox() != box2)
+//     {
+//         std::cout << "Vertex-Face" << std::endl;
+//         std::cout << face1.getBox();
+//         std::cout << box2;
+//         std::cout << std::endl;
+//     }
 //     std::cout.precision(16);
 //     std::cout << vertex.p() << std::endl;
 //     std::cout << vertex.p()+vertex.v()*dt<< std::endl;
@@ -596,7 +626,7 @@ float ContinuousIntersection::Impl::intersectVertexFace(const double &dt, const 
 //     std::cout << face1.p2() << std::endl;
 //     std::cout << face1.p3() << std::endl;
 
-    if (!box.Overlaps(box2))
+    if (!box1.Overlaps(box2))
         return -1.f;
 
     typename helper::vector<RVertex::index_type>::const_iterator i, end = vertex.getTriangles().end();

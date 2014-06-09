@@ -500,20 +500,22 @@ void TRTriangleModel<DataTypes>::computeBoundingTree(size_t maxDepth)
 template<class DataTypes>
 void TRTriangleModel<DataTypes>::cleanFeatureBoxes()
 {
-
   for(size_t i = 0, end = this->vertexBoxes.size(); i < end; ++i)
         this->vertexBoxes[i].Clean();
   for(size_t i = 0, end = this->edgeFeatures.size(); i < end; ++i)
      this->edgeBoxes[i].Clean();
-
+  
+  core::CollisionModel *boxes = this->getPrevious();
+    if(boxes)
+      static_cast<PolytopeModel*>(boxes)->cleanPolytopes();
 }
 
 template<class DataTypes>
 void TRTriangleModel<DataTypes>::updateFeatureBoxes(const double &dt)
 {
-    this->cleanFeatureBoxes();
     const VecCoord& x = *this->mstate->getX();
     const VecDeriv& v = *this->mstate->getV();
+    this->cleanFeatureBoxes();
     for(size_t i = 0, end = this->vertexBoxes.size(); i < end; ++i)
     {
         DiscreteOrientedPolytope<Real> box(x[i]+v[i]*dt);

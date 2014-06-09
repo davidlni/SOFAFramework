@@ -62,7 +62,7 @@ public:
 //     int computeIntersection(const Polytope & ,const RTriangle & ,OutputVector*);
 
     template<typename elem1, typename elem2>
-    bool testIntersection(elem1& p1,elem2& p2)
+    bool testIntersection(const elem1& p1,const elem2& p2)
     {
         return p1.getBox().Overlaps(p2.getBox());
     }

@@ -24,6 +24,7 @@
  *                                                                             *
  ******************************************************************************/
 
+#include <sofa/component/container/MechanicalObject.h>
 #include <sofa/core/CollisionModel.h>
 
 #include "DiscreteOrientedPolytope.h"
