@@ -106,84 +106,6 @@ MechanicalObject3::SPtr createFEM(sofa::simulation::Node::SPtr node)
   return DOF;
 }
 
-MechanicalObject3::SPtr createOneTetraFEM(sofa::simulation::Node::SPtr node)
-{
-  sofa::simulation::Node::SPtr FEMNode = node->createChild("FEMNode");
-
-  // Tetrahedron degrees of freedom
-  MechanicalObject3::SPtr DOF = sofa::core::objectmodel::New<MechanicalObject3>();
-  const Deriv3 rotation(30,0,24);
-  FEMNode->addObject(DOF);
-  DOF->resize(4);
-  DOF->setName("VolumeDOF");
-  DOF->setRotation(rotation[0],rotation[1],rotation[2]);
-  //get write access to the position vector of mechanical object DOF
-  sofa::helper::WriteAccessor<Data<VecCoord3> > x = *DOF->write(sofa::core::VecId::position());
-  x[0] = Coord3(0,20,0);
-  x[1] = Coord3(10,10,0);
-  x[2] = Coord3(-5,10,10);
-  x[3] = Coord3(-5,10,-10);
-//   DOF->showObject.setValue(true);
-//   DOF->showObjectScale.setValue(10.);
-
-  UniformMass3::SPtr mass = sofa::core::objectmodel::New<UniformMass3>();
-  mass->mass.setValue( 0.25 );
-  FEMNode->addObject(mass);
-
-  // Tetrahedron topology
-  sofa::component::topology::MeshTopology::SPtr topology = sofa::core::objectmodel::New<sofa::component::topology::MeshTopology>();
-  topology->setName("VolumeTopology");
-  topology->addTetra(0,1,2,3);
-  FEMNode->addObject( topology );
-
-  TetrahedronFEMForceField3::SPtr tetraFEMFF = sofa::core::objectmodel::New<TetrahedronFEMForceField3>();
-  tetraFEMFF->setName("FEM");
-  tetraFEMFF->setComputeGlobalMatrix(false);
-  tetraFEMFF->setMethod("large");
-  tetraFEMFF->setPoissonRatio(0.45);
-  tetraFEMFF->setYoungModulus(10000);
-  FEMNode->addObject(tetraFEMFF);
-
-  return DOF;
-}
-
-MechanicalObject3::SPtr createFloor(sofa::simulation::Node::SPtr node)
-{
-  sofa::simulation::Node::SPtr FloorNode = node->createChild("FloorNode");
-
-  const Deriv3 translation(0,-28,0);
-  const Deriv3 rotation(0,0,24);
-  sofa::component::loader::MeshSTLLoader::SPtr loader_surf = sofa::core::objectmodel::New<sofa::component::loader::MeshSTLLoader>();
-  loader_surf->setName("loader");
-  loader_surf->setFilename(sofa::helper::system::DataRepository.getFile("mesh/floor_tri.stl"));
-  loader_surf->load();
-  FloorNode->addObject(loader_surf);
-
-  sofa::component::topology::MeshTopology::SPtr floorMesh= sofa::core::objectmodel::New<sofa::component::topology::MeshTopology>();
-  floorMesh->setSrc("", loader_surf.get());
-  FloorNode->addObject(floorMesh);
-
-  MechanicalObject3::SPtr DOF = sofa::core::objectmodel::New<MechanicalObject3>();
-  DOF->setName("Floor Object");
-//   DOF->setTranslation(translation[0],translation[1],translation[2]);
-//   DOF->setRotation(rotation[0],rotation[1],rotation[2]);
-  FloorNode->addObject(DOF);
-  //
-  sofa::component::collision::RTriangleModel::SPtr triangle = sofa::core::objectmodel::New<sofa::component::collision::RTriangleModel>();
-  triangle->setName("FloorTriangleCollision");
-  triangle->setSimulated(false);
-  triangle->setMoving(false);
-  FloorNode->addObject(triangle);
-
-//   sofa::component::misc::STLExporter::SPtr exporter = sofa::core::objectmodel::New<sofa::component::misc::STLExporter>();
-//   exporter->stlFilename.setValue("floor");
-//   exporter->exportEveryNbSteps.setValue(1);
-//   exporter->m_fileFormat.setValue(0);
-//   FloorNode->addObject(exporter);
-
-  return DOF;
-}
-
 MechanicalObject3::SPtr createOneTetCollision(sofa::simulation::Node::SPtr node)
 {
   sofa::simulation::Node::SPtr collisionNode = node->createChild("collisionNode");
@@ -219,6 +141,7 @@ MechanicalObject3::SPtr createOneTetCollision(sofa::simulation::Node::SPtr node)
   sofa::component::collision::RTriangleModel::SPtr triangle = sofa::core::objectmodel::New<sofa::component::collision::RTriangleModel>();
   triangle->setName("TriangleCollision");
   triangle->setSelfCollision(true);
+  triangle->setContactStiffness(1000);
   collisionNode->addObject(triangle);
 
 //   sofa::component::misc::STLExporter::SPtr exporter = sofa::core::objectmodel::New<sofa::component::misc::STLExporter>();
@@ -226,6 +149,106 @@ MechanicalObject3::SPtr createOneTetCollision(sofa::simulation::Node::SPtr node)
 //   exporter->stlFilename.setValue("tet");
 //   exporter->exportEveryNbSteps.setValue(1);
 //   exporter->m_fileFormat.setValue(0);
+  return DOF;
+}
+
+MechanicalObject3::SPtr createOneTetraFEM(sofa::simulation::Node::SPtr node)
+{
+  sofa::simulation::Node::SPtr FEMNode = node->createChild("FEMNode");
+  
+  EulerImplicitSolver::SPtr solver = sofa::core::objectmodel::New<EulerImplicitSolver>();
+  solver->setName("solver");
+  solver->f_printLog.setValue(false);
+  FEMNode->addObject(solver);
+
+  CGLinearSolver::SPtr linearSolver = sofa::core::objectmodel::New<CGLinearSolver>();
+  linearSolver->setName("linearSolver");
+  FEMNode->addObject(linearSolver);
+
+  // Tetrahedron degrees of freedom
+  MechanicalObject3::SPtr DOF = sofa::core::objectmodel::New<MechanicalObject3>();
+  const Deriv3 rotation(30,0,24);
+  FEMNode->addObject(DOF);
+  DOF->resize(4);
+  DOF->setName("VolumeDOF");
+  DOF->setRotation(rotation[0],rotation[1],rotation[2]);
+  //get write access to the position vector of mechanical object DOF
+  sofa::helper::WriteAccessor<Data<VecCoord3> > x = *DOF->write(sofa::core::VecId::position());
+  x[0] = Coord3(0,20,0);
+  x[1] = Coord3(10,10,0);
+  x[2] = Coord3(-5,10,10);
+  x[3] = Coord3(-5,10,-10);
+//   DOF->showObject.setValue(true);
+//   DOF->showObjectScale.setValue(10.);
+
+  UniformMass3::SPtr mass = sofa::core::objectmodel::New<UniformMass3>();
+  mass->mass.setValue( 0.25 );
+  FEMNode->addObject(mass);
+
+  // Tetrahedron topology
+  sofa::component::topology::MeshTopology::SPtr topology = sofa::core::objectmodel::New<sofa::component::topology::MeshTopology>();
+  topology->setName("VolumeTopology");
+  topology->addTetra(0,1,2,3);
+  FEMNode->addObject( topology );
+
+  TetrahedronFEMForceField3::SPtr tetraFEMFF = sofa::core::objectmodel::New<TetrahedronFEMForceField3>();
+  tetraFEMFF->setName("FEM");
+  tetraFEMFF->setComputeGlobalMatrix(false);
+  tetraFEMFF->setMethod("large");
+  tetraFEMFF->setPoissonRatio(0.45);
+  tetraFEMFF->setYoungModulus(10000);
+  FEMNode->addObject(tetraFEMFF);
+  
+  MechanicalObject3::SPtr collisionDOF = createOneTetCollision(FEMNode);
+//
+  BarycentricMapping3_to_3::SPtr collisionMapping = sofa::core::objectmodel::New<BarycentricMapping3_to_3>();
+  collisionMapping->setModels(DOF.get(),collisionDOF.get());
+  collisionDOF->getContext()->addObject(collisionMapping);
+
+  return DOF;
+}
+
+MechanicalObject3::SPtr createFloor(sofa::simulation::Node::SPtr node)
+{
+  sofa::simulation::Node::SPtr FloorNode = node->createChild("FloorNode");
+
+  const Deriv3 translation(0,-28,0);
+  const Deriv3 rotation(0,0,24);
+  sofa::component::loader::MeshSTLLoader::SPtr loader_surf = sofa::core::objectmodel::New<sofa::component::loader::MeshSTLLoader>();
+  loader_surf->setName("loader");
+  loader_surf->setFilename(sofa::helper::system::DataRepository.getFile("mesh/floor_tri.stl"));
+  loader_surf->load();
+  FloorNode->addObject(loader_surf);
+
+  sofa::component::topology::MeshTopology::SPtr floorMesh= sofa::core::objectmodel::New<sofa::component::topology::MeshTopology>();
+  floorMesh->setSrc("", loader_surf.get());
+  FloorNode->addObject(floorMesh);
+
+  MechanicalObject3::SPtr DOF = sofa::core::objectmodel::New<MechanicalObject3>();
+  DOF->setName("Floor Object");
+//   DOF->setTranslation(translation[0],translation[1],translation[2]);
+//   DOF->setRotation(rotation[0],rotation[1],rotation[2]);
+  FloorNode->addObject(DOF);
+  //
+  sofa::component::collision::RTriangleModel::SPtr triangle = sofa::core::objectmodel::New<sofa::component::collision::RTriangleModel>();
+  triangle->setName("FloorTriangleCollision");
+  triangle->setSimulated(false);
+  triangle->setMoving(false);
+  triangle->setContactStiffness(1000);
+  FloorNode->addObject(triangle);
+
+//   sofa::component::visualmodel::OglModel::SPtr VModel = sofa::core::objectmodel::New<sofa::component::visualmodel::OglModel>();
+//   VModel->fileMesh.setValue(sofa::helper::system::DataRepository.getFile("mesh/floor_tri.stl"));
+  
+//   VModel->texturename.setValue(sofa::helper::system::DataRepository.getFile("textures/brushed_metal.bmp"));
+//   FloorNode->addObject(VModel);
+//   IdentityMapping3_to_Ext3::SPtr map = sofa::core::objectmodel::New<sofa::component::visualmodel::OglModel>();
+//   sofa::component::misc::STLExporter::SPtr exporter = sofa::core::objectmodel::New<sofa::component::misc::STLExporter>();
+//   exporter->stlFilename.setValue("floor");
+//   exporter->exportEveryNbSteps.setValue(1);
+//   exporter->m_fileFormat.setValue(0);
+//   FloorNode->addObject(exporter);
+
   return DOF;
 }
 
@@ -250,6 +273,7 @@ MechanicalObject3::SPtr createCollision(sofa::simulation::Node::SPtr node)
   sofa::component::collision::RTriangleModel::SPtr triangle = sofa::core::objectmodel::New<sofa::component::collision::RTriangleModel>();
   triangle->setName("TriangleCollision");
   triangle->setSelfCollision(true);
+  triangle->setContactStiffness(1000);
   collisionNode->addObject(triangle);
 
   return DOF;
@@ -266,27 +290,12 @@ int main(int ac, char **av)
 
   // The graph root node
   sofa::simulation::Node::SPtr root = CreateRootWithCollisionPipeline();
-  root->setGravity(sofa::defaulttype::Vector3(0,-.1,0) );
+  root->setGravity(sofa::defaulttype::Vector3(0,-10,0) );
   // One solver for all the graph
 
-  EulerImplicitSolver::SPtr solver = sofa::core::objectmodel::New<EulerImplicitSolver>();
-  solver->setName("solver");
-  solver->f_printLog.setValue(false);
-  root->addObject(solver);
-
-  CGLinearSolver::SPtr linearSolver = sofa::core::objectmodel::New<CGLinearSolver>();
-  linearSolver->setName("linearSolver");
-  root->addObject(linearSolver);
-
-  MechanicalObject3::SPtr femDOF = createOneTetraFEM(root);
-  MechanicalObject3::SPtr collisionDOF = createOneTetCollision(root);
-//
-  BarycentricMapping3_to_3::SPtr collisionMapping = sofa::core::objectmodel::New<BarycentricMapping3_to_3>();
-  collisionMapping->setModels(femDOF.get(),collisionDOF.get());
-  collisionDOF->getContext()->addObject(collisionMapping);
-
+  createOneTetraFEM(root);
   createFloor(root);
-
+  
   root->setAnimate(false);
 
   sofa::simulation::getSimulation()->init(root.get());

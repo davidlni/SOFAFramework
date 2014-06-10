@@ -67,7 +67,7 @@ void ContinuousPenalityContactForceField<DataTypes>::addContact(const int &m1, c
     c.index1 = index1;
     c.index2 = index2;
     c.norm = norm;
-    c.dist = dist;
+    c.dist = .2;
     c.ks = ks;
     c.mu_s = mu_s;
     c.mu_v = mu_v;
@@ -97,17 +97,21 @@ void ContinuousPenalityContactForceField<DataTypes>::addForce(const core::Mechan
 
     f1.resize(x1.size());
     f2.resize(x2.size());
-
     for (unsigned int i=0; i<contacts.getValue().size(); i++)
     {
         Contact& c = (*contacts.beginEdit())[i];
         Coord u = x2[c.m2]-x1[c.m1];
-        Deriv force = -c.ks*c.norm*(c.dist - u*c.norm);
+        c.pen = c.dist - u*c.norm;
+        if (c.pen > 0)
+        {
+            Real fN = c.ks * c.pen;
+            Deriv force = -c.norm*fN;
 
-        f1[c.m1]-=force;
-        this->mask1->insertEntry(c.m1);
-        f2[c.m2]+=force;
-        this->mask2->insertEntry(c.m2);
+            f1[c.m1]+=force;
+            this->mask1->insertEntry(c.m1);
+            f2[c.m2]-=force;
+            this->mask2->insertEntry(c.m2);
+        }
     }
     contacts.endEdit();
 
@@ -130,12 +134,16 @@ void ContinuousPenalityContactForceField<DataTypes>::addDForce(const core::Mecha
     for (unsigned int i=0; i<contacts.getValue().size(); i++)
     {
         const Contact& c = contacts.getValue()[i];
-        Coord du = dx2[c.m2]-dx1[c.m1];
-
-        Real dfN = -c.ks * du*c.norm * kFactor;
-        Deriv dforce = -c.norm*dfN;
-        df1[c.m1]-=dforce;
-        df2[c.m2]+=dforce;
+        if (c.pen > 0) // + dpen > 0)
+        {
+            Coord du = dx2[c.m2]-dx1[c.m1];
+            Real dpen = - du*c.norm;
+            //if (c.pen < 0) dpen += c.pen; // start penality at distance 0
+            Real dfN = c.ks * dpen * (Real)kFactor;
+            Deriv dforce = -c.norm*dfN;
+            df1[c.m1]+=dforce;
+            df2[c.m2]-=dforce;
+        }
     }
 
     data_df1.endEdit();

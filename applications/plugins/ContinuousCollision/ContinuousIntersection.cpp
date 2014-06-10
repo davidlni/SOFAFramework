@@ -543,7 +543,7 @@ float ContinuousIntersection::Impl::vertexFaceIntersection(const double &dt, con
 
         detection.point[0] = qi;
         detection.point[1] = qi;
-        detection.normal = -n;
+        detection.normal = n;
         detection.value = 0;
         detection.elem.first = face;
         detection.elem.second = RTriangle(vertex.model, vertex.getTriangles()[0]);
