@@ -183,12 +183,12 @@ public:
     {
         this->Distance = other.Distance;
     }
-    
+
     inline bool operator==(const DiscreteOrientedPolytope<T,K> &other)
     {
 	return this->Distance == other.Distance;
     }
-    
+
     inline bool operator!=(const DiscreteOrientedPolytope<T,K> &other)
     {
 	return !(*this == other);
@@ -289,20 +289,6 @@ public:
     inline defaulttype::Vector3 GetBoundingBoxMax() const
     {
         return defaulttype::Vector3(this->Distance[KHalf],this->Distance[KHalf+1],this->Distance[KHalf+2]);
-    }
-
-    inline void GetBoundingBoxMin(const defaulttype::Vector3 &v) const
-    {
-        v[this->Distance[0]];
-        v[this->Distance[1]];
-        v[this->Distance[2]];
-    }
-
-    inline defaulttype::Vector3 GetBoundingBoxMax(const defaulttype::Vector3 &v) const
-    {
-        v[this->Distance[KHalf]];
-        v[this->Distance[KHalf+1]];
-        v[this->Distance[KHalf+2]];
     }
 
     friend std::ostream &operator<<(std::ostream &cout, const DiscreteOrientedPolytope<T,K> &obj)

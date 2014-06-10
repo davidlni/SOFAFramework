@@ -221,9 +221,6 @@ void TPolytopeModel<TDataTypes,K>::computeBoundingTree(size_t maxDepth)
             {
                 const std::pair<Element,Element>& subcells = cell.subcells();
                 index_type ncells = subcells.second.getIndex() - subcells.first.getIndex();
-		std::cout << "subcells.first.getIndex() = " <<  subcells.first.getIndex() << std::endl;
-		std::cout << "subcells.second.getIndex() = " << subcells.second.getIndex() << std::endl;
-		std::cout << "ncells = " << ncells  << std::endl;
                 // Only split cells with more than 4 childs
                 if (ncells > 4)
                 {
@@ -237,7 +234,6 @@ void TPolytopeModel<TDataTypes,K>::computeBoundingTree(size_t maxDepth)
                     std::sort(start,finish,PolytopeSortPredicate(splitAxis));
 
                     index_type middleIndex = subcells.first.getIndex()+(ncells+1)/2;
-		    std::cout << "middleIndex = " << middleIndex << std::endl;
 
                     // Create the two new polytops in current level containing the splited indices
                     Element cmiddle(this, middleIndex);

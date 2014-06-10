@@ -40,7 +40,7 @@
 using sofa::component::odesolver::EulerImplicitSolver;
 typedef sofa::component::linearsolver::CGLinearSolver<sofa::component::linearsolver::GraphScatteredMatrix, sofa::component::linearsolver::GraphScatteredVector> CGLinearSolver;
 
-sofa::simulation::Node::SPtr CreateRootWithCollisionPipeline(const std::string& responseType = "default")
+sofa::simulation::Node::SPtr CreateRootWithCollisionPipeline(const std::string& responseType = "distanceLMConstraint")
 {
 
   sofa::simulation::Node::SPtr root = sofa::simulation::getSimulation()->createNewGraph("root");
@@ -58,16 +58,16 @@ sofa::simulation::Node::SPtr CreateRootWithCollisionPipeline(const std::string& 
   root->addObject(detection);
 
   //--> adding component to detection intersection of elements
-  sofa::component::collision::ContinuousIntersection::SPtr detectionProximity = sofa::core::objectmodel::New<sofa::component::collision::ContinuousIntersection>();
-  detectionProximity->setName("Proximity");
-  detectionProximity->setAlarmDistance(0.3);   //warning distance
-  detectionProximity->setContactDistance(0.2); //min distance before setting a spring to create a repulsion
-  root->addObject(detectionProximity);
+  sofa::component::collision::ContinuousIntersection::SPtr intersection = sofa::core::objectmodel::New<sofa::component::collision::ContinuousIntersection>();
+  intersection->setName("Intersection");
+  intersection->setAlarmDistance(0.3);   //warning distance
+  intersection->setContactDistance(0.2); //min distance before setting a spring to create a repulsion
+  root->addObject(intersection);
 
   //--> adding contact manager
   sofa::component::collision::DefaultContactManager::SPtr contactManager = sofa::core::objectmodel::New<sofa::component::collision::DefaultContactManager>();
   contactManager->setName("Contact Manager");
-  contactManager->setDefaultResponseType(responseType);
+//   contactManager->setDefaultResponseType(responseType);
   root->addObject(contactManager);
 
   //--> adding component to handle groups of collision.
@@ -155,7 +155,7 @@ MechanicalObject3::SPtr createOneTetCollision(sofa::simulation::Node::SPtr node)
 MechanicalObject3::SPtr createOneTetraFEM(sofa::simulation::Node::SPtr node)
 {
   sofa::simulation::Node::SPtr FEMNode = node->createChild("FEMNode");
-  
+
   EulerImplicitSolver::SPtr solver = sofa::core::objectmodel::New<EulerImplicitSolver>();
   solver->setName("solver");
   solver->f_printLog.setValue(false);
@@ -198,7 +198,7 @@ MechanicalObject3::SPtr createOneTetraFEM(sofa::simulation::Node::SPtr node)
   tetraFEMFF->setPoissonRatio(0.45);
   tetraFEMFF->setYoungModulus(10000);
   FEMNode->addObject(tetraFEMFF);
-  
+
   MechanicalObject3::SPtr collisionDOF = createOneTetCollision(FEMNode);
 //
   BarycentricMapping3_to_3::SPtr collisionMapping = sofa::core::objectmodel::New<BarycentricMapping3_to_3>();
@@ -239,7 +239,7 @@ MechanicalObject3::SPtr createFloor(sofa::simulation::Node::SPtr node)
 
 //   sofa::component::visualmodel::OglModel::SPtr VModel = sofa::core::objectmodel::New<sofa::component::visualmodel::OglModel>();
 //   VModel->fileMesh.setValue(sofa::helper::system::DataRepository.getFile("mesh/floor_tri.stl"));
-  
+
 //   VModel->texturename.setValue(sofa::helper::system::DataRepository.getFile("textures/brushed_metal.bmp"));
 //   FloorNode->addObject(VModel);
 //   IdentityMapping3_to_Ext3::SPtr map = sofa::core::objectmodel::New<sofa::component::visualmodel::OglModel>();
@@ -295,7 +295,7 @@ int main(int ac, char **av)
 
   createOneTetraFEM(root);
   createFloor(root);
-  
+
   root->setAnimate(false);
 
   sofa::simulation::getSimulation()->init(root.get());

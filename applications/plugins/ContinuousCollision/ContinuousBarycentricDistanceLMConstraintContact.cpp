@@ -22,13 +22,10 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#define SOFA_COMPONENT_INTERACTIONFORCEFIELD_CONTINUOUSPENALITYCONTACTFORCEFIELD_CPP
-
 #include "initContinuousCollision.h"
-#include "ContinuousPenalityContactForceField.inl"
-#include <sofa/core/behavior/PairInteractionForceField.inl>
-#include <sofa/defaulttype/Vec3Types.h>
-#include <sofa/core/ObjectFactory.h>
+#include "RTriangleModel.h"
+#include "sofa/component/collision/BarycentricDistanceLMConstraintContact.inl"
+#include "ContinuousContactMapper.h"
 
 namespace sofa
 {
@@ -36,33 +33,18 @@ namespace sofa
 namespace component
 {
 
-namespace interactionforcefield
+namespace collision
 {
 
-using namespace sofa::defaulttype;
+using namespace defaulttype;
+using simulation::Node;
+
+SOFA_DECL_CLASS(BarycentricDistanceLMConstraintContact)
+
+Creator<Contact::Factory, BarycentricDistanceLMConstraintContact<RTriangleModel, RTriangleModel> > RTriangleRTriangleLMConstraintContactClass("distanceLMConstraint",true);
 
 
-
-SOFA_DECL_CLASS(ContinuousPenalityContactForceField)
-
-// Register in the Factory
-int ContinuousPenalityContactForceFieldClass = core::RegisterObject("Contact using repulsive springs")
-#ifndef SOFA_FLOAT
-        .add< ContinuousPenalityContactForceField<Vec3dTypes> >()
-#endif
-#ifndef SOFA_DOUBLE
-        .add< ContinuousPenalityContactForceField<Vec3fTypes> >()
-#endif
-        ;
-
-#ifndef SOFA_FLOAT
-template class SOFA_CONTINUOUS_COLLISION_API ContinuousPenalityContactForceField<Vec3dTypes>;
-#endif
-#ifndef SOFA_DOUBLE
-template class SOFA_CONTINUOUS_COLLISION_API ContinuousPenalityContactForceField<Vec3fTypes>;
-#endif
-
-} // namespace interactionforcefield
+} // namespace collision
 
 } // namespace component
 

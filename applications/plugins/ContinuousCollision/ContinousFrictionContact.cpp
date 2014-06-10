@@ -22,10 +22,12 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
+
 #include "initContinuousCollision.h"
+
 #include "RTriangleModel.h"
-#include <sofa/component/collision/BarycentricPenalityContact.inl>
 #include "ContinuousContactMapper.h"
+#include <sofa/component/collision/FrictionContact.inl>
 
 namespace sofa
 {
@@ -36,9 +38,16 @@ namespace component
 namespace collision
 {
 
-SOFA_DECL_CLASS(ContinuousPenalityContact)
+using namespace defaulttype;
+using namespace sofa::helper;
+using simulation::Node;
 
-Creator<sofa::core::collision::Contact::Factory, BarycentricPenalityContact<RTriangleModel, RTriangleModel> > RTriangleTrianglePenalityContactClass("default",true);
+sofa::core::collision::DetectionOutput::ContactId Identifier::cpt=0;
+std::list<sofa::core::collision::DetectionOutput::ContactId> Identifier::availableId;
+
+SOFA_DECL_CLASS(FrictionContact)
+
+Creator<Contact::Factory, FrictionContact<RTriangleModel, RTriangleModel> > RTriangleRTriangleFrictionContactClass("ContinuousFrictionContact",true);
 
 
 } // namespace collision
@@ -46,4 +55,3 @@ Creator<sofa::core::collision::Contact::Factory, BarycentricPenalityContact<RTri
 } // namespace component
 
 } // namespace sofa
-

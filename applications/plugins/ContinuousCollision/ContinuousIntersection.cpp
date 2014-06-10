@@ -235,9 +235,6 @@ float ContinuousIntersection::Impl::edgeEdgeIntersection(const double &dt, const
         detection.elem.second = edge2.getTriangle(0);
         detection.id = edge1.getIndex();
         detection.deltaT = collisionTime;
-
-        std::cout << "EdgeEdge - Normal = " << -n << std::endl;
-
     }
 
     return collisionTime;
@@ -683,7 +680,7 @@ bool ContinuousIntersection::Impl::testFeatures(const double &dt, const RTriangl
     this->intersectVertexFace(dt,v1,face2,face1,output);
     this->intersectVertexFace(dt,v2,face2,face1,output);
     this->intersectVertexFace(dt,v3,face2,face1,output);
-        std::cout << "output.size() = " << output->size() << std::endl;
+//         std::cout << "output.size() = " << output->size() << std::endl;
 
 //     std::cout << "Testing vertex " << v4.getIndex() << " against face " << face1.model->getTriangles()[face1.getIndex()] << std::endl;
 //     std::cout << "output.size() = " << output->size() << std::endl;
@@ -694,7 +691,7 @@ bool ContinuousIntersection::Impl::testFeatures(const double &dt, const RTriangl
     this->intersectVertexFace(dt,v4,face1,face2,output);
     this->intersectVertexFace(dt,v5,face1,face2,output);
     this->intersectVertexFace(dt,v6,face1,face2,output);
-        std::cout << "output.size() = " << output->size() << std::endl;
+//         std::cout << "output.size() = " << output->size() << std::endl;
 
     // 9 EE test
     REdge e(face1.model,face1.e1Index()), e1(face2.model,face2.e1Index()), e2(face2.model,face2.e2Index()), e3(face2.model,face2.e3Index());
@@ -707,7 +704,7 @@ bool ContinuousIntersection::Impl::testFeatures(const double &dt, const RTriangl
     this->intersectEdgeEdge(dt,e,e1,face1,face2,output);
     this->intersectEdgeEdge(dt,e,e2,face1,face2,output);
     this->intersectEdgeEdge(dt,e,e3,face1,face2,output);
-        std::cout << "output.size() = " << output->size() << std::endl;
+//         std::cout << "output.size() = " << output->size() << std::endl;
 
     e = REdge(face1.model,face1.e2Index());
 //     std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e1.getIndex()] << "]"<< std::endl;
@@ -719,7 +716,7 @@ bool ContinuousIntersection::Impl::testFeatures(const double &dt, const RTriangl
     this->intersectEdgeEdge(dt,e,e1,face1,face2,output);
     this->intersectEdgeEdge(dt,e,e2,face1,face2,output);
     this->intersectEdgeEdge(dt,e,e3,face1,face2,output);
-        std::cout << "output.size() = " << output->size() << std::endl;
+//         std::cout << "output.size() = " << output->size() << std::endl;
 
     e = REdge(face1.model,face1.e3Index());
 //     std::cout << "Testing edge [" << face1.model->getEdges()[e.getIndex()] << "] against edge [" << face2.model->getEdges()[e1.getIndex()] << "]"<< std::endl;
@@ -731,7 +728,7 @@ bool ContinuousIntersection::Impl::testFeatures(const double &dt, const RTriangl
     this->intersectEdgeEdge(dt,e,e1,face1,face2,output);
     this->intersectEdgeEdge(dt,e,e2,face1,face2,output);
     this->intersectEdgeEdge(dt,e,e3,face1,face2,output);
-        std::cout << "output.size() = " << output->size() << std::endl;
+//         std::cout << "output.size() = " << output->size() << std::endl;
     return true;
 }
 
